@@ -159,7 +159,21 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
             </div>
 
             <!-- Niche card -->
-            <div class="app-action">
+            <div class="app-action" [class.app-action--niche-set]="profile?.selectedNiche && !showNichePicker">
+              <div class="app-action__status" *ngIf="profile?.selectedNiche && !showNichePicker && !nicheSaved">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Configurado
+              </div>
+              <div class="app-action__status app-action__status--saved" *ngIf="nicheSaved">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Salvo com sucesso!
+              </div>
               <h3>Configure seu nicho</h3>
               <p>
                 A IA adapta os posts ao seu mercado.
@@ -170,8 +184,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
               </p>
 
               <!-- Niche picker collapsed view -->
-              <button *ngIf="!showNichePicker" type="button" class="btn btn--outline" (click)="showNichePicker = true">
-                {{ profile?.selectedNiche ? 'Mudar nicho' : 'Escolher nicho' }}
+              <button *ngIf="!showNichePicker" type="button" class="btn btn--outline" (click)="showNichePicker = true; nicheSaved = false">
+                {{ profile?.selectedNiche ? 'Mudar nicho' : 'Escolher nicho →' }}
               </button>
 
               <!-- Niche grid -->
@@ -183,6 +197,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
                         (click)="selectNiche(n.value)">
                   <span class="app-niche-emoji">{{ n.emoji }}</span>
                   <span>{{ n.label }}</span>
+                  <svg *ngIf="profile?.selectedNiche === n.value" class="app-niche-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>
                 <div class="app-niche-error" *ngIf="nicheError">{{ nicheError }}</div>
               </div>
@@ -532,6 +547,11 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
     .app-action h3 { font-size: 15px; font-weight: 700; color: #fff; margin: 0 0 6px; }
     .app-action p { font-size: 13px; color: #9ca3af; line-height: 1.6; margin: 0 0 16px; }
 
+    .app-action--niche-set {
+      background: rgba(34,197,94,0.04); border-color: rgba(34,197,94,0.2);
+    }
+    .app-action__status--saved { color: #4ade80 !important; }
+
     .app-niche-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;
     }
@@ -547,6 +567,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
     }
     .app-niche-btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .app-niche-emoji { font-size: 16px; }
+    .app-niche-check { width: 13px; height: 13px; margin-left: auto; flex-shrink: 0; stroke: #fbbf24; }
     .app-niche-error { grid-column: 1/-1; font-size: 12px; color: #f87171; }
 
     .app-referral-inline {
@@ -774,6 +795,7 @@ export class ClientAppComponent implements OnInit {
   showNichePicker = false;
   nicheLoading = false;
   nicheError = '';
+  nicheSaved = false;
   igConnecting = false;
   igConnectError = '';
 
@@ -998,8 +1020,10 @@ export class ClientAppComponent implements OnInit {
       next: (res) => {
         this.nicheLoading = false;
         this.showNichePicker = false;
+        this.nicheSaved = true;
         if (this.profile) this.profile = { ...this.profile, selectedNiche: res.niche };
         if (this.client) this.client = { ...this.client, selectedNiche: res.niche };
+        setTimeout(() => this.nicheSaved = false, 3000);
       },
       error: (err) => {
         this.nicheLoading = false;
