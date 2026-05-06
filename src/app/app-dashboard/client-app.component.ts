@@ -422,6 +422,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
           </div>
         </div>
       </main>
+
+      <div *ngIf="nicheToast" style="position:fixed;bottom:1.5rem;right:1.5rem;background:#14532d;color:#86efac;border:1px solid #166534;border-radius:10px;padding:.75rem 1.25rem;font-size:.875rem;font-weight:600;z-index:999">{{ nicheToast }}</div>
     </section>
   `,
   styles: [`
@@ -811,6 +813,16 @@ export class ClientAppComponent implements OnInit {
   cancelLoading = false;
   cancelError = '';
 
+  // Toast notification
+  nicheToast = '';
+  private _nicheToastTimer: any;
+
+  showNicheToast(msg: string): void {
+    this.nicheToast = msg;
+    clearTimeout(this._nicheToastTimer);
+    this._nicheToastTimer = setTimeout(() => this.nicheToast = '', 4000);
+  }
+
   ngOnInit(): void {
     this.seo.setPage({ title: 'Painel — Akroma Spark', description: '', noindex: true });
 
@@ -834,9 +846,12 @@ export class ClientAppComponent implements OnInit {
       instagramUsername: this.client.instagramUsername
     };
 
-    // After Instagram OAuth callback, refresh profile to get updated token info
-    if (this.route.snapshot.queryParamMap.get('ig') === 'connected') {
+    // After Instagram OAuth callback, handle success or error
+    const igParam = this.route.snapshot.queryParamMap.get('ig');
+    if (igParam === 'connected') {
       this.loadProfile();
+    } else if (igParam === 'error') {
+      this.igConnectError = 'Autorização negada ou cancelada. Tente novamente.';
     }
   }
 
@@ -1016,14 +1031,18 @@ export class ClientAppComponent implements OnInit {
     this.nicheLoading = true;
     this.nicheError = '';
     const headers = this.auth.authHeaders();
-    this.http.post<{ niche: string }>(`${environment.apiUrl}/api/v1/client/niche`, { niche }, { headers }).subscribe({
+    this.http.post<{ niche: string; templateApplied: boolean }>(`${environment.apiUrl}/api/v1/client/niche`, { niche }, { headers }).subscribe({
       next: (res) => {
         this.nicheLoading = false;
         this.showNichePicker = false;
         this.nicheSaved = true;
         if (this.profile) this.profile = { ...this.profile, selectedNiche: res.niche };
         if (this.client) this.client = { ...this.client, selectedNiche: res.niche };
+        this.auth.updateStoredClient({ selectedNiche: res.niche });
         setTimeout(() => this.nicheSaved = false, 3000);
+        if (res.templateApplied) {
+          this.showNicheToast('Configuração padrão para este nicho foi aplicada ✓');
+        }
       },
       error: (err) => {
         this.nicheLoading = false;
