@@ -16,6 +16,18 @@ export const routes: Routes = [
     loadComponent: () => import('./landing/spark.component').then(m => m.SparkComponent)
   },
   {
+    path: 'como-funciona',
+    loadComponent: () => import('./landing/como-funciona.component').then(m => m.ComoFuncionaComponent)
+  },
+  {
+    path: 'recursos',
+    loadComponent: () => import('./landing/recursos.component').then(m => m.RecursosComponent)
+  },
+  {
+    path: 'planos',
+    loadComponent: () => import('./landing/planos.component').then(m => m.PlanosComponent)
+  },
+  {
     path: 'cadastro',
     loadComponent: () => import('./cadastro/cadastro.component').then(m => m.CadastroComponent)
   },
@@ -44,7 +56,7 @@ export const routes: Routes = [
     path: '404',
     loadComponent: () => import('./not-found/not-found.component').then(m => m.NotFoundComponent)
   },
-  // Niche pages (single segment) — must come before wildcard. Unknown slugs redirect to /404.
+  // Niche pages — single-segment wildcard. Named routes above must come first.
   {
     path: ':niche',
     loadComponent: () => import('./landing/spark-niche.component').then(m => m.SparkNicheComponent)
