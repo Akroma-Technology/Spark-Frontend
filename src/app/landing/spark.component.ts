@@ -2,8 +2,6 @@ import { AfterViewInit, Component, ElementRef, HostListener, Inject, OnDestroy, 
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
 import { SeoService } from '../core/services/seo.service';
 import { SparkTopbarComponent } from '../shared/components/topbar/topbar.component';
 import { SparkFooterComponent } from '../shared/components/footer/footer.component';
@@ -138,17 +136,6 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
     ],
   },
 };
-
-interface Plan {
-  id: 'starter' | 'pro' | 'enterprise';
-  name: string;
-  monthly: number;
-  prefix?: string;
-  featured: boolean;
-  features: string[];
-  ctaLabel: string;
-  ctaRoute: string;
-}
 
 @Component({
   selector: 'app-spark',
@@ -370,52 +357,6 @@ interface Plan {
           <a routerLink="/como-funciona" class="btn btn--outline">
             Ver como funciona em detalhes &rarr;
           </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- PRICING -->
-    <section id="planos" class="spark-pricing spark-section-target">
-      <div class="container">
-        <span class="label">PLANOS</span>
-        <h2 class="section-title">Simples e transparente</h2>
-
-        <!-- Billing toggle -->
-        <div class="billing-toggle">
-          <span [class.active]="!annual">Mensal</span>
-          <button class="billing-toggle__switch" [class.annual]="annual" (click)="annual = !annual" aria-label="Alternar cobrança anual">
-            <span class="billing-toggle__knob"></span>
-          </button>
-          <span [class.active]="annual">Anual <span class="billing-toggle__save">2 meses grátis</span></span>
-        </div>
-
-        <div class="pricing-grid">
-          <div class="pricing-card" *ngFor="let p of plans"
-               [class.pricing-card--featured]="p.featured">
-            <span class="pricing-card__badge" *ngIf="p.featured">POPULAR</span>
-            <div class="pricing-card__head">
-              <span class="pricing-card__name">{{ p.name }}</span>
-              <div class="pricing-card__price">
-                <span class="pricing-card__currency">R$</span>
-                <span class="pricing-card__amount">{{ annual ? annualPerMonth(p.monthly) : p.monthly }}</span>
-                <span class="pricing-card__period">/mes</span>
-              </div>
-              <div class="pricing-card__annual-note" *ngIf="annual">
-                R$ {{ p.monthly * 10 | number:'1.0-0':'pt-BR' }}/ano (pague 10, leve 12)
-              </div>
-              <div class="pricing-card__prefix" *ngIf="p.prefix">{{ p.prefix }}</div>
-            </div>
-            <ul class="pricing-card__features">
-              <li *ngFor="let f of p.features">{{ f }}</li>
-            </ul>
-            <a [routerLink]="p.ctaRoute"
-               [queryParams]="p.ctaRoute === '/cadastro' ? { plan: p.id, billing: annual ? 'annual' : 'monthly' } : null"
-               class="btn btn--full pricing-card__cta"
-               [class.btn--spark]="p.featured"
-               [class.btn--outline]="!p.featured">
-              {{ p.ctaLabel }}
-            </a>
-          </div>
         </div>
       </div>
     </section>
@@ -753,71 +694,6 @@ interface Plan {
     .step-card__title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 10px; }
     .step-card__desc { font-size: 14px; color: #9ca3af; line-height: 1.6; }
 
-    /* Pricing */
-    .spark-pricing { padding: 100px 0; background: #050810; }
-    .billing-toggle {
-      display: flex; align-items: center; justify-content: center; gap: 12px;
-      margin-bottom: 40px; font-size: 15px; color: #6b7280;
-    }
-    .billing-toggle span.active { color: #fff; font-weight: 600; }
-    .billing-toggle__switch {
-      width: 52px; height: 28px; border-radius: 14px; padding: 3px;
-      background: rgba(255,255,255,0.1); border: none; cursor: pointer;
-      position: relative; transition: background 0.2s;
-    }
-    .billing-toggle__switch.annual { background: rgba(251,191,36,0.3); }
-    .billing-toggle__knob {
-      display: block; width: 22px; height: 22px; border-radius: 50%;
-      background: #fff; transition: transform 0.2s;
-    }
-    .billing-toggle__switch.annual .billing-toggle__knob { transform: translateX(24px); }
-    .billing-toggle__save {
-      font-size: 11px; background: rgba(251,191,36,0.15); color: #fbbf24;
-      padding: 2px 8px; border-radius: 4px; font-weight: 700;
-    }
-    .pricing-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch;
-    }
-    .pricing-card {
-      padding: 36px 28px; border-radius: 20px;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-      position: relative;
-      display: flex; flex-direction: column;
-    }
-    .pricing-card__head { margin-bottom: 20px; }
-    .pricing-card__prefix {
-      font-size: 12px; color: #9ca3af; margin-top: 4px;
-    }
-    .pricing-card--featured {
-      background: rgba(251,191,36,0.06);
-      border-color: rgba(251,191,36,0.45);
-      box-shadow: 0 12px 40px -12px rgba(251,191,36,0.25);
-    }
-    .pricing-card__cta { margin-top: auto; }
-    .pricing-card__badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: #000; font-size: 11px; font-weight: 800; letter-spacing: 1px;
-      padding: 4px 16px; border-radius: 20px;
-    }
-    .pricing-card__name { font-size: 20px; font-weight: 700; color: #fff; display: block; margin-bottom: 16px; }
-    .pricing-card__price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px; }
-    .pricing-card__currency { font-size: 18px; color: #9ca3af; font-weight: 600; }
-    .pricing-card__amount { font-size: 48px; font-weight: 900; color: #fff; }
-    .pricing-card__period { font-size: 15px; color: #6b7280; }
-    .pricing-card__annual-note { font-size: 12px; color: #22c55e; margin-bottom: 16px; }
-    .pricing-card__features {
-      list-style: none; padding: 0; margin: 0 0 28px;
-      display: flex; flex-direction: column; gap: 12px;
-      flex-grow: 1;
-    }
-    .pricing-card__features li {
-      font-size: 14px; color: #d1d5db; padding-left: 20px; position: relative;
-    }
-    .pricing-card__features li::before {
-      content: '\\2713'; position: absolute; left: 0; color: #fbbf24; font-weight: 700;
-    }
-
     /* CTA Final */
     .spark-cta {
       padding: 100px 0;
@@ -887,7 +763,6 @@ interface Plan {
     /* Responsive */
     @media (max-width: 768px) {
       .steps-grid { grid-template-columns: 1fr 1fr; }
-      .pricing-grid { grid-template-columns: 1fr; }
       .spark-hero { padding: 120px 0 80px; }
       .testimonials-grid { grid-template-columns: 1fr; gap: 16px; }
       .demo-box__input-row { flex-direction: column; }
@@ -902,57 +777,10 @@ export class SparkHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('heroCanvas') heroCanvas?: ElementRef<HTMLCanvasElement>;
   private heroScene: { dispose: () => void } | null = null;
 
-  private http = inject(HttpClient);
   private host = inject(ElementRef);
   private seo = inject(SeoService);
 
   readonly niches = NICHES;
-
-  plans: Plan[] = [
-    {
-      id: 'starter', name: 'Starter', monthly: 297, featured: false,
-      features: [
-        '1 perfil (Instagram)',
-        '1 post por dia',
-        'Imagens com IA',
-        'Analytics básico',
-        'Templates de nicho',
-      ],
-      ctaLabel: 'Teste grátis 7 dias', ctaRoute: '/cadastro',
-    },
-    {
-      id: 'pro', name: 'Pro', monthly: 497, featured: true,
-      features: [
-        '3 redes (IG + FB + LinkedIn)',
-        '2 posts por dia',
-        'Carrosseis com IA',
-        'Analytics completo + Score',
-        'A/B Testing de conteúdo',
-        'Renovação de tokens',
-      ],
-      ctaLabel: 'Teste grátis 7 dias', ctaRoute: '/cadastro',
-    },
-    {
-      id: 'enterprise', name: 'Enterprise', monthly: 997, featured: false,
-      prefix: 'A partir de',
-      features: [
-        'Tudo do Pro',
-        'Posts ilimitados',
-        'Relatório semanal + mensal',
-        'Suporte prioritário',
-        'Portal do cliente',
-        'Gerente dedicado',
-      ],
-      ctaLabel: 'Falar com time de vendas', ctaRoute: '/contato',
-    },
-  ];
-
-  /** Annual = 10x monthly, spread across 12 months. Effective per-month. */
-  annualPerMonth(monthly: number): number {
-    return Math.round((monthly * 10) / 12);
-  }
-
-  private readonly apiUrl = environment.apiUrl;
 
   constructor(@Inject(PLATFORM_ID) private platformId: object) {}
 
@@ -1008,27 +836,8 @@ export class SparkHomeComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
 
-    // Fetch admin-controlled prices and override defaults (SSR-safe: only in browser)
-    if (isPlatformBrowser(this.platformId)) {
-      this.http.get<{ starter: { monthly: string }; pro: { monthly: string } }>(
-        `${this.apiUrl}/api/v1/plans/spark`
-      ).subscribe({
-        next: (prices) => {
-          const starterIdx = this.plans.findIndex(p => p.id === 'starter');
-          const proIdx     = this.plans.findIndex(p => p.id === 'pro');
-          if (starterIdx >= 0) {
-            this.plans[starterIdx] = { ...this.plans[starterIdx], monthly: +prices.starter.monthly };
-          }
-          if (proIdx >= 0) {
-            this.plans[proIdx] = { ...this.plans[proIdx], monthly: +prices.pro.monthly };
-          }
-        },
-        error: () => {} // Keep hardcoded defaults on any error
-      });
-    }
   }
 
-  annual = false;
   demoNiche = 'fitness';
   demoDropdownOpen = false;
   demoLoading = false;
