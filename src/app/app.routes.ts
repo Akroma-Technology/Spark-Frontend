@@ -13,7 +13,7 @@ const clientAuthGuard = () => {
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./landing/spark.component').then(m => m.SparkComponent)
+    loadComponent: () => import('./landing/spark.component').then(m => m.SparkHomeComponent)
   },
   {
     path: 'como-funciona',

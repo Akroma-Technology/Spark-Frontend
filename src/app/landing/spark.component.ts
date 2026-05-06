@@ -8,154 +8,7 @@ import { SeoService } from '../core/services/seo.service';
 import { SparkTopbarComponent } from '../shared/components/topbar/topbar.component';
 import { SparkFooterComponent } from '../shared/components/footer/footer.component';
 import { DEMO_POSTS } from './demo-posts.data';
-
-interface NicheInfo {
-  value: string;
-  label: string;
-  title: string;
-  subtitle: string;
-  benefits: string[];
-  stats: { num: string; label: string }[];
-}
-
-const NICHES: NicheInfo[] = [
-  {
-    value: 'fitness',
-    label: 'Fitness / Academia',
-    title: 'Automação de Instagram para Academias e Personal Trainers',
-    subtitle: 'Posts diários com IA sobre treino, nutrição e motivação — sem você precisar criar nada.',
-    benefits: [
-      'Conteúdo sobre exercícios, nutrição e lifestyle fitness gerado automaticamente',
-      'Imagens profissionais de treino adaptadas ao estilo da sua marca',
-      'Hashtags otimizadas para o nicho fitness (#treino #gym #saude)',
-      'Posts nos melhores horários para engajamento de alunos'
-    ],
-    stats: [
-      { num: '+180%', label: 'Engajamento médio' },
-      { num: '30', label: 'Posts/mês sem esforço' },
-      { num: '2h/dia', label: 'Tempo economizado' }
-    ]
-  },
-  {
-    value: 'tecnologia',
-    label: 'Tecnologia',
-    title: 'Social Media com IA para Empresas de Tecnologia',
-    subtitle: 'A IA pesquisa as últimas tendências tech e publica conteúdo relevante todos os dias.',
-    benefits: [
-      'Acompanha tendências de IA, cloud, dev e startups em tempo real',
-      'Legendas técnicas com linguagem acessível para seu público',
-      'Carrosseis explicativos sobre conceitos complexos',
-      'Hashtags otimizadas para tech (#tecnologia #inovação #dev)'
-    ],
-    stats: [
-      { num: '+210%', label: 'Alcance orgânico' },
-      { num: '24/7', label: 'Monitoramento de trends' },
-      { num: '98%', label: 'Taxa de publicação' }
-    ]
-  },
-  {
-    value: 'gastronomia',
-    label: 'Gastronomia',
-    title: 'Automação de Instagram para Restaurantes e Chefs',
-    subtitle: 'Conteúdo gourmet publicado diariamente — receitas, dicas e trends culinárias.',
-    benefits: [
-      'Posts sobre receitas, ingredientes da estação e técnicas culinárias',
-      'Imagens apetitosas geradas por IA no estilo food photography',
-      'Conteúdo adaptado para delivery, restaurante ou chef pessoal',
-      'Hashtags de gastronomia otimizadas por região'
-    ],
-    stats: [
-      { num: '+165%', label: 'Engajamento em 60 dias' },
-      { num: '12', label: 'Temas por semana' },
-      { num: '3x', label: 'Mais salvamentos' }
-    ]
-  },
-  {
-    value: 'moda',
-    label: 'Moda',
-    title: 'Instagram no Piloto Automático para Marcas de Moda',
-    subtitle: 'Tendências de moda, looks e styling publicados diariamente com IA.',
-    benefits: [
-      'Conteúdo sobre tendências, cores da temporada e styling tips',
-      'Imagens de moda geradas com estética profissional',
-      'Carrosseis de looks e combinações automáticos',
-      'Hashtags segmentadas por nicho (#moda #fashion #estilo)'
-    ],
-    stats: [
-      { num: '+190%', label: 'Crescimento de seguidores' },
-      { num: '7/7', label: 'Posts por semana' },
-      { num: '4x', label: 'Mais interações' }
-    ]
-  },
-  {
-    value: 'juridico',
-    label: 'Jurídico',
-    title: 'Marketing Jurídico com IA — Posts Diários para Advogados',
-    subtitle: 'Conteúdo informativo sobre direito publicado todo dia, respeitando a ética da OAB.',
-    benefits: [
-      'Posts sobre direitos do consumidor, trabalhista, tributário e mais',
-      'Tom educativo e informativo (sem captação direta)',
-      'Carrosseis explicativos sobre leis e direitos',
-      'Linguagem acessível para leigos'
-    ],
-    stats: [
-      { num: '+140%', label: 'Engajamento orgânico' },
-      { num: '100%', label: 'Compliance OAB' },
-      { num: '5x', label: 'Mais consultas via DM' }
-    ]
-  },
-  {
-    value: 'imobiliario',
-    label: 'Imobiliário',
-    title: 'Automação de Instagram para Corretores de Imóveis',
-    subtitle: 'Posts sobre mercado imobiliário, dicas de compra e investimento — todo dia, automático.',
-    benefits: [
-      'Conteúdo sobre mercado, financiamento, decoração e investimento',
-      'Imagens de imóveis e ambientes geradas por IA',
-      'Posts educativos que atraem leads qualificados',
-      'Hashtags geolocalizadas por cidade e bairro'
-    ],
-    stats: [
-      { num: '2.3', label: 'Leads/semana em média' },
-      { num: '+175%', label: 'Alcance orgânico' },
-      { num: '40 dias', label: 'Para primeiro lead' }
-    ]
-  },
-  {
-    value: 'educacao',
-    label: 'Educação',
-    title: 'Social Media com IA para Escolas e Cursos',
-    subtitle: 'Conteúdo educacional publicado diariamente — dicas de estudo, curiosidades e motivação.',
-    benefits: [
-      'Posts sobre aprendizado, produtividade e curiosidades educacionais',
-      'Carrosseis didáticos que simplificam conceitos complexos',
-      'Conteúdo adaptado para escola, faculdade ou curso online',
-      'Hashtags de educação otimizadas'
-    ],
-    stats: [
-      { num: '+155%', label: 'Engajamento de alunos' },
-      { num: '30', label: 'Posts educativos/mês' },
-      { num: '2x', label: 'Mais matrículas' }
-    ]
-  },
-  {
-    value: 'saude',
-    label: 'Saúde',
-    title: 'Automação de Instagram para Clínicas e Profissionais de Saúde',
-    subtitle: 'Conteúdo informativo sobre saúde e bem-estar publicado todo dia com IA.',
-    benefits: [
-      'Posts sobre prevenção, saúde mental, nutrição e qualidade de vida',
-      'Tom profissional e acolhedor, sem promessas médicas',
-      'Carrosseis educativos sobre condições e tratamentos',
-      'Hashtags de saúde segmentadas por especialidade'
-    ],
-    stats: [
-      { num: '+160%', label: 'Engajamento em 90 dias' },
-      { num: '3x', label: 'Mais agendamentos' },
-      { num: '98%', label: 'Conteúdo aprovado' }
-    ]
-  }
-];
+import { NICHES, NicheInfo } from './niches.data';
 
 /**
  * Fallback mock posts — used ONLY when demo-posts.data.ts is still empty
@@ -315,14 +168,13 @@ interface Plan {
           <span class="spark-hero__title--accent">piloto automático.</span>
         </h1>
         <p class="spark-hero__subtitle">
-          IA que pesquisa tendências, cria legendas, gera imagens e publica — todo dia, sem esforço.
-          Instagram, Facebook e LinkedIn com engajamento real.
+          Enquanto você trabalha, a IA pesquisa, escreve e publica. Todo dia. No seu nome.
         </p>
         <div class="spark-hero__ctas">
           <a routerLink="/cadastro" class="btn btn--spark">Teste grátis 7 dias &rarr;</a>
           <a href="#demo" class="btn btn--outline">Ver demonstração</a>
         </div>
-        <p class="spark-hero__trial-note">Sem cartão de crédito. Cancele quando quiser.</p>
+        <p class="spark-hero__trial-note">Sem cartão de crédito · Cancele quando quiser · Resultado em 24h</p>
       </div>
     </section>
 
@@ -488,7 +340,7 @@ interface Plan {
     </section>
 
     <!-- COMO FUNCIONA -->
-    <section id="como-funciona" class="spark-steps spark-section-target">
+    <section class="spark-steps">
       <div class="container">
         <span class="label">COMO FUNCIONA</span>
         <h2 class="section-title">4 etapas. Zero esforço.</h2>
@@ -514,98 +366,9 @@ interface Plan {
             <p class="step-card__desc">Publica automaticamente no Instagram, Facebook e LinkedIn nos horários ideais para engajamento.</p>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- FEATURES -->
-    <section class="spark-features">
-      <div class="container">
-        <span class="label">RECURSOS</span>
-        <h2 class="section-title">Tudo que você precisa para crescer</h2>
-        <div class="features-grid">
-          <div class="feature-item">
-            <span class="feature-item__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            </span>
-            <h4 class="feature-item__title">Posts diários com IA</h4>
-            <p class="feature-item__desc">Conteudo original gerado por IA todos os dias, com tom personalizado para sua marca.</p>
-          </div>
-          <div class="feature-item">
-            <span class="feature-item__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-            </span>
-            <h4 class="feature-item__title">Analytics de engajamento</h4>
-            <p class="feature-item__desc">Score 0-100 por post, tracking de hashtags, melhores horários e feedback loop automático.</p>
-          </div>
-          <div class="feature-item">
-            <span class="feature-item__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            </span>
-            <h4 class="feature-item__title">Imagens e carrosseis</h4>
-            <p class="feature-item__desc">Criação visual com Gemini — single posts e carrosseis de até 10 slides.</p>
-          </div>
-          <div class="feature-item">
-            <span class="feature-item__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
-            </span>
-            <h4 class="feature-item__title">Agendamento inteligente</h4>
-            <p class="feature-item__desc">Slots por dia da semana com temas personalizados. Publica no melhor horario.</p>
-          </div>
-          <div class="feature-item">
-            <span class="feature-item__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-            </span>
-            <h4 class="feature-item__title">Templates de nicho</h4>
-            <p class="feature-item__desc">Configs pré-prontas para fitness, tech, gastronomia, jurídico e muito mais.</p>
-          </div>
-          <div class="feature-item">
-            <span class="feature-item__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.3"/></svg>
-            </span>
-            <h4 class="feature-item__title">Renovação automática</h4>
-            <p class="feature-item__desc">Tokens do Instagram e Facebook renovados automaticamente. Zero manutenção.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- NICHES -->
-    <section id="solucoes" class="spark-niches spark-section-target">
-      <div class="container">
-        <span class="label">SOLUÇÕES POR NICHO</span>
-        <h2 class="section-title">Feito para o seu mercado</h2>
-        <div class="niches-grid">
-          <button *ngFor="let n of niches" type="button"
-                  class="niche-card"
-                  [class.niche-card--active]="expandedNiche === n.value"
-                  (click)="toggleNiche(n.value)">
-            {{ n.label }}
-          </button>
-        </div>
-
-        <div class="niche-detail" *ngIf="activeNiche">
-          <div class="niche-detail__header">
-            <div>
-              <h3 class="niche-detail__title">{{ activeNiche.title }}</h3>
-              <p class="niche-detail__subtitle">{{ activeNiche.subtitle }}</p>
-            </div>
-            <button type="button" class="niche-detail__close" (click)="expandedNiche = null" aria-label="Fechar">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-          <div class="niche-detail__stats">
-            <div class="niche-detail__stat" *ngFor="let s of activeNiche.stats">
-              <span class="niche-detail__stat-num">{{ s.num }}</span>
-              <span class="niche-detail__stat-label">{{ s.label }}</span>
-            </div>
-          </div>
-          <ul class="niche-detail__benefits">
-            <li *ngFor="let b of activeNiche.benefits">{{ b }}</li>
-          </ul>
-          <a routerLink="/cadastro" [queryParams]="{ niche: activeNiche.value }" class="btn btn--spark btn--full">
-            Começar teste grátis no nicho {{ activeNiche.label }} &rarr;
+        <div class="steps-more">
+          <a routerLink="/como-funciona" class="btn btn--outline">
+            Ver como funciona em detalhes &rarr;
           </a>
         </div>
       </div>
@@ -657,45 +420,24 @@ interface Plan {
       </div>
     </section>
 
-    <!-- REFERRAL -->
-    <section class="spark-referral">
+    <!-- SPARK BY AKROMA -->
+    <section class="spark-akroma">
       <div class="container">
-        <div class="spark-referral__card">
-          <div class="spark-referral__card-bg" aria-hidden="true"></div>
-          <div class="spark-referral__header">
-            <span class="label">PROGRAMA DE INDICAÇÃO</span>
-            <h2 class="section-title spark-referral__title">Indique 4 amigos,<br>ganhe 1 mês grátis</h2>
-            <p class="spark-referral__desc">
-              A cada 4 amigos que assinarem o Spark usando seu código, você ganha 1 mês inteiro de crédito.
-              Sem limite de indicações — 8 amigos, 2 meses; 12 amigos, 3 meses; e por aí vai.
+        <div class="spark-akroma__card">
+          <div class="spark-akroma__logo-wrap">
+            <img src="assets/icone-akroma.png" alt="Akroma" class="spark-akroma__logo" aria-hidden="true">
+          </div>
+          <div class="spark-akroma__content">
+            <span class="label">SOBRE O PRODUTO</span>
+            <h3 class="spark-akroma__title">Spark é um produto da Akroma</h3>
+            <p class="spark-akroma__desc">
+              Empresa brasileira de tecnologia para negócios. O Spark nasce da mesma missão:
+              dar às PMEs as ferramentas que grandes empresas já têm — agora no social media.
             </p>
+            <a href="https://akroma.com.br" target="_blank" rel="noopener" class="btn btn--outline btn--sm">
+              Conheça a Akroma &rarr;
+            </a>
           </div>
-          <div class="spark-referral__steps">
-            <div class="spark-referral__step">
-              <span class="spark-referral__step-num">1</span>
-              <div class="spark-referral__step-content">
-                <strong>Crie sua conta</strong>
-                <span>Receba seu código de indicação único</span>
-              </div>
-            </div>
-            <div class="spark-referral__step-arrow" aria-hidden="true">→</div>
-            <div class="spark-referral__step">
-              <span class="spark-referral__step-num">2</span>
-              <div class="spark-referral__step-content">
-                <strong>Compartilhe</strong>
-                <span>Envie o link para amigos e colegas</span>
-              </div>
-            </div>
-            <div class="spark-referral__step-arrow" aria-hidden="true">→</div>
-            <div class="spark-referral__step">
-              <span class="spark-referral__step-num">3</span>
-              <div class="spark-referral__step-content">
-                <strong>Ganhe meses grátis</strong>
-                <span>A cada 4 indicados, +1 mês de crédito</span>
-              </div>
-            </div>
-          </div>
-          <a routerLink="/cadastro" class="btn btn--spark">Criar conta e indicar amigos &rarr;</a>
         </div>
       </div>
     </section>
@@ -704,7 +446,7 @@ interface Plan {
     <section class="spark-cta">
       <div class="container spark-cta__inner">
         <h2 class="spark-cta__title">Pronto para automatizar seu social media?</h2>
-        <p class="spark-cta__desc">Trial Starter de 7 dias gratis. Sem cartao. Sem compromisso.</p>
+        <p class="spark-cta__desc">7 dias grátis. Sem cartão. Se não gostar, cancela com um clique.</p>
         <a routerLink="/cadastro" class="btn btn--spark btn--lg">Começar agora &rarr;</a>
       </div>
     </section>
@@ -1011,98 +753,6 @@ interface Plan {
     .step-card__title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 10px; }
     .step-card__desc { font-size: 14px; color: #9ca3af; line-height: 1.6; }
 
-    /* Features */
-    .spark-features {
-      padding: 100px 0;
-      background: linear-gradient(180deg, #050810 0%, #0d0b1e 100%);
-    }
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .feature-item {
-      padding: 28px; border-radius: 16px;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-      transition: transform 0.25s ease, border-color 0.2s, background 0.2s;
-    }
-    .feature-item:hover {
-      transform: translateY(-4px);
-      border-color: rgba(251,191,36,0.2);
-      background: rgba(255,255,255,0.05);
-    }
-    .feature-item__icon {
-      display: flex; align-items: center; justify-content: center;
-      width: 48px; height: 48px; border-radius: 12px; margin-bottom: 16px;
-      background: rgba(251,191,36,0.1); color: #fbbf24;
-    }
-    .feature-item__icon svg { width: 24px; height: 24px; }
-    .feature-item__title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; }
-    .feature-item__desc { font-size: 14px; color: #9ca3af; line-height: 1.6; }
-
-    /* Niches */
-    .spark-niches { padding: 80px 0; background: #050810; }
-    .niches-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-    .niche-card {
-      padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;
-      color: #d1d5db; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      cursor: pointer; font-family: inherit; transition: all 0.18s;
-    }
-    .niche-card:hover { border-color: rgba(251,191,36,0.3); color: #fbbf24; }
-    .niche-card--active {
-      background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.4); color: #fbbf24;
-    }
-
-    /* Niche detail panel (accordion) */
-    .niche-detail {
-      margin: 40px auto 0; max-width: 760px; padding: 32px;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(251,191,36,0.2);
-      border-radius: 20px;
-      animation: niche-expand 0.25s ease-out;
-    }
-    @keyframes niche-expand {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .niche-detail__header {
-      display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
-      margin-bottom: 24px;
-    }
-    .niche-detail__title {
-      font-size: clamp(20px, 2.5vw, 26px); font-weight: 800; color: #fff;
-      line-height: 1.2; margin: 0 0 8px;
-    }
-    .niche-detail__subtitle {
-      font-size: 15px; color: #9ca3af; line-height: 1.6; margin: 0;
-    }
-    .niche-detail__close {
-      flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-      color: #9ca3af; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
-    }
-    .niche-detail__close:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .niche-detail__close svg { width: 16px; height: 16px; }
-    .niche-detail__stats {
-      display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap;
-      padding: 20px; background: rgba(0,0,0,0.2); border-radius: 12px;
-    }
-    .niche-detail__stat { flex: 1; min-width: 140px; }
-    .niche-detail__stat-num {
-      display: block; font-size: 28px; font-weight: 900; color: #fbbf24;
-      margin-bottom: 2px;
-    }
-    .niche-detail__stat-label { font-size: 12px; color: #6b7280; }
-    .niche-detail__benefits {
-      list-style: none; padding: 0; margin: 0 0 28px;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .niche-detail__benefits li {
-      font-size: 14px; color: #d1d5db; line-height: 1.6;
-      padding-left: 22px; position: relative;
-    }
-    .niche-detail__benefits li::before {
-      content: '\\2713'; position: absolute; left: 0; top: 0;
-      color: #fbbf24; font-weight: 700;
-    }
-
     /* Pricing */
     .spark-pricing { padding: 100px 0; background: #050810; }
     .billing-toggle {
@@ -1168,68 +818,6 @@ interface Plan {
       content: '\\2713'; position: absolute; left: 0; color: #fbbf24; font-weight: 700;
     }
 
-    /* Referral */
-    .spark-referral {
-      padding: 80px 0;
-      background: linear-gradient(180deg, #050810 0%, #0d0b1e 100%);
-    }
-    .spark-referral__card {
-      position: relative; overflow: hidden;
-      background: rgba(251,191,36,0.04);
-      border: 1px solid rgba(251,191,36,0.25);
-      border-radius: 24px;
-      padding: 56px 48px;
-      text-align: center;
-    }
-    @media (max-width: 768px) {
-      .spark-referral__card { padding: 40px 24px; }
-    }
-    .spark-referral__card-bg {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.08) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .spark-referral__header { position: relative; margin-bottom: 40px; }
-    .spark-referral__title { margin-bottom: 16px !important; }
-    .spark-referral__desc {
-      font-size: 16px; color: #9ca3af; max-width: 540px; margin: 0 auto; line-height: 1.7;
-    }
-    .spark-referral__steps {
-      display: flex; align-items: flex-start; justify-content: center;
-      gap: 16px; flex-wrap: wrap; margin-bottom: 40px; position: relative;
-    }
-    .spark-referral__step {
-      display: flex; align-items: flex-start; gap: 14px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 16px; padding: 20px 24px;
-      text-align: left; flex: 1; min-width: 180px; max-width: 240px;
-    }
-    .spark-referral__step-arrow {
-      font-size: 20px; color: rgba(251,191,36,0.4); padding-top: 28px; flex-shrink: 0;
-    }
-    @media (max-width: 700px) {
-      .spark-referral__step-arrow { display: none; }
-      .spark-referral__step { max-width: 100%; min-width: unset; width: 100%; }
-      .spark-referral__steps { flex-direction: column; align-items: stretch; }
-    }
-    .spark-referral__step-num {
-      flex-shrink: 0;
-      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
-      justify-content: center; font-size: 14px; font-weight: 800;
-      background: rgba(251,191,36,0.15); color: #fbbf24;
-      border: 1px solid rgba(251,191,36,0.3);
-    }
-    .spark-referral__step-content {
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .spark-referral__step-content strong {
-      font-size: 15px; font-weight: 700; color: #fff; display: block;
-    }
-    .spark-referral__step-content span {
-      font-size: 13px; color: #9ca3af;
-    }
-
     /* CTA Final */
     .spark-cta {
       padding: 100px 0;
@@ -1253,10 +841,52 @@ interface Plan {
     }
     .spark-cta__desc { font-size: 18px; color: #9ca3af; margin-bottom: 32px; }
 
+    /* Steps-more link */
+    .steps-more {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    /* Spark by Akroma */
+    .spark-akroma {
+      padding: 60px 0;
+      background: #050810;
+    }
+    .spark-akroma__card {
+      display: flex; align-items: center; gap: 40px;
+      padding: 40px 48px; border-radius: 20px;
+      background: rgba(251,191,36,0.03);
+      border: 1px solid rgba(251,191,36,0.15);
+    }
+    @media (max-width: 768px) {
+      .spark-akroma__card { flex-direction: column; gap: 24px; padding: 32px 24px; text-align: center; }
+    }
+    .spark-akroma__logo-wrap {
+      flex-shrink: 0;
+      width: 72px; height: 72px; border-radius: 16px;
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .spark-akroma__logo {
+      width: 44px; height: 44px;
+      filter: brightness(0) saturate(100%) invert(76%) sepia(43%) saturate(1100%) hue-rotate(358deg) brightness(101%) contrast(99%);
+    }
+    .spark-akroma__title {
+      font-size: 20px; font-weight: 700; color: #fff;
+      margin: 8px 0 10px;
+    }
+    .spark-akroma__desc {
+      font-size: 15px; color: #9ca3af; line-height: 1.65;
+      margin-bottom: 20px; max-width: 520px;
+    }
+    .btn--sm {
+      padding: 10px 18px; font-size: 13px;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .steps-grid { grid-template-columns: 1fr 1fr; }
-      .features-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
       .spark-hero { padding: 120px 0 80px; }
       .testimonials-grid { grid-template-columns: 1fr; gap: 16px; }
@@ -1265,11 +895,10 @@ interface Plan {
     }
     @media (max-width: 480px) {
       .steps-grid { grid-template-columns: 1fr; }
-      .spark-referral__how { flex-direction: column; align-items: center; }
     }
   `]
 })
-export class SparkComponent implements OnInit, AfterViewInit, OnDestroy {
+export class SparkHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('heroCanvas') heroCanvas?: ElementRef<HTMLCanvasElement>;
   private heroScene: { dispose: () => void } | null = null;
 
@@ -1424,29 +1053,13 @@ export class SparkComponent implements OnInit, AfterViewInit, OnDestroy {
     'rafaela.ok', 'leo.m', 'ana.paula_', 'gabizinha.bc',
   ];
 
-  expandedNiche: string | null = null;
-
   get selectedNicheLabel(): string {
     return this.niches.find(n => n.value === this.demoNiche)?.label ?? 'Escolha um nicho';
-  }
-
-  get activeNiche(): NicheInfo | null {
-    return this.niches.find(n => n.value === this.expandedNiche) ?? null;
   }
 
   selectNiche(value: string) {
     this.demoNiche = value;
     this.demoDropdownOpen = false;
-  }
-
-  toggleNiche(value: string) {
-    this.expandedNiche = this.expandedNiche === value ? null : value;
-    // Smooth scroll so the expanded detail is visible
-    if (this.expandedNiche) {
-      setTimeout(() => {
-        document.querySelector('.niche-detail')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 50);
-    }
   }
 
   @HostListener('document:click', ['$event'])
