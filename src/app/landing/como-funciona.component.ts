@@ -16,7 +16,6 @@ import { NICHES, NicheInfo } from './niches.data';
     <!-- PAGE HERO -->
     <section class="page-hero">
       <div class="container page-hero__inner">
-        <span class="label">COMO FUNCIONA</span>
         <h1 class="page-hero__title">Veja como o Spark<br>trabalha por você</h1>
         <p class="page-hero__subtitle">
           Da pesquisa de tendências à publicação — tudo automatizado.
@@ -185,7 +184,7 @@ import { NICHES, NicheInfo } from './niches.data';
     .step-card__desc { font-size: 14px; color: #9ca3af; line-height: 1.7; }
 
     /* Niches */
-    .niches-section { padding: 80px 0; background: linear-gradient(180deg, #050810 0%, #0d0b1e 100%); }
+    .niches-section { padding: 80px 0; background: #050810; }
     .niches-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
     .niche-card {
       padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;
@@ -249,7 +248,7 @@ import { NICHES, NicheInfo } from './niches.data';
     /* Page CTA */
     .page-cta {
       padding: 100px 0;
-      background: linear-gradient(180deg, #050810 0%, #120b04 60%, #050810 100%);
+      background: #050810;
     }
     .page-cta__inner { text-align: center; }
     .page-cta__title {

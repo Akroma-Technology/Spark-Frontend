@@ -48,10 +48,38 @@ export class ClientAuthService {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  signup(payload: SignupRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/api/v1/client-auth/signup`, payload).pipe(
-      tap(res => this.persist(res))
-    );
+  signup(payload: SignupRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/v1/client-auth/signup`, payload);
+  }
+
+  verifyCode(email: string, code: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/v1/client-auth/verify-code`, { email, code });
+  }
+
+  resendCode(email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/v1/client-auth/resend-code`, { email });
+  }
+
+  saveSession(res: LoginResponse): void {
+    this.persist(res);
+  }
+
+  saveSessionFromJwt(jwt: string): void {
+    if (!this.isBrowser) return;
+    sessionStorage.setItem(TOKEN_KEY, jwt);
+    // Decode claims from JWT payload for client info
+    try {
+      const payload = JSON.parse(atob(jwt.split('.')[1]));
+      const clientInfo: ClientInfo = {
+        clientId: payload.sub,
+        name: payload.name || '',
+        planTier: payload.plan_tier || 'STARTER',
+      };
+      sessionStorage.setItem(CLIENT_KEY, JSON.stringify(clientInfo));
+    } catch {
+      // If decode fails, store minimal info
+      sessionStorage.setItem(CLIENT_KEY, JSON.stringify({ clientId: '', name: '', planTier: 'STARTER' }));
+    }
   }
 
   login(email: string, password: string): Observable<LoginResponse> {

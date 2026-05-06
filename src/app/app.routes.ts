@@ -53,6 +53,10 @@ export const routes: Routes = [
     loadComponent: () => import('./contato/contato.component').then(m => m.ContatoComponent)
   },
   {
+    path: 'verificar',
+    loadComponent: () => import('./verificar/verificar.component').then(m => m.VerificarComponent)
+  },
+  {
     path: '404',
     loadComponent: () => import('./not-found/not-found.component').then(m => m.NotFoundComponent)
   },

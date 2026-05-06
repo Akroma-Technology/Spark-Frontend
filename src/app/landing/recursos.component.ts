@@ -14,7 +14,6 @@ import { SparkFooterComponent } from '../shared/components/footer/footer.compone
     <!-- PAGE HERO -->
     <section class="page-hero">
       <div class="container page-hero__inner">
-        <span class="label">RECURSOS</span>
         <h1 class="page-hero__title">Tudo que você precisa<br>para crescer no automático</h1>
         <p class="page-hero__subtitle">
           Cada funcionalidade do Spark foi pensada para eliminar o trabalho manual do social media.
@@ -119,7 +118,7 @@ import { SparkFooterComponent } from '../shared/components/footer/footer.compone
 
     .features-section {
       padding: 80px 0 100px;
-      background: linear-gradient(180deg, #050810 0%, #0d0b1e 100%);
+      background: #050810;
     }
     .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
     @media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -145,7 +144,7 @@ import { SparkFooterComponent } from '../shared/components/footer/footer.compone
 
     .page-cta {
       padding: 100px 0;
-      background: linear-gradient(180deg, #050810 0%, #120b04 60%, #050810 100%);
+      background: #050810;
     }
     .page-cta__inner { text-align: center; }
     .page-cta__title {

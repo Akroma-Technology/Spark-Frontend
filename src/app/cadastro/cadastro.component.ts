@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
@@ -24,7 +24,41 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
           </p>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" class="signup-form">
+        <!-- VERIFICATION STEP (shown after signup) -->
+        <div *ngIf="pendingEmail" class="verify-step">
+          <div class="verify-icon">✉️</div>
+          <h2 class="verify-title">Confirme seu e-mail</h2>
+          <p class="verify-desc">
+            Enviamos um código de 6 dígitos para <strong>{{ pendingEmail }}</strong>.<br>
+            Verifique também a caixa de spam.
+          </p>
+          <form [formGroup]="codeForm" (ngSubmit)="submitCode()" class="verify-form">
+            <input
+              formControlName="code"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="000000"
+              class="signup-field input code-input"
+              autocomplete="one-time-code"
+            />
+            <div class="signup-error signup-error--banner" *ngIf="codeError">{{ codeError }}</div>
+            <button type="submit" class="btn btn--spark btn--full" [disabled]="codeLoading">
+              {{ codeLoading ? 'Verificando...' : 'Confirmar →' }}
+            </button>
+          </form>
+          <button
+            type="button"
+            class="resend-btn"
+            (click)="resendCode()"
+            [disabled]="resendCooldown > 0"
+          >
+            {{ resendCooldown > 0 ? 'Reenviar em ' + resendCooldown + 's' : 'Reenviar código' }}
+          </button>
+        </div>
+
+        <!-- SIGNUP FORM (shown before verification) -->
+        <form *ngIf="!pendingEmail" [formGroup]="form" (ngSubmit)="submit()" class="signup-form">
           <div class="signup-field">
             <label for="name">Seu nome</label>
             <input id="name" type="text" formControlName="name" autocomplete="name" placeholder="Como quer ser chamado" />
@@ -71,7 +105,7 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
           </div>
         </form>
 
-        <div class="signup-perks">
+        <div class="signup-perks" *ngIf="!pendingEmail">
           <div class="signup-perk">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <div>
@@ -127,13 +161,13 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
     .signup-field { display: flex; flex-direction: column; gap: 6px; }
     .signup-field label { font-size: 13px; font-weight: 600; color: #d1d5db; }
     .signup-field__opt { color: #6b7280; font-weight: 400; margin-left: 4px; }
-    .signup-field input {
+    .signup-field input, .signup-field.input {
       padding: 12px 14px; border-radius: 10px; font-size: 15px;
       background: rgba(255,255,255,0.05); color: #fff;
       border: 1px solid rgba(255,255,255,0.1);
       transition: border-color 0.15s, background 0.15s;
     }
-    .signup-field input:focus {
+    .signup-field input:focus, .signup-field.input:focus {
       outline: none; border-color: rgba(251,191,36,0.5); background: rgba(255,255,255,0.07);
     }
     .signup-error { font-size: 12px; color: #f87171; }
@@ -160,6 +194,7 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
       box-shadow: 0 8px 24px -6px rgba(245,158,11,0.4);
     }
     .btn--spark:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn--full { width: 100%; }
 
     .signup-tos { font-size: 12px; color: #6b7280; text-align: center; margin: 0; line-height: 1.6; }
     .signup-tos a { color: #fbbf24; text-decoration: none; }
@@ -176,9 +211,73 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
     .signup-perk svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; }
     .signup-perk strong { display: block; font-size: 14px; color: #fff; font-weight: 700; margin-bottom: 4px; }
     .signup-perk span { font-size: 13px; color: #9ca3af; line-height: 1.5; }
+
+    /* Verification step */
+    .verify-step {
+      grid-column: 1 / -1;
+      max-width: 440px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+    .verify-icon { font-size: 48px; line-height: 1; }
+    .verify-title { font-size: 22px; font-weight: 800; color: #fff; margin: 0; }
+    .verify-desc { font-size: 14px; color: #9ca3af; line-height: 1.6; margin: 0; }
+    .verify-desc strong { color: #e5e7eb; }
+    .verify-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .code-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 16px 14px;
+      border-radius: 10px;
+      font-size: 28px;
+      font-weight: 800;
+      font-family: monospace;
+      letter-spacing: 10px;
+      text-align: center;
+      background: rgba(255,255,255,0.05);
+      color: #fbbf24;
+      border: 1px solid rgba(251,191,36,0.3);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .code-input:focus {
+      outline: none;
+      border-color: rgba(251,191,36,0.6);
+      background: rgba(255,255,255,0.07);
+    }
+    .resend-btn {
+      background: none;
+      border: none;
+      color: #fbbf24;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px;
+      text-decoration: underline;
+      transition: opacity 0.15s;
+    }
+    .resend-btn:disabled {
+      color: #6b7280;
+      text-decoration: none;
+      cursor: default;
+    }
+    .resend-btn:hover:not(:disabled) { opacity: 0.8; }
   `]
 })
-export class CadastroComponent implements OnInit {
+export class CadastroComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private auth = inject(ClientAuthService);
   private router = inject(Router);
@@ -186,8 +285,17 @@ export class CadastroComponent implements OnInit {
   private seo = inject(SeoService);
 
   form!: FormGroup;
+  codeForm!: FormGroup;
+
   error = '';
   loading = false;
+
+  pendingEmail = '';
+  codeError = '';
+  codeLoading = false;
+  resendCooldown = 0;
+
+  private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     this.seo.setPage({
@@ -209,6 +317,16 @@ export class CadastroComponent implements OnInit {
       whatsapp: [''],
       referralCode: [ref]
     });
+
+    this.codeForm = this.fb.group({
+      code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern(/^\d{6}$/)]]
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+    }
   }
 
   submit(): void {
@@ -217,7 +335,10 @@ export class CadastroComponent implements OnInit {
     this.error = '';
 
     this.auth.signup(this.form.value).subscribe({
-      next: () => this.router.navigate(['/app'], { queryParams: { welcome: '1' } }),
+      next: (res: any) => {
+        this.loading = false;
+        this.pendingEmail = res.email;
+      },
       error: (err: HttpErrorResponse) => {
         if (err.status === 409) {
           this.error = 'Este e-mail ja esta cadastrado. Que tal fazer login?';
@@ -229,6 +350,42 @@ export class CadastroComponent implements OnInit {
           this.error = `Erro ao criar conta (${err.status}). Tente novamente em instantes.`;
         }
         this.loading = false;
+      }
+    });
+  }
+
+  submitCode(): void {
+    if (this.codeForm.invalid) { this.codeForm.markAllAsTouched(); return; }
+    this.codeLoading = true;
+    this.codeError = '';
+    const { code } = this.codeForm.value;
+    this.auth.verifyCode(this.pendingEmail, code).subscribe({
+      next: (res: any) => {
+        this.auth.saveSession(res);
+        this.router.navigate(['/app'], { queryParams: { welcome: '1' } });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.codeLoading = false;
+        this.codeError = err.error?.detail || 'Código inválido. Tente novamente.';
+      }
+    });
+  }
+
+  resendCode(): void {
+    if (this.resendCooldown > 0) return;
+    this.auth.resendCode(this.pendingEmail).subscribe({
+      next: () => {
+        this.resendCooldown = 60;
+        this.cooldownInterval = setInterval(() => {
+          this.resendCooldown--;
+          if (this.resendCooldown <= 0) {
+            clearInterval(this.cooldownInterval!);
+            this.cooldownInterval = null;
+          }
+        }, 1000);
+      },
+      error: () => {
+        // Silent fail — don't expose info
       }
     });
   }

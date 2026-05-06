@@ -43,11 +43,10 @@ import { RouterModule } from '@angular/router';
         <nav class="footer__nav">
           <div class="footer__col">
             <h4 class="footer__heading">Produto</h4>
-            <a href="/#como-funciona" class="footer__link">Como funciona</a>
-            <a href="/#solucoes" class="footer__link">Soluções</a>
-            <a href="/#demo" class="footer__link">Demonstração</a>
-            <a href="/#planos" class="footer__link">Planos</a>
-            <a routerLink="/cadastro" class="footer__link">Teste grátis 7 dias</a>
+            <a routerLink="/como-funciona" class="footer__link">Como funciona</a>
+            <a routerLink="/recursos" class="footer__link">Recursos</a>
+            <a routerLink="/planos" class="footer__link">Planos</a>
+            <a routerLink="/cadastro" class="footer__link footer__link--highlight">Teste grátis 7 dias</a>
           </div>
           <div class="footer__col">
             <h4 class="footer__heading">Empresa</h4>
@@ -150,6 +149,8 @@ import { RouterModule } from '@angular/router';
       text-decoration: none; transition: color 0.15s;
     }
     .footer__link:hover { color: #fbbf24; }
+    .footer__link--highlight { color: #fbbf24; font-weight: 600; }
+    .footer__link--highlight:hover { color: #fcd34d; }
 
     .footer__bottom {
       border-top: 1px solid rgba(255,255,255,0.05);

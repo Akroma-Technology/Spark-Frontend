@@ -149,7 +149,6 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
       <canvas #heroCanvas class="spark-hero__canvas" aria-hidden="true"></canvas>
       <div class="spark-hero__glow" aria-hidden="true"></div>
       <div class="container spark-hero__inner">
-        <span class="label spark-hero__label">AKROMA SPARK</span>
         <h1 class="spark-hero__title">
           Social media no<br>
           <span class="spark-hero__title--accent">piloto automático.</span>
@@ -159,7 +158,7 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
         </p>
         <div class="spark-hero__ctas">
           <a routerLink="/cadastro" class="btn btn--spark">Teste grátis 7 dias &rarr;</a>
-          <a href="#demo" class="btn btn--outline">Ver demonstração</a>
+          <button type="button" class="btn btn--outline" (click)="scrollToDemo()">Ver demonstração</button>
         </div>
         <p class="spark-hero__trial-note">Sem cartão de crédito · Cancele quando quiser · Resultado em 24h</p>
       </div>
@@ -354,7 +353,7 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
           </div>
         </div>
         <div class="steps-more">
-          <a routerLink="/como-funciona" class="btn btn--outline">
+          <a routerLink="/como-funciona" class="btn btn--outline-accent">
             Ver como funciona em detalhes &rarr;
           </a>
         </div>
@@ -495,6 +494,14 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
       border: 1px solid rgba(255,255,255,0.15);
     }
     .btn--outline:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+    .btn--outline-accent {
+      background: transparent; color: #fbbf24;
+      border: 1px solid rgba(251,191,36,0.45);
+    }
+    .btn--outline-accent:hover {
+      border-color: rgba(251,191,36,0.8); color: #fcd34d;
+      background: rgba(251,191,36,0.07); transform: translateY(-1px);
+    }
     .btn--full { width: 100%; box-sizing: border-box; }
     .btn--lg { padding: 18px 36px; font-size: 17px; }
 
@@ -783,6 +790,11 @@ export class SparkHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly niches = NICHES;
 
   constructor(@Inject(PLATFORM_ID) private platformId: object) {}
+
+  scrollToDemo(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   async ngAfterViewInit(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;

@@ -18,7 +18,6 @@ import { environment } from '../../environments/environment';
     <!-- PAGE HERO -->
     <section class="page-hero">
       <div class="container page-hero__inner">
-        <span class="label">PLANOS</span>
         <h1 class="page-hero__title">Planos simples.<br>Resultado real.</h1>
         <p class="page-hero__subtitle">
           Comece grátis por 7 dias. Sem cartão de crédito. Cancele quando quiser.
@@ -228,7 +227,7 @@ import { environment } from '../../environments/environment';
     /* Referral */
     .referral-section {
       padding: 80px 0;
-      background: linear-gradient(180deg, #050810 0%, #0d0b1e 100%);
+      background: #050810;
     }
     .referral-card {
       position: relative; overflow: hidden;
@@ -280,7 +279,7 @@ import { environment } from '../../environments/environment';
     /* Page CTA */
     .page-cta {
       padding: 100px 0;
-      background: linear-gradient(180deg, #050810 0%, #120b04 60%, #050810 100%);
+      background: #050810;
     }
     .page-cta__inner { text-align: center; }
     .page-cta__title {
