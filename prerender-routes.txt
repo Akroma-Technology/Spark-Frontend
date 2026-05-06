@@ -1,0 +1,8 @@
+/fitness
+/tecnologia
+/gastronomia
+/moda
+/juridico
+/imobiliario
+/educacao
+/saude

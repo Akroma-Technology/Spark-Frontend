@@ -1,0 +1,24 @@
+{
+  "content": {
+    "topic": "O fim do preço abusivo por algoritmo e IAs",
+    "caption": "74% dos brasileiros pagam mais caro em apps de transporte e delivery sem saber o motivo.\n\nO STJ acaba de sinalizar: algoritmos de precificação dinâmica que rastreiam sua bateria baixa ou urgência são abusivos. Não é apenas 'oferta e procura', é discriminação digital. Se o app sabe que você está desesperado, ele não pode te punir com uma tarifa 3x maior.\n\nEm 2026, o CDC finalmente alcançou a caixa-preta das IAs. O ônus da prova agora é da plataforma: elas precisam provar a transparência do cálculo, não você. O jogo virou para quem entende de vulnerabilidade digital.\n\nVocê já sentiu que o preço subiu só porque você precisava muito daquele serviço agora?\n\n#direitodoconsumidor #oabsp #advogada #direitodigital2026 #stj #consumidorconsciente #algoritmos #precificacaodinamica #iaresponsavel #protecaodedados #justicadigital #cdc2026 #vulnerabilidadedigital #direitostech",
+    "imageDescription": "Autoridade fria com tensão tecnológica. Contraste entre o brilho artificial de dados processados e a sobriedade de quem detém a ordem. Sensação de vigilância digital sendo interrompida por um limite ético."
+  },
+  "visual_plan": {
+    "headline": "Preço Justo vs. Discriminação por Algoritmo",
+    "subtitle": "A inteligência artificial não pode ignorar o Código de Defesa do Consumidor. Conheça seus limites.",
+    "bullets": [
+      "Transparência de dados",
+      "Isonomia de preços",
+      "Fim do perfilamento oculto",
+      "Vigilância comportamental"
+    ],
+    "dataPoints": [
+      "Violação Ética",
+      "Risco Digital"
+    ],
+    "style": "comparison",
+    "colorScheme": "fundo #1e40af e #dc2626, headline #ffffff, acento #000000"
+  },
+  "image_prompt": "A professional comparison social media graphic design, editorial law review aesthetic. BACKGROUND: clean vertical split with the left half in solid royal blue (#1e40af) and the right half in solid crimson red (#dc2626). HEADLINE: \"Preço Justo vs. Discriminação por Algoritmo\" in white (#ffffff) classic serif extra-bold at 110pt, centered in the upper 40% of the canvas, spanning across the color divide. SUBTITLE: \"A inteligência artificial não pode ignorar o Código de Defesa do Consumidor. Conheça seus limites.\" in white (#ffffff) serif regular at 32pt, centered below the headline with 60px of vertical spacing. BULLETS: arranged in a balanced horizontal list in the center of the canvas, \"Transparência de dados | Isonomia de preços | Fim do perfilamento oculto | Vigilância comportamental\" in black (#000000) serif medium at 22pt, centered. DATA: at the bottom 10% of the canvas, \"Violação Ética | Risco Digital\" in white (#ffffff) sans-serif bold at 26pt, centered and uppercase. COMPOSITION: symmetrical layout, edge-to-edge color fill, 80px internal padding, strict typographic hierarchy, no icons, no photography, no frames. Ultra sharp, professional graphic design, clean vector typography, no spelling errors, print quality, 4K resolution."
+}

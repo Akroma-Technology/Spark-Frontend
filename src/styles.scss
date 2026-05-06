@@ -1,0 +1,15 @@
+/* You can add global styles to this file, and also import other style files */
+
+@use '@akroma-technology/ui/styles/tokens' as ak;
+
+html {
+  /* Keep anchor jumps clear of the fixed topbar (64px + 8px breathing) */
+  scroll-padding-top: 72px;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: ak.$akroma-bg;
+  color: #fff;
+  font-family: ak.$akroma-font-sans;
+}

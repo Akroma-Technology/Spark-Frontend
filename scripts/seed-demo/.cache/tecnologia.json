@@ -1,0 +1,24 @@
+{
+  "content": {
+    "topic": "A morte do Senior tradicional e a ascensão do Orquestrador",
+    "caption": "Junior ganhando R$18k. Senior ganhando R$12k. Como?\n\nEm 2026, tempo de casa virou custo fixo irrelevante. O mercado parou de pagar por \"linhas de código\" e começou a pagar por \"gestão de contexto\". Quem ainda foca em sintaxe virou commodity barata frente aos modelos Llama-5 e GPT-6o.\n\nO novo Senior não codifica, ele orquestra enxames de agentes autônomos. Vi Tech Leads na DevPro dobrando o faturamento ao migrar do legado para arquiteturas de Intent-based Infra, onde o código é gerado e destruído em segundos. ⚡️\n\nSe você ainda se orgulha de dominar um framework, você é o próximo na fila do layoff. A elite agora domina orquestração de inferência e redução de latência de agentes. 🧠\n\nE aí, você prefere ser o piloto da IA ou a peça que ela vai substituir? 👇\n\n#devpro #tecnologia #programacao #aiagents #llmops #rustlang #softwarearchitecture #techleadership #cloudcomputing2026 #aiorchestration #futureofwork #seniorit #backendengineering #systemdesign",
+    "imageDescription": "Autoridade fria com peso editorial de revista econômica. O contraste visual deve ser entre o caos de dados brutos ao fundo e a precisão cirúrgica de uma interface de comando minimalista em primeiro plano."
+  },
+  "visual_plan": {
+    "headline": "O Sênior morreu. O Orquestrador assumiu o comando.",
+    "subtitle": "Escrever código virou commodity. Orquestrar sistemas e IAs é a nova fronteira da senioridade.",
+    "bullets": [
+      "Sistemas de Alta Disponibilidade",
+      "Orquestração de Agentes IA",
+      "Tech Lead Pragmático",
+      "Visão de Produto Real"
+    ],
+    "dataPoints": [
+      "R$45k+ Salários",
+      "+240% Eficiência"
+    ],
+    "style": "infographic",
+    "colorScheme": "fundo #f8f9fa, headline #0033cc, acento #22c55e"
+  },
+  "image_prompt": "A professional infographic social media graphic design, cyber-editorial tech aesthetic, solid off-white background (#f8f9fa). The text 'O Sênior morreu. O Orquestrador assumiu o comando.' in royal blue (#0033cc) sans-serif extra-bold at 120pt, centered in the upper 45% of the canvas, designed to occupy 50% of the visual area with high impact. Below, the subtitle 'Escrever código virou commodity. Orquestrar sistemas e IAs é a nova fronteira da senioridade.' in dark charcoal (#1a1a1a) sans-serif regular at 32pt, centered with balanced line spacing. In the lower-middle section, the bullets 'Sistemas de Alta Disponibilidade | Orquestração de Agentes IA | Tech Lead Pragmático | Visão de Produto Real' in vibrant green (#22c55e) monospace at 22pt, arranged in a clean horizontal layout. At the bottom 15% of the canvas, the data 'R$45k+ Salários | +240% Eficiência' in royal blue (#0033cc) bold monospace at 48pt. Composition features a strict technical grid, 100px internal padding, edge-to-edge typography, high contrast, ultra sharp, professional graphic design, clean vector typography, no spelling errors, print quality, 4K resolution."
+}
