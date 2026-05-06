@@ -60,6 +60,15 @@ export const routes: Routes = [
     path: '404',
     loadComponent: () => import('./not-found/not-found.component').then(m => m.NotFoundComponent)
   },
+  {
+    path: 'admin',
+    children: [
+      {
+        path: 'nichos',
+        loadComponent: () => import('./admin/nichos/admin-nichos.component').then(m => m.AdminNichosComponent)
+      }
+    ]
+  },
   // Niche pages — single-segment wildcard. Named routes above must come first.
   {
     path: ':niche',
