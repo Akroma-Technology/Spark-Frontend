@@ -1,22 +1,16 @@
 import {
-  Component, DestroyRef, ElementRef, Inject, OnDestroy,
-  AfterViewInit, PLATFORM_ID, inject,
+  Component, DestroyRef, ElementRef, Inject,
+  AfterViewInit, OnDestroy, PLATFORM_ID, inject,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs/operators';
-
-interface NavLink {
-  id: string;         // matches the section[id]
-  label: string;
-  href: string;       // anchor href
-}
 
 @Component({
   selector: 'app-spark-topbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive],
   template: `
     <header class="topbar" [class.topbar--scrolled]="scrolled">
       <div class="topbar__inner">
@@ -26,12 +20,19 @@ interface NavLink {
         </a>
 
         <nav class="topbar__nav" aria-label="Navegacao principal">
-          <a *ngFor="let l of links"
-             [href]="l.href"
-             class="topbar__link"
-             [class.topbar__link--active]="activeId === l.id">
-            {{ l.label }}
-          </a>
+          <a routerLink="/"
+             routerLinkActive="topbar__link--active"
+             [routerLinkActiveOptions]="{exact: true}"
+             class="topbar__link">Início</a>
+          <a routerLink="/como-funciona"
+             routerLinkActive="topbar__link--active"
+             class="topbar__link">Como funciona</a>
+          <a routerLink="/recursos"
+             routerLinkActive="topbar__link--active"
+             class="topbar__link">Recursos</a>
+          <a routerLink="/planos"
+             routerLinkActive="topbar__link--active"
+             class="topbar__link">Planos</a>
         </nav>
 
         <div class="topbar__actions">
@@ -58,13 +59,14 @@ interface NavLink {
          aria-label="Menu"
          (click)="closeDrawer()">
       <div class="drawer__panel" (click)="$event.stopPropagation()">
-        <a *ngFor="let l of links"
-           [href]="l.href"
-           class="drawer__link"
-           [class.drawer__link--active]="activeId === l.id"
-           (click)="closeDrawer()">
-          {{ l.label }}
-        </a>
+        <a routerLink="/" routerLinkActive="drawer__link--active" [routerLinkActiveOptions]="{exact: true}"
+           class="drawer__link" (click)="closeDrawer()">Início</a>
+        <a routerLink="/como-funciona" routerLinkActive="drawer__link--active"
+           class="drawer__link" (click)="closeDrawer()">Como funciona</a>
+        <a routerLink="/recursos" routerLinkActive="drawer__link--active"
+           class="drawer__link" (click)="closeDrawer()">Recursos</a>
+        <a routerLink="/planos" routerLinkActive="drawer__link--active"
+           class="drawer__link" (click)="closeDrawer()">Planos</a>
         <div class="drawer__divider"></div>
         <a routerLink="/entrar" class="drawer__link drawer__link--muted" (click)="closeDrawer()">Entrar</a>
         <a routerLink="/cadastro" class="drawer__cta" (click)="closeDrawer()">Teste grátis 7 dias &rarr;</a>
@@ -102,7 +104,6 @@ interface NavLink {
     .topbar__brand:hover { opacity: 0.85; }
     .topbar__logo {
       height: 40px; width: auto;
-      /* Recolor the dark Akroma icon to Spark yellow (#fbbf24) */
       filter: brightness(0) saturate(100%) invert(76%) sepia(43%) saturate(1100%) hue-rotate(358deg) brightness(101%) contrast(99%);
     }
     .topbar__name {
@@ -238,17 +239,8 @@ interface NavLink {
 })
 export class SparkTopbarComponent implements AfterViewInit, OnDestroy {
   scrolled = false;
-  activeId: string | null = null;
   drawerOpen = false;
 
-  readonly links: NavLink[] = [
-    { id: 'como-funciona', label: 'Como funciona', href: '/#como-funciona' },
-    { id: 'solucoes',      label: 'Soluções',      href: '/#solucoes' },
-    { id: 'demo',          label: 'Demonstração',  href: '/#demo' },
-    { id: 'planos',        label: 'Planos',        href: '/#planos' },
-  ];
-
-  private observer: IntersectionObserver | null = null;
   private onScroll = () => { this.scrolled = window.scrollY > 20; };
   private onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') this.closeDrawer(); };
 
@@ -259,7 +251,6 @@ export class SparkTopbarComponent implements AfterViewInit, OnDestroy {
     private host: ElementRef<HTMLElement>,
     private router: Router,
   ) {
-    // Close drawer on route change (e.g., clicking Entrar / Cadastro)
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.closeDrawer());
@@ -269,33 +260,12 @@ export class SparkTopbarComponent implements AfterViewInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('keydown', this.onKey);
-
-    // Scroll-spy: highlight the link whose section is most visible.
-    const targets = Array.from(document.querySelectorAll<HTMLElement>('.spark-section-target'));
-    if (!targets.length) return;
-
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        // Pick the entry with the highest intersection ratio among those intersecting.
-        const visible = entries
-          .filter(e => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible.length) {
-          this.activeId = visible[0].target.id;
-        } else if (window.scrollY < 200) {
-          this.activeId = null;  // back to hero — nothing highlighted
-        }
-      },
-      { rootMargin: '-72px 0px -55% 0px', threshold: [0.1, 0.3, 0.6] }
-    );
-    targets.forEach(t => this.observer!.observe(t));
   }
 
   ngOnDestroy(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     window.removeEventListener('scroll', this.onScroll);
     window.removeEventListener('keydown', this.onKey);
-    this.observer?.disconnect();
   }
 
   toggleDrawer(): void {
