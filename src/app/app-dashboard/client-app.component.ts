@@ -355,6 +355,41 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
               </div>
             </div>
           </div>
+
+          <!-- ANALYTICS BÁSICO -->
+          <section class="analytics-section" *ngIf="profile?.instagramConnected">
+            <h2 class="analytics-section__title">📊 Análise de Performance</h2>
+
+            <div *ngIf="analyticsLoading" class="analytics-grid">
+              <div class="analytics-card analytics-card--skeleton"><div class="skeleton" style="height:40px;border-radius:6px"></div></div>
+              <div class="analytics-card analytics-card--skeleton"><div class="skeleton" style="height:40px;border-radius:6px"></div></div>
+              <div class="analytics-card analytics-card--skeleton"><div class="skeleton" style="height:40px;border-radius:6px"></div></div>
+              <div class="analytics-card analytics-card--skeleton"><div class="skeleton" style="height:40px;border-radius:6px"></div></div>
+            </div>
+
+            <div *ngIf="!analyticsLoading && analyticsSummary" class="analytics-grid">
+              <div class="analytics-card">
+                <span class="analytics-card__label">Posts publicados</span>
+                <span class="analytics-card__value">{{ analyticsSummary.totalPosts }}</span>
+              </div>
+              <div class="analytics-card">
+                <span class="analytics-card__label">Taxa de sucesso</span>
+                <span class="analytics-card__value">{{ analyticsSummary.successRate | number:'1.0-1' }}%</span>
+              </div>
+              <div class="analytics-card">
+                <span class="analytics-card__label">Curtidas médias</span>
+                <span class="analytics-card__value">{{ analyticsSummary.avgLikes | number:'1.0-1' }}</span>
+              </div>
+              <div class="analytics-card">
+                <span class="analytics-card__label">Alcance médio</span>
+                <span class="analytics-card__value">{{ analyticsSummary.avgReach | number:'1.0-0' }}</span>
+              </div>
+            </div>
+
+            <p *ngIf="!analyticsLoading && analyticsSummary?.totalPosts === 0" class="analytics-empty">
+              Nenhum post publicado ainda. Assim que seus primeiros posts forem ao ar, você verá as métricas aqui.
+            </p>
+          </section>
         </div>
 
         <!-- BRAND TAB -->
@@ -761,6 +796,34 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
               </div>
             </div>
             <div class="app-plan-error" *ngIf="cancelError">{{ cancelError }}</div>
+          </div>
+
+          <!-- Zona de Perigo: apagar conta -->
+          <div class="danger-zone">
+            <h3 class="danger-zone__title">⚠️ Zona de Perigo</h3>
+            <p class="danger-zone__desc">
+              Apagar sua conta remove todos os seus dados e tokens permanentemente.
+              Você não poderá criar uma nova conta com o mesmo e-mail ou conta do Instagram.
+            </p>
+            <button class="btn danger-zone__toggle-btn" (click)="showDeleteConfirm = !showDeleteConfirm">
+              Apagar minha conta
+            </button>
+            <div *ngIf="showDeleteConfirm" class="delete-confirm">
+              <p class="delete-confirm__label">Digite <strong>apagar</strong> para confirmar:</p>
+              <input
+                type="text"
+                [(ngModel)]="deleteConfirmText"
+                placeholder="apagar"
+                class="delete-confirm__input"
+              />
+              <button
+                class="btn btn--danger"
+                [disabled]="deleteConfirmText.toLowerCase() !== 'apagar' || deletingAccount"
+                (click)="deleteAccount()"
+              >
+                {{ deletingAccount ? 'Apagando...' : 'Confirmar — apagar conta' }}
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -1491,6 +1554,65 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .slot-net-lock { font-size: 10px; margin-left: 2px; }
 
     .btn--sm { padding: 7px 14px; font-size: 12px; }
+
+    /* Analytics básico */
+    .analytics-section { margin: 28px 0 0; }
+    .analytics-section__title {
+      font-size: 15px; font-weight: 700; color: #fff; margin: 0 0 14px;
+    }
+    .analytics-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;
+    }
+    .analytics-card {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; padding: 1rem;
+      display: flex; flex-direction: column; gap: 0.35rem;
+    }
+    .analytics-card--skeleton { opacity: .5; }
+    .analytics-card__label {
+      font-size: 11px; color: #6b7280; text-transform: uppercase;
+      letter-spacing: .05em; font-weight: 600;
+    }
+    .analytics-card__value { font-size: 1.6rem; font-weight: 800; color: #fff; line-height: 1; }
+    .analytics-empty { color: #6b7280; font-size: .875rem; padding: .75rem 0; }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px;
+    }
+
+    /* Zona de perigo / apagar conta */
+    .danger-zone {
+      margin-top: 40px; padding: 24px; border-radius: 14px;
+      border: 1px solid rgba(239,68,68,0.2); background: rgba(239,68,68,0.03);
+    }
+    .danger-zone__title { font-size: 15px; font-weight: 700; color: #f87171; margin: 0 0 8px; }
+    .danger-zone__desc { font-size: 13px; color: #9ca3af; line-height: 1.6; margin: 0 0 16px; }
+    .danger-zone__toggle-btn {
+      background: transparent; border: 1px solid rgba(239,68,68,0.3);
+      color: #f87171; font-size: 13px; padding: 8px 18px; border-radius: 8px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .danger-zone__toggle-btn:hover { background: rgba(239,68,68,0.08); }
+    .delete-confirm {
+      margin-top: 14px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .delete-confirm__label { font-size: 13px; color: #9ca3af; margin: 0; }
+    .delete-confirm__label strong { color: #fff; }
+    .delete-confirm__input {
+      padding: 8px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px;
+      background: rgba(255,255,255,.04); color: #fff; font-size: 13px; max-width: 180px;
+    }
+    .btn--danger {
+      background: #dc2626; color: #fff; border: none; padding: 9px 18px;
+      border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700;
+      transition: opacity 0.15s; align-self: flex-start;
+    }
+    .btn--danger:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn--danger:hover:not(:disabled) { opacity: 0.85; }
   `]
 })
 export class ClientAppComponent implements OnInit {
@@ -1537,6 +1659,18 @@ export class ClientAppComponent implements OnInit {
   cancelLoading = false;
   cancelError = '';
 
+  // Analytics básico
+  analyticsSummary: {
+    totalPosts: number; successRate: number;
+    avgLikes: number; avgReach: number; avgComments: number; avgSaves: number;
+  } | null = null;
+  analyticsLoading = false;
+
+  // Apagar conta
+  showDeleteConfirm = false;
+  deleteConfirmText = '';
+  deletingAccount = false;
+
   // Toast notification
   nicheToast = '';
   private _nicheToastTimer: any;
@@ -1572,6 +1706,7 @@ export class ClientAppComponent implements OnInit {
 
     // Always load full profile from API (includes imageStyle, brandContext, etc.)
     this.loadProfile();
+    this.loadAnalytics();
 
     // After Instagram OAuth callback, handle success or error
     const igParam = this.route.snapshot.queryParamMap.get('ig');
@@ -1853,6 +1988,31 @@ export class ClientAppComponent implements OnInit {
         }
       },
       error: () => {}
+    });
+  }
+
+  loadAnalytics(): void {
+    this.analyticsLoading = true;
+    const headers = this.auth.authHeaders();
+    this.http.get<any>(`${environment.apiUrl}/api/v1/client/analytics/summary`, { headers }).subscribe({
+      next: (data) => { this.analyticsSummary = data; this.analyticsLoading = false; },
+      error: () => { this.analyticsSummary = null; this.analyticsLoading = false; }
+    });
+  }
+
+  deleteAccount(): void {
+    if (this.deleteConfirmText.toLowerCase() !== 'apagar') return;
+    this.deletingAccount = true;
+    const headers = this.auth.authHeaders();
+    this.http.delete(`${environment.apiUrl}/api/v1/client/account`, { headers }).subscribe({
+      next: () => {
+        this.auth.logout();
+        window.location.href = '/';
+      },
+      error: () => {
+        alert('Erro ao apagar conta. Tente novamente ou contate o suporte.');
+        this.deletingAccount = false;
+      }
     });
   }
 
