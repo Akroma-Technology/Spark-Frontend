@@ -7,6 +7,12 @@ import { ClientAuthService, ClientInfo } from '../core/services/client-auth.serv
 import { SeoService } from '../core/services/seo.service';
 import { environment } from '../../environments/environment';
 
+interface IgError {
+  title: string;
+  what: string;
+  steps: string[];
+}
+
 interface ReferralStats {
   referralCode: string | null;
   totalPaidReferrals: number;
@@ -202,12 +208,34 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                 Conectado
               </div>
               <h3>{{ profile?.instagramConnected ? 'Instagram conectado' : 'Conecte seu Instagram' }}</h3>
-              <p *ngIf="!profile?.instagramConnected">
-                Para a IA publicar, precisamos da autorizacao do Instagram. Isso leva 1 minuto.
-              </p>
+
+              <!-- Connected state -->
               <p *ngIf="profile?.instagramConnected">
                 Conta <strong>&#64;{{ profile?.instagramUsername }}</strong> autorizada. A IA pode publicar automaticamente.
               </p>
+
+              <!-- Not connected: show requirements checklist -->
+              <ng-container *ngIf="!profile?.instagramConnected">
+                <p style="margin-bottom:12px">Para a IA publicar no seu Instagram, voce precisa ter:</p>
+                <ul class="app-ig-requirements">
+                  <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Uma <strong>Pagina do Facebook</strong> (nao perfil pessoal)
+                  </li>
+                  <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Conta Instagram no tipo <strong>Business ou Creator</strong>
+                  </li>
+                  <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Instagram <strong>vinculado a essa Pagina do Facebook</strong>
+                  </li>
+                </ul>
+                <p class="app-ig-requirements__note">
+                  No Instagram: Configuracoes → Conta → "Mudar para conta profissional" → vincule sua Pagina do Facebook.
+                </p>
+              </ng-container>
+
               <button *ngIf="!profile?.instagramConnected" type="button"
                       class="btn btn--spark" [disabled]="igConnecting" (click)="connectInstagram()">
                 {{ igConnecting ? 'Redirecionando...' : 'Conectar Instagram →' }}
@@ -216,7 +244,27 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                       class="btn btn--outline" [disabled]="igConnecting" (click)="connectInstagram()">
                 {{ igConnecting ? 'Redirecionando...' : 'Reconectar' }}
               </button>
-              <p class="app-action__error" *ngIf="igConnectError">{{ igConnectError }}</p>
+            </div>
+
+            <!-- Instagram error modal -->
+            <div class="app-modal-overlay" *ngIf="igError" (click)="igError = null">
+              <div class="app-modal" (click)="$event.stopPropagation()">
+                <div class="app-modal__icon app-modal__icon--error">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <h3 class="app-modal__title">{{ igError.title }}</h3>
+                <p class="app-modal__body">{{ igError.what }}</p>
+                <div class="app-modal__steps" *ngIf="igError.steps.length">
+                  <p class="app-modal__steps-label">Como corrigir:</p>
+                  <ol>
+                    <li *ngFor="let step of igError.steps">{{ step }}</li>
+                  </ol>
+                </div>
+                <div class="app-modal__actions">
+                  <button type="button" class="btn btn--outline" (click)="igError = null">Entendi</button>
+                  <button type="button" class="btn btn--spark" (click)="igError = null; connectInstagram()">Tentar novamente</button>
+                </div>
+              </div>
             </div>
 
             <!-- Niche card -->
@@ -1049,6 +1097,55 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .app-action h3 { font-size: 15px; font-weight: 700; color: #fff; margin: 0 0 6px; }
     .app-action p { font-size: 13px; color: #9ca3af; line-height: 1.6; margin: 0 0 16px; }
 
+    /* Instagram requirements checklist */
+    .app-ig-requirements {
+      list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .app-ig-requirements li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: #d1d5db; line-height: 1.5;
+    }
+    .app-ig-requirements li svg {
+      width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; stroke: #22c55e;
+    }
+    .app-ig-requirements li strong { color: #fff; }
+    .app-ig-requirements__note {
+      font-size: 11px !important; color: #6b7280 !important; margin: 0 0 16px !important;
+      padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 8px;
+      border-left: 2px solid rgba(251,191,36,0.3);
+    }
+
+    /* Instagram error modal */
+    .app-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+      animation: fadeIn 0.15s ease-out;
+    }
+    .app-modal {
+      background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+      padding: 28px; max-width: 460px; width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      animation: modalSlideIn 0.2s ease-out;
+    }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .app-modal__icon {
+      width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .app-modal__icon--error { background: rgba(239,68,68,0.15); }
+    .app-modal__icon--error svg { width: 24px; height: 24px; stroke: #f87171; }
+    .app-modal__title { font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 10px; }
+    .app-modal__body { font-size: 13px; color: #9ca3af; line-height: 1.6; margin: 0 0 20px; }
+    .app-modal__steps { margin-bottom: 24px; }
+    .app-modal__steps-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #6b7280; text-transform: uppercase; margin: 0 0 10px; }
+    .app-modal__steps ol { padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    .app-modal__steps ol li { font-size: 13px; color: #d1d5db; line-height: 1.5; }
+    .app-modal__actions { display: flex; gap: 10px; }
+    .app-modal__actions .btn { flex: 1; justify-content: center; }
+
     .app-action--niche-set {
       background: rgba(34,197,94,0.04); border-color: rgba(34,197,94,0.2);
     }
@@ -1308,7 +1405,7 @@ export class ClientAppComponent implements OnInit {
   nicheError = '';
   nicheSaved = false;
   igConnecting = false;
-  igConnectError = '';
+  igError: IgError | null = null;
 
   // Plan tab state
   billingStatus: BillingStatus | null = null;
@@ -1364,28 +1461,83 @@ export class ClientAppComponent implements OnInit {
       this.loadProfile();
     } else if (igParam === 'error') {
       const reason = this.route.snapshot.queryParamMap.get('ig_reason') || '';
-      this.igConnectError = this.translateIgError(reason);
+      this.igError = this.translateIgError(reason);
     }
   }
 
-  private translateIgError(reason: string): string {
+  private translateIgError(reason: string): IgError {
     const r = (reason || '').toLowerCase();
+
     if (r.includes('no facebook pages') || r.includes('no facebook page')) {
-      return 'Sua conta Instagram precisa ser do tipo Business/Creator E estar vinculada a uma Página do Facebook. Acesse as configurações do Instagram → "Conta" → "Mudar para conta profissional", e depois conecte a uma Página do Facebook.';
+      return {
+        title: 'Nenhuma Pagina do Facebook encontrada',
+        what: 'Sua conta do Facebook nao tem nenhuma Pagina criada. O Instagram Business precisa estar vinculado a uma Pagina (nao a um perfil pessoal).',
+        steps: [
+          'Acesse facebook.com e crie uma Pagina do Facebook (ex: pagina da sua empresa)',
+          'No Instagram, va em Configuracoes → Conta → "Mudar para conta profissional" → escolha Business ou Creator',
+          'Ainda no Instagram, va em Configuracoes → Conta → "Conta vinculada" → vincule sua Pagina do Facebook',
+          'Volte aqui e clique em "Conectar Instagram" novamente',
+        ],
+      };
     }
-    if (r.includes('no instagram') || r.includes('not_business')) {
-      return 'Sua Página do Facebook não tem uma conta Instagram Business vinculada. Conecte uma conta Instagram Business à sua Página primeiro.';
+
+    if (r.includes('no linked instagram') || r.includes('no instagram') || r.includes('not_business') || r.includes('instagram_business_account')) {
+      return {
+        title: 'Instagram nao vinculado a Pagina do Facebook',
+        what: 'Sua Pagina do Facebook existe, mas nao tem uma conta Instagram Business vinculada a ela.',
+        steps: [
+          'No Instagram, va em Configuracoes → Conta → "Mudar para conta profissional" → escolha Business ou Creator',
+          'Ainda no Instagram, va em Configuracoes → Conta → "Conta vinculada" → selecione sua Pagina do Facebook',
+          'Volte aqui e clique em "Conectar Instagram" novamente',
+        ],
+      };
     }
-    if (r.includes('access_denied') || r.includes('user_cancelled')) {
-      return 'Autorização negada. Você precisa aceitar as permissões para que a IA possa publicar.';
+
+    if (r.includes('access_denied') || r.includes('user_cancelled') || r.includes('user_denied')) {
+      return {
+        title: 'Autorizacao negada',
+        what: 'Voce cancelou ou negou as permissoes. A IA precisa de autorizacao para publicar no seu Instagram.',
+        steps: [
+          'Clique em "Conectar Instagram" novamente',
+          'Na tela do Facebook, aceite TODAS as permissoes solicitadas',
+          'Nao desmarque nenhuma permissao — todas sao necessarias para a publicacao automatica',
+        ],
+      };
     }
-    if (r.includes('invalid_state') || r.includes('missing_code')) {
-      return 'Sessão expirada. Tente conectar novamente.';
+
+    if (r.includes('invalid_state') || r.includes('missing_code') || r.includes('expired')) {
+      return {
+        title: 'Sessao expirada',
+        what: 'O tempo limite da autorizacao foi atingido ou a sessao ficou invalida.',
+        steps: [
+          'Clique em "Tentar novamente" abaixo',
+          'Complete o processo sem demorar mais de 5 minutos',
+        ],
+      };
     }
-    if (r) {
-      return `Erro na conexão com Instagram: ${reason}. Tente novamente ou contate o suporte.`;
+
+    if (r.includes('permission') || r.includes('scope')) {
+      return {
+        title: 'Permissoes insuficientes',
+        what: 'Algumas permissoes necessarias nao foram concedidas. Sem elas a IA nao consegue publicar.',
+        steps: [
+          'Clique em "Tentar novamente"',
+          'Na tela do Facebook, nao desmarque nenhuma permissao',
+          'Se o problema persistir, verifique se sua conta Instagram e do tipo Business ou Creator',
+        ],
+      };
     }
-    return 'Autorização negada ou cancelada. Tente novamente.';
+
+    // Generic fallback
+    return {
+      title: 'Erro ao conectar Instagram',
+      what: reason ? `Detalhes: ${reason}` : 'Ocorreu um erro inesperado durante a autorizacao.',
+      steps: [
+        'Verifique se sua conta Instagram e do tipo Business ou Creator (nao pessoal)',
+        'Verifique se sua conta Instagram esta vinculada a uma Pagina do Facebook',
+        'Tente novamente. Se o erro persistir, entre em contato com o suporte.',
+      ],
+    };
   }
 
   get trialActive(): boolean {
@@ -1555,13 +1707,17 @@ export class ClientAppComponent implements OnInit {
   connectInstagram(): void {
     if (this.igConnecting) return;
     this.igConnecting = true;
-    this.igConnectError = '';
+    this.igError = null;
     const headers = this.auth.authHeaders();
     this.http.get<{ url: string }>(`${environment.apiUrl}/api/v1/client/instagram/oauth-url`, { headers }).subscribe({
       next: (res) => { window.location.href = res.url; },
-      error: (err) => {
+      error: () => {
         this.igConnecting = false;
-        this.igConnectError = err.error?.error || 'Erro ao iniciar conexao com Instagram.';
+        this.igError = {
+          title: 'Erro ao iniciar conexao',
+          what: 'Nao foi possivel gerar o link de autorizacao. Verifique sua conexao e tente novamente.',
+          steps: ['Atualize a pagina e tente conectar novamente', 'Se persistir, entre em contato com o suporte.'],
+        };
       }
     });
   }
