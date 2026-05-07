@@ -15,6 +15,8 @@ interface ReferralStats {
 }
 
 interface ClientProfile {
+  name?: string;
+  email?: string;
   selectedNiche?: string;
   instagramConnected?: boolean;
   instagramUsername?: string;
@@ -125,7 +127,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
             <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           </div>
           <div>
-            <strong>Bem-vindo ao Akroma Spark, {{ client.name.split(' ')[0] }}!</strong>
+            <strong>Bem-vindo ao Akroma Spark, <span class="hl-name">{{ firstName }}</span>!</strong>
             <span>Seu trial Starter de 7 dias esta ativo. Conecte seu Instagram para comecar.</span>
           </div>
           <button type="button" class="app-welcome__close" (click)="showWelcome = false" aria-label="Fechar">
@@ -136,7 +138,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
         <!-- OVERVIEW -->
         <div *ngIf="tab === 'overview'">
           <header class="app-page-header">
-            <h1>Ola, {{ client.name.split(' ')[0] }}</h1>
+            <h1>Olá, <span class="hl-name">{{ firstName }}</span></h1>
             <p>Este e o seu painel do Akroma Spark.</p>
           </header>
 
@@ -599,6 +601,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
   `,
   styles: [`
     :host { display: block; background: #050912; min-height: 100vh; }
+    .hl-name { color: #fbbf24; font-weight: inherit; }
 
     /* TINDER-STYLE PROFILE COMPLETION BANNER */
     .profile-completion-banner {
@@ -1088,6 +1091,14 @@ export class ClientAppComponent implements OnInit {
   private seo = inject(SeoService);
 
   client: ClientInfo | null = null;
+
+  get firstName(): string {
+    const fromProfile = (this.profile?.name || '').trim();
+    const fromClient  = (this.client?.name  || '').trim();
+    const full = fromProfile || fromClient;
+    if (!full) return 'cliente';
+    return full.split(' ')[0];
+  }
   tab: Tab = 'overview';
   showWelcome = false;
   copied = false;
@@ -1324,7 +1335,14 @@ export class ClientAppComponent implements OnInit {
   loadProfile(): void {
     const headers = this.auth.authHeaders();
     this.http.get<ClientProfile>(`${environment.apiUrl}/api/v1/client/me`, { headers }).subscribe({
-      next: (p) => { this.profile = p; },
+      next: (p) => {
+        this.profile = p;
+        // Persist the name back to the auth client so it survives reloads
+        if (p?.name && (!this.client || this.client.name !== p.name)) {
+          if (this.client) this.client = { ...this.client, name: p.name };
+          this.auth.updateStoredClient({ name: p.name });
+        }
+      },
       error: () => {}
     });
   }
