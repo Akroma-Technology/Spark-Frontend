@@ -79,7 +79,7 @@ interface PlanPrices {
   pro:     { monthly: string; annual: string; annualMonthly: string };
 }
 
-type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
+type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
 @Component({
   selector: 'app-client-app',
@@ -101,6 +101,15 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
           <button type="button" class="app-nav__item" [class.app-nav__item--active]="tab === 'posts'" (click)="tab = 'posts'">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
             <span>Posts</span>
+          </button>
+          <button type="button" class="app-nav__item" [class.app-nav__item--active]="tab === 'brand'" (click)="openBrandTab()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
+            <span>Marca</span>
+            <span *ngIf="profile?.brandContextNeedsAttention" class="app-nav__dot" title="Personalize sua marca"></span>
+          </button>
+          <button type="button" class="app-nav__item" [class.app-nav__item--active]="tab === 'schedule'" (click)="openScheduleTab()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Agenda</span>
           </button>
           <button type="button" class="app-nav__item" [class.app-nav__item--active]="tab === 'referrals'" (click)="tab = 'referrals'; loadReferralStats()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -161,7 +170,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
           </div>
 
           <!-- TINDER-STYLE PROFILE COMPLETION BANNER -->
-          <div *ngIf="profile?.selectedNiche && profile?.brandContextNeedsAttention && !brandContextEditing"
+          <div *ngIf="profile?.selectedNiche && profile?.brandContextNeedsAttention"
                class="profile-completion-banner">
             <div class="profile-completion-banner__bar">
               <div class="profile-completion-banner__bar-fill" [style.width.%]="completionPercent"></div>
@@ -171,93 +180,10 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
                 <h3>Seu perfil está {{ completionPercent }}% pronto</h3>
                 <p>Conta pra IA <strong>como sua marca fala</strong> — assim os posts ficam com a sua cara, não genéricos.</p>
               </div>
-              <button class="btn btn--spark" (click)="startBrandContextEdit()">
+              <button class="btn btn--spark" (click)="openBrandTab()">
                 Completar agora →
               </button>
             </div>
-          </div>
-
-          <!-- BRAND CONTEXT EDITOR -->
-          <div *ngIf="brandContextEditing" class="app-action app-action--brand-edit">
-            <h3>✨ Conta pra IA sobre sua marca</h3>
-            <p class="brand-edit-desc">
-              Esse texto guia o tom, o público e o estilo dos posts. Quanto mais específico, melhor.
-              <strong *ngIf="profile?.brandContextHint">Já preenchemos um rascunho do seu nicho — adapte para a sua realidade:</strong>
-            </p>
-            <textarea class="brand-edit-textarea"
-                      rows="8"
-                      [(ngModel)]="brandContextDraft"
-                      [ngModelOptions]="{standalone: true}"
-                      placeholder="Ex: Sou uma confeitaria artesanal em Florianópolis. Atendo casamentos e aniversários sofisticados. Tom acolhedor mas elegante, sempre destacando ingredientes premium."></textarea>
-            <div class="brand-edit-row">
-              <label class="brand-edit-label">URL do seu logo (opcional, mas recomendado)</label>
-              <input class="brand-edit-input" type="url"
-                     [(ngModel)]="logoUrlDraft"
-                     [ngModelOptions]="{standalone: true}"
-                     placeholder="https://meusite.com/logo.png">
-            </div>
-            <div class="brand-edit-actions">
-              <button class="btn btn--outline" (click)="cancelBrandContextEdit()" [disabled]="brandContextSaving">Cancelar</button>
-              <button class="btn btn--spark" (click)="saveBrandContext()" [disabled]="brandContextSaving || !brandContextDraft.trim()">
-                {{ brandContextSaving ? 'Salvando...' : 'Salvar perfil →' }}
-              </button>
-            </div>
-            <p class="brand-edit-error" *ngIf="brandContextError">{{ brandContextError }}</p>
-          </div>
-
-          <!-- POST CONFIG EDITOR (publish settings) -->
-          <div *ngIf="postConfigEditing" class="app-action app-action--brand-edit">
-            <h3>📅 Configuração de publicação</h3>
-            <p class="brand-edit-desc">
-              Plano <strong class="hl-name">{{ profile?.planTier }}</strong> —
-              até <strong>{{ profile?.maxPostsPerDay }}</strong> post(s) por dia,
-              {{ canCarousel ? 'carrossel liberado' : 'sem carrossel (upgrade para Pro)' }}.
-            </p>
-
-            <!-- Postagens agendadas (estilo admin) -->
-            <div class="cfg-row">
-              <label class="brand-edit-label">📤 Postagens agendadas
-                <span class="cfg-hint">({{ postConfigDraft.scheduleTimes.length }} configurada{{ postConfigDraft.scheduleTimes.length !== 1 ? 's' : '' }})</span>
-              </label>
-              <div class="slots-list">
-                <div *ngFor="let s of postConfigDraft.scheduleTimes; let i = index" class="slot-card">
-                  <div class="slot-row">
-                    <select class="cfg-input slot-day" [(ngModel)]="s.dayOfWeek" [ngModelOptions]="{standalone: true}">
-                      <option *ngFor="let d of allDays" [value]="d.code">{{ d.fullLabel }}</option>
-                    </select>
-                    <span class="slot-sep">às</span>
-                    <input type="time" class="cfg-input slot-time" [(ngModel)]="s.time" [ngModelOptions]="{standalone: true}">
-                    <select class="cfg-input slot-format" [(ngModel)]="s.format" [ngModelOptions]="{standalone: true}">
-                      <option value="SINGLE">Imagem única</option>
-                      <option *ngIf="canCarousel" value="CAROUSEL">Carrossel</option>
-                    </select>
-                    <input *ngIf="s.format === 'CAROUSEL'"
-                           type="number" min="2" max="10"
-                           class="cfg-input slot-count"
-                           [(ngModel)]="s.carouselCount" [ngModelOptions]="{standalone: true}"
-                           title="Slides">
-                    <label class="toggle-story-c" title="Publicar também no Story">
-                      <input type="checkbox" [(ngModel)]="s.publishStory" [ngModelOptions]="{standalone: true}">
-                      <span>Story</span>
-                    </label>
-                    <button class="schedule-remove" (click)="removeSlot(i)" aria-label="Remover">×</button>
-                  </div>
-                  <p *ngIf="slotWarnings[i]" class="slot-warning">⚠️ {{ slotWarnings[i] }}</p>
-                </div>
-                <button class="btn btn--outline btn--sm" (click)="addSlot()">+ Adicionar postagem</button>
-                <p *ngIf="!postConfigDraft.scheduleTimes.length" class="cfg-hint" style="text-align:center;padding:1rem;">
-                  Nenhuma postagem agendada. Clique em + Adicionar postagem para começar.
-                </p>
-              </div>
-            </div>
-
-            <div class="brand-edit-actions">
-              <button class="btn btn--outline" (click)="cancelPostConfig()" [disabled]="postConfigSaving">Cancelar</button>
-              <button class="btn btn--spark" (click)="savePostConfig()" [disabled]="postConfigSaving">
-                {{ postConfigSaving ? 'Salvando...' : 'Salvar agenda →' }}
-              </button>
-            </div>
-            <p class="brand-edit-error" *ngIf="postConfigError">{{ postConfigError }}</p>
           </div>
 
           <div class="app-actions">
@@ -315,21 +241,9 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
               </p>
 
               <!-- Niche picker collapsed view -->
-              <div *ngIf="!showNichePicker" style="display:flex;gap:8px;flex-wrap:wrap">
-                <button type="button" class="btn btn--outline" (click)="showNichePicker = true; nicheSaved = false">
-                  {{ profile?.selectedNiche ? 'Mudar nicho' : 'Escolher nicho →' }}
-                </button>
-                <button *ngIf="profile?.selectedNiche && !brandContextEditing"
-                        type="button" class="btn btn--outline"
-                        (click)="startBrandContextEdit()">
-                  ✨ {{ profile?.brandContextNeedsAttention ? 'Personalizar perfil da marca' : 'Editar perfil da marca' }}
-                </button>
-                <button *ngIf="profile?.selectedNiche && !postConfigEditing"
-                        type="button" class="btn btn--outline"
-                        (click)="startPostConfigEdit()">
-                  📅 Configuração de publicação
-                </button>
-              </div>
+              <button *ngIf="!showNichePicker" type="button" class="btn btn--outline" (click)="showNichePicker = true; nicheSaved = false">
+                {{ profile?.selectedNiche ? 'Mudar nicho' : 'Escolher nicho →' }}
+              </button>
 
               <!-- Niche grid -->
               <div class="app-niche-grid" *ngIf="showNichePicker">
@@ -359,6 +273,104 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- BRAND TAB -->
+        <div *ngIf="tab === 'brand'">
+          <header class="app-page-header">
+            <h1>✨ Perfil da marca</h1>
+            <p>Esses dados guiam o tom, o público e o estilo dos posts gerados pela IA. Seja específico — quanto mais a IA souber, mais a sua cara fica.</p>
+          </header>
+
+          <div class="cfg-page">
+            <div class="cfg-section">
+              <h2 class="cfg-section__title">Sobre o seu negócio</h2>
+              <p class="cfg-section__desc" *ngIf="profile?.brandContextHint && (!profile?.brandContext || profile?.brandContext === profile?.brandContextHint)">
+                ✨ <strong>Pré-preenchemos um rascunho do nicho <em>{{ nicheLabel(profile?.selectedNiche) }}</em>.</strong>
+                Adapte para o seu caso real. Quanto mais único, melhor.
+              </p>
+              <textarea class="brand-edit-textarea" rows="9"
+                        [(ngModel)]="brandContextDraft" [ngModelOptions]="{standalone: true}"
+                        placeholder="Ex: Sou uma confeitaria artesanal em Florianópolis. Atendo casamentos e aniversários sofisticados. Tom acolhedor mas elegante, sempre destacando ingredientes premium."></textarea>
+            </div>
+
+            <div class="cfg-section">
+              <h2 class="cfg-section__title">Logo da marca <span class="cfg-section__badge">opcional</span></h2>
+              <p class="cfg-section__desc">URL pública do logo (PNG transparente recomendado). Aparece em alguns formatos de post.</p>
+              <input class="brand-edit-input" type="url"
+                     [(ngModel)]="logoUrlDraft" [ngModelOptions]="{standalone: true}"
+                     placeholder="https://meusite.com/logo.png">
+            </div>
+
+            <div class="cfg-page__actions">
+              <button class="btn btn--outline" (click)="tab = 'overview'" [disabled]="brandContextSaving">← Voltar</button>
+              <button class="btn btn--spark" (click)="saveBrandContext()" [disabled]="brandContextSaving || !brandContextDraft.trim()">
+                {{ brandContextSaving ? 'Salvando...' : 'Salvar perfil →' }}
+              </button>
+            </div>
+            <p class="brand-edit-error" *ngIf="brandContextError">{{ brandContextError }}</p>
+          </div>
+        </div>
+
+        <!-- SCHEDULE TAB -->
+        <div *ngIf="tab === 'schedule'">
+          <header class="app-page-header">
+            <h1>📅 Agenda de publicação</h1>
+            <p>
+              Plano <strong class="hl-name">{{ profile?.planTier }}</strong> —
+              até <strong>{{ profile?.maxPostsPerDay }}</strong> post(s) por dia,
+              {{ canCarousel ? 'carrossel liberado.' : 'sem carrossel (faça upgrade para Pro).' }}
+            </p>
+          </header>
+
+          <div class="cfg-page">
+            <div class="cfg-section">
+              <div class="cfg-section__head">
+                <div>
+                  <h2 class="cfg-section__title">Postagens agendadas</h2>
+                  <p class="cfg-section__desc">{{ postConfigDraft.scheduleTimes.length }} configurada{{ postConfigDraft.scheduleTimes.length !== 1 ? 's' : '' }}. A IA gera e publica automaticamente nos horários definidos.</p>
+                </div>
+                <button class="btn btn--outline btn--sm" (click)="addSlot()">+ Adicionar postagem</button>
+              </div>
+
+              <div class="slots-list" style="margin-top: 12px;">
+                <div *ngFor="let s of postConfigDraft.scheduleTimes; let i = index" class="slot-card">
+                  <div class="slot-row">
+                    <select class="cfg-input slot-day" [(ngModel)]="s.dayOfWeek" [ngModelOptions]="{standalone: true}" (ngModelChange)="recomputeSlotWarnings()">
+                      <option *ngFor="let d of allDays" [value]="d.code">{{ d.fullLabel }}</option>
+                    </select>
+                    <span class="slot-sep">às</span>
+                    <input type="time" class="cfg-input slot-time" [(ngModel)]="s.time" [ngModelOptions]="{standalone: true}">
+                    <select class="cfg-input slot-format" [(ngModel)]="s.format" [ngModelOptions]="{standalone: true}">
+                      <option value="SINGLE">Imagem única</option>
+                      <option *ngIf="canCarousel" value="CAROUSEL">Carrossel</option>
+                    </select>
+                    <input *ngIf="s.format === 'CAROUSEL'" type="number" min="2" max="10"
+                           class="cfg-input slot-count"
+                           [(ngModel)]="s.carouselCount" [ngModelOptions]="{standalone: true}"
+                           title="Slides">
+                    <label class="toggle-story-c" title="Publicar também no Story">
+                      <input type="checkbox" [(ngModel)]="s.publishStory" [ngModelOptions]="{standalone: true}">
+                      <span>Story</span>
+                    </label>
+                    <button class="schedule-remove" (click)="removeSlot(i)" aria-label="Remover">×</button>
+                  </div>
+                  <p *ngIf="slotWarnings[i]" class="slot-warning">⚠️ {{ slotWarnings[i] }}</p>
+                </div>
+                <p *ngIf="!postConfigDraft.scheduleTimes.length" class="cfg-empty">
+                  Nenhuma postagem agendada ainda. Clique em <strong>+ Adicionar postagem</strong> para começar.
+                </p>
+              </div>
+            </div>
+
+            <div class="cfg-page__actions">
+              <button class="btn btn--outline" (click)="tab = 'overview'" [disabled]="postConfigSaving">← Voltar</button>
+              <button class="btn btn--spark" (click)="savePostConfig()" [disabled]="postConfigSaving">
+                {{ postConfigSaving ? 'Salvando...' : 'Salvar agenda →' }}
+              </button>
+            </div>
+            <p class="brand-edit-error" *ngIf="postConfigError">{{ postConfigError }}</p>
           </div>
         </div>
 
@@ -572,6 +584,43 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
   styles: [`
     :host { display: block; background: #050912; min-height: 100vh; }
     .hl-name { color: #fbbf24; font-weight: inherit; }
+    .app-nav__dot {
+      margin-left: auto; width: 8px; height: 8px; border-radius: 50%;
+      background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,.7);
+      animation: pulseDot 1.6s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: .55; transform: scale(.85); }
+      50%      { opacity: 1;   transform: scale(1.1); }
+    }
+
+    /* CONFIG PAGES (Brand / Schedule tabs) */
+    .cfg-page { display: flex; flex-direction: column; gap: 20px; max-width: 880px; }
+    .cfg-section {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 22px 24px;
+    }
+    .cfg-section__title { font-size: 16px; font-weight: 700; color: #fff; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+    .cfg-section__desc { font-size: 13px; color: #9ca3af; margin: 0 0 14px; line-height: 1.6; }
+    .cfg-section__desc strong { color: #fbbf24; font-weight: 600; }
+    .cfg-section__desc em { color: #e5e7eb; font-style: normal; font-weight: 600; }
+    .cfg-section__badge {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      background: rgba(255,255,255,.06); color: #9ca3af;
+      padding: 2px 8px; border-radius: 4px; letter-spacing: .04em;
+    }
+    .cfg-section__head {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .cfg-page__actions {
+      display: flex; justify-content: space-between; gap: 10px; padding-top: 8px;
+    }
+    .cfg-empty {
+      text-align: center; padding: 24px; color: #6b7280; font-size: 13px;
+      background: rgba(255,255,255,.02); border: 1px dashed rgba(255,255,255,.08); border-radius: 10px;
+    }
 
     /* TINDER-STYLE PROFILE COMPLETION BANNER */
     .profile-completion-banner {
@@ -1335,8 +1384,7 @@ export class ClientAppComponent implements OnInit {
     });
   }
 
-  // ─── Brand context (Tinder-style profile completion) ───────────
-  brandContextEditing = false;
+  // ─── Brand context (now lives in /brand tab) ───────────
   brandContextDraft = '';
   logoUrlDraft = '';
   brandContextSaving = false;
@@ -1353,23 +1401,22 @@ export class ClientAppComponent implements OnInit {
     return Math.min(pct, 100);
   }
 
-  startBrandContextEdit(): void {
-    // Pre-fill the draft with the current value, or with the hint as starter rascunho
+  openBrandTab(): void {
+    // Always rehydrate draft from current profile when entering the tab
     this.brandContextDraft = (this.profile?.brandContext && this.profile.brandContext.trim())
       ? this.profile.brandContext
       : (this.profile?.brandContextHint || '');
     this.logoUrlDraft = this.profile?.logoUrl || '';
-    this.brandContextEditing = true;
     this.brandContextError = '';
+    this.tab = 'brand';
   }
 
-  cancelBrandContextEdit(): void {
-    this.brandContextEditing = false;
-    this.brandContextError = '';
+  openScheduleTab(): void {
+    this.startPostConfigEdit();
+    this.tab = 'schedule';
   }
 
   // ─── Post Config (publish settings with plan limits) ────────
-  postConfigEditing = false;
   postConfigSaving = false;
   postConfigError = '';
   postConfigDraft: {
@@ -1414,14 +1461,8 @@ export class ClientAppComponent implements OnInit {
       fixedHashtags: this.profile?.fixedHashtags ?? '',
       watermarkComment: this.profile?.watermarkComment ?? '',
     };
-    this.postConfigEditing = true;
     this.postConfigError = '';
     this.recomputeSlotWarnings();
-  }
-
-  cancelPostConfig(): void {
-    this.postConfigEditing = false;
-    this.postConfigError = '';
   }
 
   addSlot(): void {
@@ -1472,11 +1513,11 @@ export class ClientAppComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.postConfigSaving = false;
-        this.postConfigEditing = false;
         if (this.profile) {
           this.profile = { ...this.profile, ...this.postConfigDraft };
         }
-        this.showNicheToast('Configuração de publicação salva! 📅');
+        this.showNicheToast('Agenda salva! 📅');
+        this.tab = 'overview';
       },
       error: (err) => {
         this.postConfigSaving = false;
@@ -1498,7 +1539,6 @@ export class ClientAppComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.brandContextSaving = false;
-        this.brandContextEditing = false;
         if (this.profile) {
           this.profile = {
             ...this.profile,
@@ -1508,6 +1548,7 @@ export class ClientAppComponent implements OnInit {
           };
         }
         this.showNicheToast('Perfil da marca salvo! ✨ Os próximos posts vão ficar com a sua cara.');
+        this.tab = 'overview';
       },
       error: (err) => {
         this.brandContextSaving = false;
