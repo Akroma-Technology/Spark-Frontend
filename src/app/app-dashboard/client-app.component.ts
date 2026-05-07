@@ -209,82 +209,52 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
           <div *ngIf="postConfigEditing" class="app-action app-action--brand-edit">
             <h3>📅 Configuração de publicação</h3>
             <p class="brand-edit-desc">
-              Defina quando e como a IA publica. Limites do seu plano <strong>{{ profile?.planTier }}</strong>:
-              até <strong>{{ profile?.maxPostsPerDay }}</strong> post(s) por dia.
+              Plano <strong class="hl-name">{{ profile?.planTier }}</strong> —
+              até <strong>{{ profile?.maxPostsPerDay }}</strong> post(s) por dia,
+              {{ canCarousel ? 'carrossel liberado' : 'sem carrossel (upgrade para Pro)' }}.
             </p>
 
+            <!-- Postagens agendadas (estilo admin) -->
             <div class="cfg-row">
-              <label class="brand-edit-label">📤 Posts por dia</label>
-              <div class="posts-per-day-row">
-                <button *ngFor="let n of allowedPostsPerDay" type="button"
-                        class="posts-pd-btn"
-                        [class.posts-pd-btn--on]="postConfigDraft.postsPerDay === n"
-                        (click)="postConfigDraft.postsPerDay = n; pruneSlotsAgainstLimits()">{{ n }}</button>
-              </div>
-            </div>
-
-            <div class="cfg-row">
-              <label class="brand-edit-label">📆 Dias ativos</label>
-              <div class="day-toggles">
-                <button *ngFor="let d of allDays" type="button"
-                        class="day-toggle"
-                        [class.day-toggle--on]="postConfigDraft.activeDays.includes(d.code)"
-                        (click)="toggleActiveDay(d.code)">{{ d.label }}</button>
-              </div>
-            </div>
-
-            <div class="cfg-row">
-              <label class="brand-edit-label">⏰ Horários
-                <span class="cfg-hint">(máx {{ postConfigDraft.postsPerDay }} por dia)</span>
+              <label class="brand-edit-label">📤 Postagens agendadas
+                <span class="cfg-hint">({{ postConfigDraft.scheduleTimes.length }} configurada{{ postConfigDraft.scheduleTimes.length !== 1 ? 's' : '' }})</span>
               </label>
-              <div class="schedule-list">
-                <div *ngFor="let s of postConfigDraft.scheduleTimes; let i = index" class="schedule-row">
-                  <input type="time" class="cfg-input cfg-input--sm" [(ngModel)]="s.time" [ngModelOptions]="{standalone: true}">
-                  <select class="cfg-input cfg-input--sm" [(ngModel)]="s.dayOfWeek" [ngModelOptions]="{standalone: true}">
-                    <option *ngFor="let d of allDays" [value]="d.code" [disabled]="!postConfigDraft.activeDays.includes(d.code)">{{ d.label }}</option>
-                  </select>
-                  <select class="cfg-input cfg-input--sm" [(ngModel)]="s.format" [ngModelOptions]="{standalone: true}">
-                    <option value="SINGLE">Single</option>
-                    <option value="CAROUSEL" [disabled]="profile?.planTier === 'STARTER'">Carrossel</option>
-                  </select>
-                  <button class="schedule-remove" (click)="removeSlot(i)" aria-label="Remover">×</button>
+              <div class="slots-list">
+                <div *ngFor="let s of postConfigDraft.scheduleTimes; let i = index" class="slot-card">
+                  <div class="slot-row">
+                    <select class="cfg-input slot-day" [(ngModel)]="s.dayOfWeek" [ngModelOptions]="{standalone: true}">
+                      <option *ngFor="let d of allDays" [value]="d.code">{{ d.fullLabel }}</option>
+                    </select>
+                    <span class="slot-sep">às</span>
+                    <input type="time" class="cfg-input slot-time" [(ngModel)]="s.time" [ngModelOptions]="{standalone: true}">
+                    <select class="cfg-input slot-format" [(ngModel)]="s.format" [ngModelOptions]="{standalone: true}">
+                      <option value="SINGLE">Imagem única</option>
+                      <option *ngIf="canCarousel" value="CAROUSEL">Carrossel</option>
+                    </select>
+                    <input *ngIf="s.format === 'CAROUSEL'"
+                           type="number" min="2" max="10"
+                           class="cfg-input slot-count"
+                           [(ngModel)]="s.carouselCount" [ngModelOptions]="{standalone: true}"
+                           title="Slides">
+                    <label class="toggle-story-c" title="Publicar também no Story">
+                      <input type="checkbox" [(ngModel)]="s.publishStory" [ngModelOptions]="{standalone: true}">
+                      <span>Story</span>
+                    </label>
+                    <button class="schedule-remove" (click)="removeSlot(i)" aria-label="Remover">×</button>
+                  </div>
+                  <p *ngIf="slotWarnings[i]" class="slot-warning">⚠️ {{ slotWarnings[i] }}</p>
                 </div>
-                <button class="btn btn--outline btn--sm" (click)="addSlot()" [disabled]="!canAddSlot()">+ Adicionar horário</button>
-                <p *ngIf="!canAddSlot()" class="cfg-warning">Você atingiu o limite de horários para os dias ativos.</p>
+                <button class="btn btn--outline btn--sm" (click)="addSlot()">+ Adicionar postagem</button>
+                <p *ngIf="!postConfigDraft.scheduleTimes.length" class="cfg-hint" style="text-align:center;padding:1rem;">
+                  Nenhuma postagem agendada. Clique em + Adicionar postagem para começar.
+                </p>
               </div>
-            </div>
-
-            <div class="cfg-row">
-              <label class="brand-edit-label">🚫 Tópicos a evitar
-                <span class="cfg-hint">(temas que a IA não deve abordar)</span>
-              </label>
-              <textarea class="brand-edit-textarea" rows="3" [(ngModel)]="postConfigDraft.negativeTopics"
-                        [ngModelOptions]="{standalone: true}"
-                        placeholder="Ex: política, comparações com concorrentes, conteúdo adulto"></textarea>
-            </div>
-
-            <div class="cfg-row">
-              <label class="brand-edit-label">💬 Comentário fixo (CTA)
-                <span class="cfg-hint">(postado como 1º comentário em cada post)</span>
-              </label>
-              <textarea class="brand-edit-textarea" rows="2" [(ngModel)]="postConfigDraft.watermarkComment"
-                        [ngModelOptions]="{standalone: true}"
-                        placeholder="Ex: Marca um amigo que precisa ver isso! Link na bio."></textarea>
-            </div>
-
-            <div class="cfg-row">
-              <label class="brand-edit-label"># Hashtags fixas
-                <span class="cfg-hint">(sempre incluídas em todo post)</span>
-              </label>
-              <textarea class="brand-edit-textarea" rows="2" [(ngModel)]="postConfigDraft.fixedHashtags"
-                        [ngModelOptions]="{standalone: true}"
-                        placeholder="#minhamarca #cidade #segmento"></textarea>
             </div>
 
             <div class="brand-edit-actions">
               <button class="btn btn--outline" (click)="cancelPostConfig()" [disabled]="postConfigSaving">Cancelar</button>
               <button class="btn btn--spark" (click)="savePostConfig()" [disabled]="postConfigSaving">
-                {{ postConfigSaving ? 'Salvando...' : 'Salvar configuração →' }}
+                {{ postConfigSaving ? 'Salvando...' : 'Salvar agenda →' }}
               </button>
             </div>
             <p class="brand-edit-error" *ngIf="postConfigError">{{ postConfigError }}</p>
@@ -721,18 +691,36 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
     .day-toggle:hover { border-color: rgba(251,191,36,.5); color: #fff; }
     .day-toggle--on { background: rgba(124,58,237,.18); border-color: rgba(124,58,237,.6); color: #c4b5fd; }
 
-    .schedule-list { display: flex; flex-direction: column; gap: 8px; }
-    .schedule-row {
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
-      border-radius: 10px; padding: 8px;
+    /* Slot cards (matches admin style) */
+    .slots-list { display: flex; flex-direction: column; gap: 10px; }
+    .slot-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .slot-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .slot-day { min-width: 130px; }
+    .slot-time { width: 110px; }
+    .slot-format { min-width: 140px; }
+    .slot-count { width: 64px; }
+    .slot-sep { color: #9ca3af; font-size: 13px; }
+    .toggle-story-c {
+      display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9ca3af; cursor: pointer;
     }
     .schedule-remove {
-      background: transparent; border: none; color: #f87171; cursor: pointer;
-      font-size: 18px; width: 28px; height: 28px; border-radius: 6px;
+      margin-left: auto;
+      background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25);
+      color: #f87171; cursor: pointer;
+      font-size: 16px; width: 30px; height: 30px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
     }
-    .schedule-remove:hover { background: rgba(239,68,68,.15); }
+    .schedule-remove:hover { background: rgba(239,68,68,.22); }
+    .slot-warning {
+      margin: 8px 0 0; font-size: 12px; color: #fbbf24;
+    }
 
 
     .app-shell {
@@ -1396,30 +1384,39 @@ export class ClientAppComponent implements OnInit {
     negativeTopics: '', fixedHashtags: '', watermarkComment: '',
   };
 
+  slotWarnings: Record<number, string> = {};
+
   readonly allDays = [
-    { code: 'MON', label: 'Seg' }, { code: 'TUE', label: 'Ter' }, { code: 'WED', label: 'Qua' },
-    { code: 'THU', label: 'Qui' }, { code: 'FRI', label: 'Sex' }, { code: 'SAT', label: 'Sáb' },
-    { code: 'SUN', label: 'Dom' },
+    { code: 'MON', label: 'Seg', fullLabel: 'Segunda' },
+    { code: 'TUE', label: 'Ter', fullLabel: 'Terça' },
+    { code: 'WED', label: 'Qua', fullLabel: 'Quarta' },
+    { code: 'THU', label: 'Qui', fullLabel: 'Quinta' },
+    { code: 'FRI', label: 'Sex', fullLabel: 'Sexta' },
+    { code: 'SAT', label: 'Sáb', fullLabel: 'Sábado' },
+    { code: 'SUN', label: 'Dom', fullLabel: 'Domingo' },
   ];
 
-  get allowedPostsPerDay(): number[] {
-    const max = this.profile?.maxPostsPerDay ?? 1;
-    const arr: number[] = [];
-    for (let i = 1; i <= max; i++) arr.push(i);
-    return arr;
+  get canCarousel(): boolean {
+    const tier = (this.profile?.planTier ?? 'STARTER').toUpperCase();
+    return tier === 'PRO' || tier === 'ENTERPRISE';
   }
 
   startPostConfigEdit(): void {
     this.postConfigDraft = {
-      postsPerDay: this.profile?.postsPerDay ?? 1,
+      postsPerDay: this.profile?.maxPostsPerDay ?? 1,
       activeDays: [...(this.profile?.activeDays ?? ['MON','TUE','WED','THU','FRI'])],
-      scheduleTimes: (this.profile?.scheduleTimes ?? []).map(s => ({ ...s })),
+      scheduleTimes: (this.profile?.scheduleTimes ?? []).map(s => ({
+        ...s,
+        // sanitize: if plan doesn't allow carousel, force SINGLE
+        format: (!this.canCarousel && s.format === 'CAROUSEL') ? 'SINGLE' : s.format,
+      })),
       negativeTopics: this.profile?.negativeTopics ?? '',
       fixedHashtags: this.profile?.fixedHashtags ?? '',
       watermarkComment: this.profile?.watermarkComment ?? '',
     };
     this.postConfigEditing = true;
     this.postConfigError = '';
+    this.recomputeSlotWarnings();
   }
 
   cancelPostConfig(): void {
@@ -1427,55 +1424,45 @@ export class ClientAppComponent implements OnInit {
     this.postConfigError = '';
   }
 
-  toggleActiveDay(code: string): void {
-    const idx = this.postConfigDraft.activeDays.indexOf(code);
-    if (idx >= 0) {
-      this.postConfigDraft.activeDays.splice(idx, 1);
-      // remove slots scheduled on this day
-      this.postConfigDraft.scheduleTimes = this.postConfigDraft.scheduleTimes.filter(s => s.dayOfWeek !== code);
-    } else {
-      this.postConfigDraft.activeDays.push(code);
-    }
-  }
-
-  pruneSlotsAgainstLimits(): void {
-    // Keep at most postsPerDay slots per day
-    const counts: Record<string, number> = {};
-    this.postConfigDraft.scheduleTimes = this.postConfigDraft.scheduleTimes.filter(s => {
-      counts[s.dayOfWeek] = (counts[s.dayOfWeek] || 0) + 1;
-      return counts[s.dayOfWeek] <= this.postConfigDraft.postsPerDay;
-    });
-  }
-
-  canAddSlot(): boolean {
-    if (this.postConfigDraft.activeDays.length === 0) return false;
-    // At least one active day must still have capacity
-    const counts: Record<string, number> = {};
-    this.postConfigDraft.scheduleTimes.forEach(s => { counts[s.dayOfWeek] = (counts[s.dayOfWeek] || 0) + 1; });
-    return this.postConfigDraft.activeDays.some(d => (counts[d] || 0) < this.postConfigDraft.postsPerDay);
-  }
-
   addSlot(): void {
-    if (!this.canAddSlot()) return;
-    // Find first active day with capacity
-    const counts: Record<string, number> = {};
-    this.postConfigDraft.scheduleTimes.forEach(s => { counts[s.dayOfWeek] = (counts[s.dayOfWeek] || 0) + 1; });
-    const targetDay = this.postConfigDraft.activeDays.find(d => (counts[d] || 0) < this.postConfigDraft.postsPerDay)
-      || this.postConfigDraft.activeDays[0];
-    const isStarter = (this.profile?.planTier ?? 'STARTER') === 'STARTER';
     this.postConfigDraft.scheduleTimes.push({
-      time: '09:00', dayOfWeek: targetDay,
-      format: isStarter ? 'SINGLE' : 'SINGLE',
-      carouselCount: 3, publishStory: false,
+      time: '09:00',
+      dayOfWeek: 'MON',
+      format: 'SINGLE',
+      carouselCount: 3,
+      publishStory: false,
     });
+    this.recomputeSlotWarnings();
   }
 
   removeSlot(idx: number): void {
     this.postConfigDraft.scheduleTimes.splice(idx, 1);
+    this.recomputeSlotWarnings();
+  }
+
+  recomputeSlotWarnings(): void {
+    const max = this.profile?.maxPostsPerDay ?? 1;
+    this.slotWarnings = {};
+    const counts: Record<string, number> = {};
+    this.postConfigDraft.scheduleTimes.forEach((s, i) => {
+      counts[s.dayOfWeek] = (counts[s.dayOfWeek] || 0) + 1;
+      if (counts[s.dayOfWeek] > max) {
+        this.slotWarnings[i] = `Excede o limite de ${max} post(s) por dia do seu plano (${this.profile?.planTier}).`;
+      }
+    });
   }
 
   savePostConfig(): void {
     if (this.postConfigSaving) return;
+    this.recomputeSlotWarnings();
+    if (Object.keys(this.slotWarnings).length > 0) {
+      this.postConfigError = 'Resolva os horários em conflito antes de salvar.';
+      return;
+    }
+    // Derive activeDays from the slots themselves
+    const usedDays = new Set(this.postConfigDraft.scheduleTimes.map(s => s.dayOfWeek));
+    this.postConfigDraft.activeDays = Array.from(usedDays);
+
     this.postConfigSaving = true;
     this.postConfigError = '';
     const headers = this.auth.authHeaders();
