@@ -27,6 +27,8 @@ interface ClientProfile {
   instagramConnected?: boolean;
   instagramUsername?: string;
   instagramTokenExpiresAt?: string;
+  facebookPageId?: string;
+  facebookPageName?: string;
   brandContext?: string;
   brandContextHint?: string;
   brandContextNeedsAttention?: boolean;
@@ -34,6 +36,7 @@ interface ClientProfile {
   // Plan + post config
   planTier?: string;
   maxPostsPerDay?: number;
+  facebookEnabled?: boolean;
   postsPerDay?: number;
   activeDays?: string[];
   scheduleTimes?: PostSlot[];
@@ -52,6 +55,7 @@ interface PostSlot {
   carouselCount?: number;
   publishStory?: boolean;
   searchTopic?: string | null;
+  networks?: string[];
 }
 
 const NICHE_OPTIONS: { value: string; label: string; emoji: string }[] = [
@@ -210,9 +214,23 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
               <h3>{{ profile?.instagramConnected ? 'Instagram conectado' : 'Conecte seu Instagram' }}</h3>
 
               <!-- Connected state -->
-              <p *ngIf="profile?.instagramConnected">
-                Conta <strong>&#64;{{ profile?.instagramUsername }}</strong> autorizada. A IA pode publicar automaticamente.
-              </p>
+              <div *ngIf="profile?.instagramConnected" class="connected-networks">
+                <div class="connected-network-row">
+                  <span class="network-badge network-badge--ig">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                    Instagram
+                  </span>
+                  <strong>&#64;{{ profile?.instagramUsername }}</strong>
+                </div>
+                <div class="connected-network-row" *ngIf="profile?.facebookPageName">
+                  <span class="network-badge network-badge--fb">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    Facebook
+                  </span>
+                  <strong>{{ profile?.facebookPageName }}</strong>
+                </div>
+                <p class="connected-networks__hint">A IA pode publicar automaticamente nessas redes.</p>
+              </div>
 
               <!-- Not connected: show requirements checklist -->
               <ng-container *ngIf="!profile?.instagramConnected">
@@ -470,6 +488,42 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     </label>
                     <button class="schedule-remove" (click)="removeSlot(i)" aria-label="Remover">×</button>
                   </div>
+
+                  <!-- Network selector (Instagram / Facebook / Ambas) -->
+                  <div class="slot-network-row">
+                    <span class="slot-network-label">Publicar em:</span>
+                    <!-- Instagram: always available -->
+                    <button type="button" class="slot-net-btn"
+                            [class.slot-net-btn--ig]="slotHasNetwork(s, 'instagram')"
+                            (click)="setSlotNetwork(s, 'instagram')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                      Instagram
+                    </button>
+                    <!-- Facebook: Pro+ only -->
+                    <div class="slot-net-wrapper" [title]="!profile?.facebookEnabled ? 'Disponível no plano Pro ou superior' : ''">
+                      <button type="button" class="slot-net-btn"
+                              [class.slot-net-btn--fb]="slotHasNetwork(s, 'facebook')"
+                              [class.slot-net-btn--locked]="!profile?.facebookEnabled"
+                              [disabled]="!profile?.facebookEnabled"
+                              (click)="profile?.facebookEnabled && setSlotNetwork(s, 'facebook')">
+                        <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                        Facebook
+                        <span *ngIf="!profile?.facebookEnabled" class="slot-net-lock">🔒</span>
+                      </button>
+                    </div>
+                    <!-- Ambas: Pro+ only -->
+                    <div class="slot-net-wrapper" [title]="!profile?.facebookEnabled ? 'Disponível no plano Pro ou superior' : ''">
+                      <button type="button" class="slot-net-btn"
+                              [class.slot-net-btn--both]="slotHasNetwork(s, 'both')"
+                              [class.slot-net-btn--locked]="!profile?.facebookEnabled"
+                              [disabled]="!profile?.facebookEnabled"
+                              (click)="profile?.facebookEnabled && setSlotNetwork(s, 'both')">
+                        Ambas
+                        <span *ngIf="!profile?.facebookEnabled" class="slot-net-lock">🔒</span>
+                      </button>
+                    </div>
+                  </div>
+
                   <div class="slot-topic-row">
                     <input class="cfg-input slot-topic"
                            type="text"
@@ -1386,6 +1440,57 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     }
     .app-cancel-btn--confirm:hover:not(:disabled) { background: rgba(239,68,68,0.3); }
     .app-cancel-btn--confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Connected networks (Instagram + Facebook) */
+    .connected-networks { margin: 0 0 16px; }
+    .connected-network-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .connected-network-row strong { font-size: 13px; color: #fff; }
+    .connected-networks__hint { font-size: 12px; color: #6b7280; margin: 6px 0 0; }
+    .network-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; letter-spacing: .4px;
+      padding: 3px 9px; border-radius: 6px;
+    }
+    .network-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .network-badge--ig {
+      background: rgba(225,48,108,.12); color: #e1306c; border: 1px solid rgba(225,48,108,.25);
+    }
+    .network-badge--fb {
+      background: rgba(24,119,242,.12); color: #4e9af1; border: 1px solid rgba(24,119,242,.25);
+    }
+
+    /* Slot network selector */
+    .slot-network-row {
+      display: flex; align-items: center; gap: 6px; margin: 8px 0 0; flex-wrap: wrap;
+    }
+    .slot-network-label { font-size: 11px; color: #6b7280; font-weight: 600; margin-right: 2px; }
+    .slot-net-wrapper { position: relative; }
+    .slot-net-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 7px; font-size: 12px; font-weight: 600;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+      color: #9ca3af; cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .slot-net-btn:hover:not(:disabled):not(.slot-net-btn--locked) {
+      border-color: rgba(255,255,255,.25); color: #fff;
+    }
+    .slot-net-btn--ig {
+      background: rgba(225,48,108,.14); border-color: rgba(225,48,108,.45); color: #e1306c;
+    }
+    .slot-net-btn--fb {
+      background: rgba(24,119,242,.14); border-color: rgba(24,119,242,.45); color: #4e9af1;
+    }
+    .slot-net-btn--both {
+      background: rgba(251,191,36,.12); border-color: rgba(251,191,36,.45); color: #fbbf24;
+    }
+    .slot-net-btn--locked {
+      opacity: .45; cursor: not-allowed;
+    }
+    .slot-net-lock { font-size: 10px; margin-left: 2px; }
+
+    .btn--sm { padding: 7px 14px; font-size: 12px; }
   `]
 })
 export class ClientAppComponent implements OnInit {
@@ -1868,6 +1973,10 @@ export class ClientAppComponent implements OnInit {
         ...s,
         // sanitize: if plan doesn't allow carousel, force SINGLE
         format: (!this.canCarousel && s.format === 'CAROUSEL') ? 'SINGLE' : s.format,
+        // sanitize: if facebook not enabled on this plan, force instagram only
+        networks: !this.profile?.facebookEnabled
+          ? ['instagram']
+          : (s.networks ?? ['instagram']),
       })),
       negativeTopics: this.profile?.negativeTopics ?? '',
       fixedHashtags: this.profile?.fixedHashtags ?? '',
@@ -1879,6 +1988,10 @@ export class ClientAppComponent implements OnInit {
 
   addSlot(): void {
     const defaultTopic = this.profile?.searchDescription || null;
+    // Default: publish to both networks if facebook is enabled, else instagram only
+    const defaultNetworks = this.profile?.facebookEnabled
+      ? ['instagram', 'facebook']
+      : ['instagram'];
     this.postConfigDraft.scheduleTimes.push({
       time: '09:00',
       dayOfWeek: 'MON',
@@ -1886,8 +1999,25 @@ export class ClientAppComponent implements OnInit {
       carouselCount: 3,
       publishStory: false,
       searchTopic: defaultTopic,
+      networks: defaultNetworks,
     });
     this.recomputeSlotWarnings();
+  }
+
+  /** Returns which network key is "active" for the slot: 'instagram', 'facebook', or 'both' */
+  slotHasNetwork(slot: PostSlot, key: 'instagram' | 'facebook' | 'both'): boolean {
+    const nets = slot.networks ?? ['instagram'];
+    if (key === 'both') return nets.includes('instagram') && nets.includes('facebook');
+    if (key === 'instagram') return nets.includes('instagram') && !nets.includes('facebook');
+    if (key === 'facebook') return nets.includes('facebook') && !nets.includes('instagram');
+    return false;
+  }
+
+  /** Toggle/set the network selection for a slot */
+  setSlotNetwork(slot: PostSlot, key: 'instagram' | 'facebook' | 'both'): void {
+    if (key === 'instagram') slot.networks = ['instagram'];
+    else if (key === 'facebook') slot.networks = ['facebook'];
+    else slot.networks = ['instagram', 'facebook'];
   }
 
   removeSlot(idx: number): void {
