@@ -174,7 +174,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
             </div>
             <div class="app-stat">
               <span class="app-stat__label">Indicados</span>
-              <span class="app-stat__value">{{ referralStats?.totalPaidReferrals ?? '—' }}</span>
+              <span class="app-stat__value">{{ referralStats?.totalPaidReferrals ?? 0 }}</span>
               <span class="app-stat__hint">{{ (referralStats?.creditMonths ?? 0) > 0 ? (referralStats!.creditMonths + ' mes gratis') : 'Amigos que pagaram' }}</span>
             </div>
           </div>
@@ -1483,13 +1483,13 @@ export class ClientAppComponent implements OnInit {
 
     if (r.includes('no facebook pages') || r.includes('no facebook page')) {
       return {
-        title: 'Nenhuma Pagina do Facebook encontrada',
-        what: 'Sua conta do Facebook nao tem nenhuma Pagina criada. O Instagram Business precisa estar vinculado a uma Pagina (nao a um perfil pessoal).',
+        title: 'Pagina do Facebook nao autorizada',
+        what: 'O Facebook nao retornou nenhuma Pagina com acesso liberado. Isso acontece quando: (1) durante o login voce nao autorizou acesso a sua Pagina, ou (2) sua Pagina ainda nao tem uma conta Instagram vinculada.',
         steps: [
-          'Acesse facebook.com e crie uma Pagina do Facebook (ex: pagina da sua empresa)',
-          'No Instagram, va em Configuracoes → Conta → "Mudar para conta profissional" → escolha Business ou Creator',
-          'Ainda no Instagram, va em Configuracoes → Conta → "Conta vinculada" → vincule sua Pagina do Facebook',
+          'Na sua Pagina do Facebook, va em Configuracoes → Contas vinculadas → Instagram',
+          'Vincule sua conta Instagram Business ou Creator a Pagina',
           'Volte aqui e clique em "Conectar Instagram" novamente',
+          'Na tela do Facebook, certifique-se de clicar em "Continuar como..." e confirmar o acesso a Pagina',
         ],
       };
     }
@@ -1497,10 +1497,11 @@ export class ClientAppComponent implements OnInit {
     if (r.includes('no linked instagram') || r.includes('no instagram') || r.includes('not_business') || r.includes('instagram_business_account')) {
       return {
         title: 'Instagram nao vinculado a Pagina do Facebook',
-        what: 'Sua Pagina do Facebook existe, mas nao tem uma conta Instagram Business vinculada a ela.',
+        what: 'Sua Pagina do Facebook foi encontrada, mas ela nao tem nenhuma conta Instagram Business vinculada. Sem essa vinculacao a publicacao automatica nao funciona.',
         steps: [
-          'No Instagram, va em Configuracoes → Conta → "Mudar para conta profissional" → escolha Business ou Creator',
-          'Ainda no Instagram, va em Configuracoes → Conta → "Conta vinculada" → selecione sua Pagina do Facebook',
+          'Na sua Pagina do Facebook, va em Configuracoes → Contas vinculadas → Instagram',
+          'Clique em "Adicionar conta do Instagram" e faca o login',
+          'Certifique-se que a conta Instagram e do tipo Business ou Creator (nao pessoal)',
           'Volte aqui e clique em "Conectar Instagram" novamente',
         ],
       };
