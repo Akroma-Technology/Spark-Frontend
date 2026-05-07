@@ -148,6 +148,9 @@ export class EntrarComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {
           this.error = 'E-mail ou senha incorretos.';
+        } else if (err.status === 403 && err.error?.detail === 'email_not_verified') {
+          this.router.navigate(['/cadastro'], { queryParams: { email, verify: '1' } });
+          return;
         } else if (err.status === 0) {
           this.error = 'Sem conexao com o servidor. Verifique sua internet.';
         } else {

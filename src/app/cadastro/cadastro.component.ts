@@ -309,6 +309,14 @@ export class CadastroComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Redirect from login when email is not yet verified
+    const emailParam = this.route.snapshot.queryParamMap.get('email');
+    const verifyParam = this.route.snapshot.queryParamMap.get('verify');
+    if (emailParam && verifyParam === '1') {
+      this.pendingEmail = emailParam;
+      this.auth.resendCode(emailParam).subscribe();
+    }
+
     const ref = this.route.snapshot.queryParamMap.get('ref') ?? '';
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
