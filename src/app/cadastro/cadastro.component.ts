@@ -79,7 +79,7 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
 
           <div class="signup-field">
             <label for="whatsapp">WhatsApp <span class="signup-field__opt">(opcional)</span></label>
-            <input id="whatsapp" type="tel" formControlName="whatsapp" autocomplete="tel" placeholder="(11) 9 9999-9999" (input)="maskWhatsapp($event)" maxlength="16" />
+            <input id="whatsapp" type="tel" formControlName="whatsapp" autocomplete="tel" placeholder="(11) 9 9999-9999" maxlength="16" />
           </div>
 
           <div class="signup-field">
@@ -321,6 +321,18 @@ export class CadastroComponent implements OnInit, OnDestroy {
     this.codeForm = this.fb.group({
       code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern(/^\d{6}$/)]]
     });
+
+    // Phone mask: (xx) x xxxx-xxxx
+    this.form.get('whatsapp')?.valueChanges.subscribe(val => {
+      if (!val) return;
+      const d = String(val).replace(/\D/g, '').slice(0, 11);
+      let m = '';
+      if (d.length > 0) m  = '(' + d.slice(0, 2);
+      if (d.length >= 3) m += ') ' + d.slice(2, 3);
+      if (d.length >= 4) m += ' ' + d.slice(3, 7);
+      if (d.length >= 8) m += '-' + d.slice(7, 11);
+      if (m !== val) this.form.get('whatsapp')?.setValue(m, { emitEvent: false });
+    });
   }
 
   ngOnDestroy(): void {
@@ -388,18 +400,6 @@ export class CadastroComponent implements OnInit, OnDestroy {
         // Silent fail — don't expose info
       }
     });
-  }
-
-  maskWhatsapp(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    let v = input.value.replace(/\D/g, '').slice(0, 11);
-    let masked = '';
-    if (v.length > 0)  masked  = '(' + v.slice(0, 2);
-    if (v.length >= 3)  masked += ') ' + v.slice(2, 3);
-    if (v.length >= 4)  masked += ' ' + v.slice(3, 7);
-    if (v.length >= 8)  masked += '-' + v.slice(7, 11);
-    input.value = masked;
-    this.form.get('whatsapp')?.setValue(masked, { emitEvent: false });
   }
 
   hasError(field: string): boolean {
