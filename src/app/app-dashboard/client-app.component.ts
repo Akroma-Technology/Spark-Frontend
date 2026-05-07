@@ -8,7 +8,7 @@ import { SeoService } from '../core/services/seo.service';
 import { environment } from '../../environments/environment';
 
 interface ReferralStats {
-  referralCode: string;
+  referralCode: string | null;
   totalPaidReferrals: number;
   creditMonths: number;
   referralsToNextMonth: number;
@@ -36,6 +36,7 @@ interface ClientProfile {
   watermarkComment?: string;
   imageStyle?: string;
   imageStyleTemplateDefault?: string;
+  searchDescription?: string;
 }
 
 interface PostSlot {
@@ -44,6 +45,7 @@ interface PostSlot {
   format: 'SINGLE' | 'CAROUSEL';
   carouselCount?: number;
   publishStory?: boolean;
+  searchTopic?: string | null;
 }
 
 const NICHE_OPTIONS: { value: string; label: string; emoji: string }[] = [
@@ -348,7 +350,26 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
         </div>
 
         <!-- SCHEDULE TAB -->
-        <div *ngIf="tab === 'schedule'">
+        <div *ngIf="tab === 'schedule'" class="schedule-wrap" [class.schedule-wrap--locked]="!profile?.instagramConnected">
+          <!-- Lock overlay (only when Instagram NOT connected) -->
+          <div class="schedule-lock" *ngIf="!profile?.instagramConnected">
+            <div class="schedule-lock__card">
+              <div class="schedule-lock__icon">🔒</div>
+              <h2>Conecte seu Instagram primeiro</h2>
+              <p>
+                Antes de configurar a agenda, autorize o Akroma Spark a publicar
+                no seu Instagram. Sem essa conexão, a IA não consegue postar.
+              </p>
+              <button class="btn btn--spark" (click)="tab = 'overview'">
+                ← Ir para a tela inicial e conectar
+              </button>
+              <p class="schedule-lock__hint">
+                Você precisa de uma conta Instagram <strong>Business</strong> ou
+                <strong>Creator</strong> vinculada a uma Página do Facebook.
+              </p>
+            </div>
+          </div>
+
           <header class="app-page-header">
             <h1>📅 Agenda de publicação</h1>
             <p>
@@ -389,6 +410,12 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                       <span>Story</span>
                     </label>
                     <button class="schedule-remove" (click)="removeSlot(i)" aria-label="Remover">×</button>
+                  </div>
+                  <div class="slot-topic-row">
+                    <input class="cfg-input slot-topic"
+                           type="text"
+                           [(ngModel)]="s.searchTopic" [ngModelOptions]="{standalone: true}"
+                           [placeholder]="'Tema do post (padrão: ' + (profile?.searchDescription || 'descrição do nicho') + ')'">
                   </div>
                   <p *ngIf="slotWarnings[i]" class="slot-warning">⚠️ {{ slotWarnings[i] }}</p>
                 </div>
@@ -431,17 +458,30 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
           <div class="app-referral-card">
             <span class="app-referral-card__label">SEU CODIGO</span>
-            <div class="app-referral-card__code">
-              <strong>{{ referralStats?.referralCode || client.referralCode || '—' }}</strong>
-              <button type="button" class="app-copy-btn" (click)="copyCode()">
-                <svg *ngIf="!copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                <svg *ngIf="copied" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>{{ copied ? 'Copiado!' : 'Copiar' }}</span>
+
+            <!-- No code yet: show generate button -->
+            <ng-container *ngIf="!(referralStats?.referralCode || client.referralCode)">
+              <p class="app-referral-card__hint">Voce ainda nao tem um codigo de indicacao.</p>
+              <button type="button" class="btn btn--spark" (click)="generateReferralCode()" [disabled]="generatingCode">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 5v14M5 12h14"/></svg>
+                {{ generatingCode ? 'Gerando...' : 'Gerar meu codigo' }}
               </button>
-            </div>
-            <div class="app-referral-card__share">
-              <span>Compartilhe: <code>spark.akroma.com.br/cadastro?ref={{ referralStats?.referralCode || client.referralCode }}</code></span>
-            </div>
+            </ng-container>
+
+            <!-- Has code: show it with copy button -->
+            <ng-container *ngIf="referralStats?.referralCode || client.referralCode">
+              <div class="app-referral-card__code">
+                <strong>{{ referralStats?.referralCode || client.referralCode }}</strong>
+                <button type="button" class="app-copy-btn" (click)="copyCode()">
+                  <svg *ngIf="!copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <svg *ngIf="copied" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>{{ copied ? 'Copiado!' : 'Copiar' }}</span>
+                </button>
+              </div>
+              <div class="app-referral-card__share">
+                <span>Compartilhe: <code>spark.akroma.com.br/cadastro?ref={{ referralStats?.referralCode || client.referralCode }}</code></span>
+              </div>
+            </ng-container>
           </div>
 
           <div class="app-stats">
@@ -794,6 +834,67 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .day-toggle:hover { border-color: rgba(251,191,36,.5); color: #fff; }
     .day-toggle--on { background: rgba(124,58,237,.18); border-color: rgba(124,58,237,.6); color: #c4b5fd; }
 
+    /* Schedule lock overlay (when Instagram not connected) */
+    .schedule-wrap { position: relative; }
+    .schedule-wrap--locked > :not(.schedule-lock) {
+      filter: blur(6px);
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.55;
+    }
+    .schedule-lock {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(10,10,15,.55), rgba(10,10,15,.85));
+      backdrop-filter: blur(2px);
+      border-radius: 16px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .schedule-lock__card {
+      max-width: 480px;
+      width: 100%;
+      background: rgba(15,15,20,.95);
+      border: 1px solid rgba(251,191,36,.35);
+      border-radius: 14px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .schedule-lock__icon {
+      font-size: 42px;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 4px 12px rgba(251,191,36,.4));
+    }
+    .schedule-lock__card h2 {
+      margin: 0 0 12px;
+      font-size: 22px;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+    .schedule-lock__card p {
+      margin: 0 0 20px;
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .schedule-lock__hint {
+      margin-top: 18px !important;
+      font-size: 12px !important;
+      color: #94a3b8 !important;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .schedule-lock__hint strong { color: #fbbf24; }
+
     /* Slot cards (matches admin style) */
     .slots-list { display: flex; flex-direction: column; gap: 10px; }
     .slot-card {
@@ -810,6 +911,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .slot-format { min-width: 140px; }
     .slot-count { width: 64px; }
     .slot-sep { color: #9ca3af; font-size: 13px; }
+    .slot-topic-row { margin-top: 8px; }
+    .slot-topic { width: 100%; font-size: 13px; }
     .toggle-story-c {
       display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9ca3af; cursor: pointer;
     }
@@ -1039,6 +1142,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px;
       font-size: 12px; color: #fbbf24;
     }
+    .app-referral-card__hint { font-size: 14px; color: #9ca3af; margin: 0 0 16px; }
 
     /* Plan */
     .app-plan-card {
@@ -1251,13 +1355,37 @@ export class ClientAppComponent implements OnInit {
       instagramUsername: this.client.instagramUsername
     };
 
+    // Always load full profile from API (includes imageStyle, brandContext, etc.)
+    this.loadProfile();
+
     // After Instagram OAuth callback, handle success or error
     const igParam = this.route.snapshot.queryParamMap.get('ig');
     if (igParam === 'connected') {
       this.loadProfile();
     } else if (igParam === 'error') {
-      this.igConnectError = 'Autorização negada ou cancelada. Tente novamente.';
+      const reason = this.route.snapshot.queryParamMap.get('ig_reason') || '';
+      this.igConnectError = this.translateIgError(reason);
     }
+  }
+
+  private translateIgError(reason: string): string {
+    const r = (reason || '').toLowerCase();
+    if (r.includes('no facebook pages') || r.includes('no facebook page')) {
+      return 'Sua conta Instagram precisa ser do tipo Business/Creator E estar vinculada a uma Página do Facebook. Acesse as configurações do Instagram → "Conta" → "Mudar para conta profissional", e depois conecte a uma Página do Facebook.';
+    }
+    if (r.includes('no instagram') || r.includes('not_business')) {
+      return 'Sua Página do Facebook não tem uma conta Instagram Business vinculada. Conecte uma conta Instagram Business à sua Página primeiro.';
+    }
+    if (r.includes('access_denied') || r.includes('user_cancelled')) {
+      return 'Autorização negada. Você precisa aceitar as permissões para que a IA possa publicar.';
+    }
+    if (r.includes('invalid_state') || r.includes('missing_code')) {
+      return 'Sessão expirada. Tente conectar novamente.';
+    }
+    if (r) {
+      return `Erro na conexão com Instagram: ${reason}. Tente novamente ou contate o suporte.`;
+    }
+    return 'Autorização negada ou cancelada. Tente novamente.';
   }
 
   get trialActive(): boolean {
@@ -1271,21 +1399,36 @@ export class ClientAppComponent implements OnInit {
     return ms > 0 ? Math.floor(ms / (1000 * 60 * 60 * 24)) : 0;
   }
 
+  generatingCode = false;
+
   loadReferralStats(): void {
     if (!this.client) return;
     if (this.referralStats) return; // cached
-    this.http.get<ReferralStats>(`${environment.apiUrl}/api/v1/referral/stats/${this.client.clientId}`).subscribe({
+    const headers = this.auth.authHeaders();
+    this.http.get<ReferralStats>(`${environment.apiUrl}/api/v1/client/referral-stats`, { headers }).subscribe({
       next: (stats) => this.referralStats = stats,
       error: () => {
-        if (this.client?.referralCode) {
-          this.referralStats = {
-            referralCode: this.client.referralCode,
-            totalPaidReferrals: 0,
-            creditMonths: 0,
-            referralsToNextMonth: 4
-          };
-        }
+        // Fallback: build minimal stats from JWT token info
+        this.referralStats = {
+          referralCode: this.client?.referralCode || null,
+          totalPaidReferrals: 0,
+          creditMonths: 0,
+          referralsToNextMonth: 4
+        };
       }
+    });
+  }
+
+  generateReferralCode(): void {
+    if (this.generatingCode) return;
+    this.generatingCode = true;
+    const headers = this.auth.authHeaders();
+    this.http.post<ReferralStats>(`${environment.apiUrl}/api/v1/client/referral-code/generate`, {}, { headers }).subscribe({
+      next: (stats) => {
+        this.referralStats = stats;
+        this.generatingCode = false;
+      },
+      error: () => { this.generatingCode = false; }
     });
   }
 
@@ -1459,17 +1602,34 @@ export class ClientAppComponent implements OnInit {
   }
 
   openBrandTab(): void {
-    // Always rehydrate draft from current profile when entering the tab
-    this.brandContextDraft = (this.profile?.brandContext && this.profile.brandContext.trim())
-      ? this.profile.brandContext
-      : (this.profile?.brandContextHint || '');
-    this.logoUrlDraft = this.profile?.logoUrl || '';
-    this.imageStyleDraft = (this.profile?.imageStyle && this.profile.imageStyle.trim())
-      ? this.profile.imageStyle
-      : (this.profile?.imageStyleTemplateDefault || '');
+    this.tab = 'brand';
     this.brandContextError = '';
     this.confirmResetImageStyle = false;
-    this.tab = 'brand';
+
+    // Always fetch fresh data from the API to avoid stale-profile race conditions
+    const headers = this.auth.authHeaders();
+    this.http.get<ClientProfile>(`${environment.apiUrl}/api/v1/client/me`, { headers }).subscribe({
+      next: (p) => {
+        this.profile = { ...this.profile, ...p };
+        this.brandContextDraft = (p.brandContext && p.brandContext.trim())
+          ? p.brandContext
+          : (p.brandContextHint || '');
+        this.logoUrlDraft = p.logoUrl || '';
+        this.imageStyleDraft = (p.imageStyle && p.imageStyle.trim())
+          ? p.imageStyle
+          : (p.imageStyleTemplateDefault || '');
+      },
+      error: () => {
+        // Fallback to cached profile values if API call fails
+        this.brandContextDraft = (this.profile?.brandContext && this.profile.brandContext.trim())
+          ? this.profile.brandContext
+          : (this.profile?.brandContextHint || '');
+        this.logoUrlDraft = this.profile?.logoUrl || '';
+        this.imageStyleDraft = (this.profile?.imageStyle && this.profile.imageStyle.trim())
+          ? this.profile.imageStyle
+          : (this.profile?.imageStyleTemplateDefault || '');
+      }
+    });
   }
 
   doResetImageStyle(): void {
@@ -1548,12 +1708,14 @@ export class ClientAppComponent implements OnInit {
   }
 
   addSlot(): void {
+    const defaultTopic = this.profile?.searchDescription || null;
     this.postConfigDraft.scheduleTimes.push({
       time: '09:00',
       dayOfWeek: 'MON',
       format: 'SINGLE',
       carouselCount: 3,
       publishStory: false,
+      searchTopic: defaultTopic,
     });
     this.recomputeSlotWarnings();
   }
