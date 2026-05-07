@@ -216,24 +216,35 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
               <!-- Not connected: show requirements checklist -->
               <ng-container *ngIf="!profile?.instagramConnected">
-                <p style="margin-bottom:12px">Para a IA publicar no seu Instagram, voce precisa ter:</p>
                 <ul class="app-ig-requirements">
                   <li>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Uma <strong>Pagina do Facebook</strong> (nao perfil pessoal)
+                    <span class="app-ig-req__icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <span class="app-ig-req__text">
+                      <strong>Pagina do Facebook criada</strong>
+                      <span>nao pode ser perfil pessoal</span>
+                    </span>
                   </li>
                   <li>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Conta Instagram no tipo <strong>Business ou Creator</strong>
+                    <span class="app-ig-req__icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <span class="app-ig-req__text">
+                      <strong>Instagram Business ou Creator</strong>
+                      <span>conta pessoal nao funciona</span>
+                    </span>
                   </li>
                   <li>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Instagram <strong>vinculado a essa Pagina do Facebook</strong>
+                    <span class="app-ig-req__icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <span class="app-ig-req__text">
+                      <strong>Instagram vinculado a Pagina do Facebook</strong>
+                      <span>Instagram → Configuracoes → Conta → Conta vinculada</span>
+                    </span>
                   </li>
                 </ul>
-                <p class="app-ig-requirements__note">
-                  No Instagram: Configuracoes → Conta → "Mudar para conta profissional" → vincule sua Pagina do Facebook.
-                </p>
               </ng-container>
 
               <button *ngIf="!profile?.instagramConnected" type="button"
@@ -1099,21 +1110,23 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
     /* Instagram requirements checklist */
     .app-ig-requirements {
-      list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 8px;
+      list-style: none; padding: 0; margin: 0 0 16px;
+      display: flex; flex-direction: column; gap: 10px;
     }
     .app-ig-requirements li {
-      display: flex; align-items: flex-start; gap: 8px;
-      font-size: 13px; color: #d1d5db; line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 10px;
     }
-    .app-ig-requirements li svg {
-      width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; stroke: #22c55e;
+    .app-ig-req__icon {
+      flex-shrink: 0; width: 20px; height: 20px; margin-top: 1px;
+      background: rgba(34,197,94,0.12); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
     }
-    .app-ig-requirements li strong { color: #fff; }
-    .app-ig-requirements__note {
-      font-size: 11px !important; color: #6b7280 !important; margin: 0 0 16px !important;
-      padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 8px;
-      border-left: 2px solid rgba(251,191,36,0.3);
+    .app-ig-req__icon svg { width: 11px; height: 11px; stroke: #22c55e; }
+    .app-ig-req__text {
+      display: flex; flex-direction: column; gap: 2px;
     }
+    .app-ig-req__text strong { font-size: 13px; color: #f3f4f6; font-weight: 600; line-height: 1.3; }
+    .app-ig-req__text span { font-size: 11px; color: #6b7280; line-height: 1.3; }
 
     /* Instagram error modal */
     .app-modal-overlay {
