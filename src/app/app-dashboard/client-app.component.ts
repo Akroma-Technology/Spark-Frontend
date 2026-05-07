@@ -34,6 +34,8 @@ interface ClientProfile {
   negativeTopics?: string;
   fixedHashtags?: string;
   watermarkComment?: string;
+  imageStyle?: string;
+  imageStyleTemplateDefault?: string;
 }
 
 interface PostSlot {
@@ -301,6 +303,38 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
               <input class="brand-edit-input" type="url"
                      [(ngModel)]="logoUrlDraft" [ngModelOptions]="{standalone: true}"
                      placeholder="https://meusite.com/logo.png">
+            </div>
+
+            <div class="cfg-section">
+              <h2 class="cfg-section__title">🎨 Estilo visual <span class="cfg-section__badge">avançado</span></h2>
+              <p class="cfg-section__desc">
+                Esse texto guia o gerador de imagem da IA. Já vem com um padrão profissional do nicho <strong>{{ nicheLabel(profile?.selectedNiche) }}</strong> (cores, tipografia, regras).
+                <strong>Se mexer no padrão sem saber, pode prejudicar a qualidade dos posts.</strong>
+              </p>
+              <textarea class="brand-edit-textarea" rows="14"
+                        [(ngModel)]="imageStyleDraft" [ngModelOptions]="{standalone: true}"
+                        placeholder="DNA Visual da sua marca..."></textarea>
+              <div class="image-style-actions">
+                <button class="btn btn--outline btn--sm" type="button"
+                        (click)="confirmResetImageStyle = true"
+                        [disabled]="!profile?.imageStyleTemplateDefault || imageStyleDraft === profile?.imageStyleTemplateDefault">
+                  ⟲ Restaurar padrão do nicho
+                </button>
+              </div>
+            </div>
+
+            <!-- Reset confirmation modal -->
+            <div *ngIf="confirmResetImageStyle" class="modal-backdrop" (click)="confirmResetImageStyle = false">
+              <div class="modal-card" (click)="$event.stopPropagation()">
+                <h3>Restaurar estilo padrão?</h3>
+                <p>Suas customizações no estilo visual <strong>serão sobrescritas</strong> pelo padrão profissional do nicho. Essa ação não pode ser desfeita.</p>
+                <div class="modal-actions">
+                  <button class="btn btn--outline" (click)="confirmResetImageStyle = false">Cancelar</button>
+                  <button class="btn btn--spark" (click)="doResetImageStyle()" [disabled]="resettingImageStyle">
+                    {{ resettingImageStyle ? 'Restaurando...' : 'Sim, restaurar padrão' }}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div class="cfg-page__actions">
@@ -621,6 +655,26 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       text-align: center; padding: 24px; color: #6b7280; font-size: 13px;
       background: rgba(255,255,255,.02); border: 1px dashed rgba(255,255,255,.08); border-radius: 10px;
     }
+    .image-style-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+
+    /* Generic modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 1000;
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+      animation: fadeBg .15s ease-out;
+    }
+    @keyframes fadeBg { from { opacity: 0; } to { opacity: 1; } }
+    .modal-card {
+      background: #0d1117; border: 1px solid rgba(251,191,36,.2); border-radius: 14px;
+      max-width: 480px; width: 100%; padding: 24px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+      animation: cardIn .2s ease-out;
+    }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-card h3 { font-size: 17px; font-weight: 700; color: #fbbf24; margin: 0 0 8px; }
+    .modal-card p { font-size: 14px; color: #d1d5db; line-height: 1.6; margin: 0 0 20px; }
+    .modal-card p strong { color: #fff; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
     /* TINDER-STYLE PROFILE COMPLETION BANNER */
     .profile-completion-banner {
@@ -1387,8 +1441,11 @@ export class ClientAppComponent implements OnInit {
   // ─── Brand context (now lives in /brand tab) ───────────
   brandContextDraft = '';
   logoUrlDraft = '';
+  imageStyleDraft = '';
   brandContextSaving = false;
   brandContextError = '';
+  confirmResetImageStyle = false;
+  resettingImageStyle = false;
 
   get completionPercent(): number {
     if (!this.profile) return 0;
@@ -1407,8 +1464,33 @@ export class ClientAppComponent implements OnInit {
       ? this.profile.brandContext
       : (this.profile?.brandContextHint || '');
     this.logoUrlDraft = this.profile?.logoUrl || '';
+    this.imageStyleDraft = (this.profile?.imageStyle && this.profile.imageStyle.trim())
+      ? this.profile.imageStyle
+      : (this.profile?.imageStyleTemplateDefault || '');
     this.brandContextError = '';
+    this.confirmResetImageStyle = false;
     this.tab = 'brand';
+  }
+
+  doResetImageStyle(): void {
+    if (this.resettingImageStyle) return;
+    this.resettingImageStyle = true;
+    const headers = this.auth.authHeaders();
+    this.http.post<{ ok: boolean; imageStyle: string }>(
+      `${environment.apiUrl}/api/v1/client/image-style/reset`, {}, { headers }
+    ).subscribe({
+      next: (res) => {
+        this.imageStyleDraft = res.imageStyle || (this.profile?.imageStyleTemplateDefault || '');
+        if (this.profile) this.profile = { ...this.profile, imageStyle: this.imageStyleDraft };
+        this.resettingImageStyle = false;
+        this.confirmResetImageStyle = false;
+        this.showNicheToast('Estilo visual restaurado para o padrão do nicho ✨');
+      },
+      error: () => {
+        this.resettingImageStyle = false;
+        this.brandContextError = 'Erro ao restaurar padrão. Tente novamente.';
+      }
+    });
   }
 
   openScheduleTab(): void {
@@ -1533,27 +1615,34 @@ export class ClientAppComponent implements OnInit {
     this.brandContextSaving = true;
     this.brandContextError = '';
     const headers = this.auth.authHeaders();
-    this.http.put(`${environment.apiUrl}/api/v1/client/brand-context`,
+    const imgStyle = (this.imageStyleDraft || '').trim();
+
+    // Save brand context first; if image_style differs from server, save that too
+    const tasks: Promise<any>[] = [];
+    tasks.push(this.http.put(`${environment.apiUrl}/api/v1/client/brand-context`,
       { brandContext: text, logoUrl: this.logoUrlDraft.trim() || null },
-      { headers }
-    ).subscribe({
-      next: () => {
-        this.brandContextSaving = false;
-        if (this.profile) {
-          this.profile = {
-            ...this.profile,
-            brandContext: text,
-            logoUrl: this.logoUrlDraft.trim() || this.profile.logoUrl,
-            brandContextNeedsAttention: false,
-          };
-        }
-        this.showNicheToast('Perfil da marca salvo! ✨ Os próximos posts vão ficar com a sua cara.');
-        this.tab = 'overview';
-      },
-      error: (err) => {
-        this.brandContextSaving = false;
-        this.brandContextError = err?.error?.detail || 'Erro ao salvar. Tente novamente.';
+      { headers }).toPromise());
+    if (imgStyle && imgStyle !== (this.profile?.imageStyle || '')) {
+      tasks.push(this.http.put(`${environment.apiUrl}/api/v1/client/image-style`,
+        { imageStyle: imgStyle }, { headers }).toPromise());
+    }
+
+    Promise.all(tasks).then(() => {
+      this.brandContextSaving = false;
+      if (this.profile) {
+        this.profile = {
+          ...this.profile,
+          brandContext: text,
+          logoUrl: this.logoUrlDraft.trim() || this.profile.logoUrl,
+          imageStyle: imgStyle || this.profile.imageStyle,
+          brandContextNeedsAttention: false,
+        };
       }
+      this.showNicheToast('Perfil da marca salvo! ✨ Os próximos posts vão ficar com a sua cara.');
+      this.tab = 'overview';
+    }).catch((err: any) => {
+      this.brandContextSaving = false;
+      this.brandContextError = err?.error?.detail || 'Erro ao salvar. Tente novamente.';
     });
   }
 
