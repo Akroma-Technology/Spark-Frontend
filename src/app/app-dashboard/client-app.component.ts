@@ -1707,6 +1707,7 @@ export class ClientAppComponent implements OnInit {
     // Always load full profile from API (includes imageStyle, brandContext, etc.)
     this.loadProfile();
     this.loadAnalytics();
+    this.loadReferralStats(); // carrega o referralCode logo no início
 
     // After Instagram OAuth callback, handle success or error
     const igParam = this.route.snapshot.queryParamMap.get('ig');
@@ -1937,25 +1938,44 @@ export class ClientAppComponent implements OnInit {
   copyCode(): void {
     const code = this.referralStats?.referralCode || this.client?.referralCode;
     if (!code) return;
-    try {
-      navigator.clipboard.writeText(code);
-      this.copied = true;
-      setTimeout(() => this.copied = false, 2000);
-    } catch {
-      // noop
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(() => {
+        this.copied = true;
+        setTimeout(() => this.copied = false, 2000);
+      }).catch(() => this._fallbackCopy(code, 'code'));
+    } else {
+      this._fallbackCopy(code, 'code');
     }
   }
 
   copyReferralLink(): void {
-    const code = this.client?.referralCode;
+    const code = this.referralStats?.referralCode || this.client?.referralCode;
     if (!code) return;
-    try {
-      navigator.clipboard.writeText(`https://spark.akroma.com.br/cadastro?ref=${code}`);
-      this.copiedLink = true;
-      setTimeout(() => this.copiedLink = false, 2000);
-    } catch {
-      // noop
+    const text = `https://spark.akroma.com.br/cadastro?ref=${code}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.copiedLink = true;
+        setTimeout(() => this.copiedLink = false, 2000);
+      }).catch(() => this._fallbackCopy(text, 'link'));
+    } else {
+      this._fallbackCopy(text, 'link');
     }
+  }
+
+  private _fallbackCopy(text: string, type: 'code' | 'link'): void {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      if (type === 'link') { this.copiedLink = true; setTimeout(() => this.copiedLink = false, 2000); }
+      else { this.copied = true; setTimeout(() => this.copied = false, 2000); }
+    } catch { /* noop */ }
+    document.body.removeChild(ta);
   }
 
   connectInstagram(): void {
