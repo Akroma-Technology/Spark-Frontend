@@ -452,9 +452,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
             </div>
 
             <div class="cfg-page__actions">
-              <button class="btn btn--outline" (click)="tab = 'overview'" [disabled]="brandContextSaving">← Voltar</button>
-              <button class="btn btn--spark" (click)="saveBrandContext()" [disabled]="brandContextSaving || !brandContextDraft.trim()">
-                {{ brandContextSaving ? 'Salvando...' : 'Salvar perfil →' }}
+              <button class="btn btn--spark cfg-page__save-btn" (click)="saveBrandContext()" [disabled]="brandContextSaving || !brandContextDraft.trim()">
+                {{ brandContextSaving ? 'Salvando...' : 'Salvar perfil' }}
               </button>
             </div>
             <p class="brand-edit-error" *ngIf="brandContextError">{{ brandContextError }}</p>
@@ -574,9 +573,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
             </div>
 
             <div class="cfg-page__actions">
-              <button class="btn btn--outline" (click)="tab = 'overview'" [disabled]="postConfigSaving">← Voltar</button>
-              <button class="btn btn--spark" (click)="savePostConfig()" [disabled]="postConfigSaving">
-                {{ postConfigSaving ? 'Salvando...' : 'Salvar agenda →' }}
+              <button class="btn btn--spark cfg-page__save-btn" (click)="savePostConfig()" [disabled]="postConfigSaving">
+                {{ postConfigSaving ? 'Salvando...' : 'Salvar agenda' }}
               </button>
             </div>
             <p class="brand-edit-error" *ngIf="postConfigError">{{ postConfigError }}</p>
@@ -856,6 +854,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .cfg-section__desc { font-size: 13px; color: #9ca3af; margin: 0 0 14px; line-height: 1.6; }
     .cfg-section__desc strong { color: #fbbf24; font-weight: 600; }
     .cfg-section__desc em { color: #e5e7eb; font-style: normal; font-weight: 600; }
+    .cfg-page__actions { margin-top: 8px; }
+    .cfg-page__save-btn { width: 100%; justify-content: center; }
     .cfg-section__badge {
       font-size: 10px; font-weight: 600; text-transform: uppercase;
       background: rgba(255,255,255,.06); color: #9ca3af;
