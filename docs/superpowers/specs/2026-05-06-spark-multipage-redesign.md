@@ -30,6 +30,12 @@ Cada item do nav vira uma rota com componente próprio. O topbar passa de âncor
 
 O arquivo atual `src/app/landing/spark.component.ts` é renomeado para `home.component.ts`. A rota `/` no `app.routes.ts` é atualizada para apontar para `SparkHomeComponent`.
 
+### ⚠️ Ordem crítica no app.routes.ts
+
+O `app.routes.ts` atual contém uma rota catch-all de nicho `{ path: ':niche', component: SparkNicheComponent }` que captura qualquer segmento único. As novas rotas `/como-funciona`, `/recursos` e `/planos` são segmentos únicos — se inseridas **após** `/:niche`, serão silenciosamente interceptadas por ela (Angular usa first-match).
+
+**As três novas rotas DEVEM ser inseridas ANTES de `{ path: ':niche', ... }` no array de rotas.**
+
 ---
 
 ## Topbar
@@ -41,6 +47,16 @@ O arquivo atual `src/app/landing/spark.component.ts` é renomeado para `home.com
 - Sai: scroll-spy com `IntersectionObserver` (fazia sentido apenas com âncoras)
 - Entra: `routerLinkActive="topbar__link--active"` para active state por rota
 - A lógica de `activeId` e `observer` é removida do `SparkTopbarComponent`
+
+### ⚠️ routerLinkActive — link "Início" precisa de exact match
+
+O link "Início" aponta para `/`. Sem `[routerLinkActiveOptions]="{exact: true}"`, ele ficará ativo em **todas** as páginas (pois `/` é prefixo de qualquer rota). Adicionar o atributo obrigatório:
+
+```html
+<a routerLink="/" routerLinkActive="topbar__link--active" [routerLinkActiveOptions]="{exact: true}">Início</a>
+```
+
+Os demais links (`/como-funciona`, `/recursos`, `/planos`) não precisam de `exact: true` — cada um é uma rota terminal sem filhos.
 
 ### Links do nav (ordem)
 
@@ -115,6 +131,15 @@ Seções (ordem):
    - Subtítulo: "Comece grátis por 7 dias. Sem cartão de crédito. Cancele quando quiser."
 
 2. **Billing toggle + pricing cards** — idêntico ao atual (mensal/anual, 3 cards: Starter/Pro/Enterprise)
+
+   **Dados e lógica:** copiar diretamente do `SparkComponent` atual para o `PlanosComponent`:
+   - `plans: Plan[]` (array com os 3 planos)
+   - `annual = false` (boolean de toggle)
+   - `annualPerMonth(monthly: number): number` (método de cálculo)
+   - Fetch HTTP de preços da API (`/api/v1/plans/spark`) — copiar o bloco `ngOnInit` com `isPlatformBrowser` guard
+   - Interface `Plan` — copiar ou mover para um arquivo compartilhado `src/app/landing/plans.data.ts`
+
+   A lógica de preços **não é extraída para um serviço** nesta fase — simples duplicação self-contained é suficiente.
 
 3. **Programa de Indicação** — bloco movido integralmente da home ("Indique 4 amigos, ganhe 1 mês grátis")
 
@@ -198,6 +223,10 @@ Cada componente chama `seo.setPage()` com título e description próprios:
 | `/como-funciona` | `Como funciona o Spark — Automação de social media com IA` | `Entenda como o Spark pesquisa tendências, gera conteúdo e publica automaticamente. Veja por nicho.` |
 | `/recursos` | `Recursos do Spark — Tudo que você precisa para crescer` | `Posts diários com IA, analytics, carrosseis, agendamento e muito mais. Conheça todos os recursos.` |
 | `/planos` | `Planos Spark — Simples e transparentes` | `Starter, Pro e Enterprise. Comece grátis por 7 dias. Programa de indicação incluso.` |
+
+**og:image:** todas as páginas usam o `DEFAULT_OG_IMAGE` do site (`/assets/og-image.png`). Decisão deliberada — não há assets específicos por página nesta fase. Revisitar quando houver imagens de OG customizadas.
+
+**SSR:** os três novos componentes não introduzem APIs de browser (sem `window`, sem `document`, sem listeners de scroll). Nenhum `isPlatformBrowser` guard adicional é necessário, exceto no `PlanosComponent` onde o fetch de preços já usa o guard copiado do componente atual.
 
 ---
 

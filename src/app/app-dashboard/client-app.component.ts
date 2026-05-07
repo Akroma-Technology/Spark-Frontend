@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ClientAuthService, ClientInfo } from '../core/services/client-auth.service';
@@ -18,17 +19,28 @@ interface ClientProfile {
   instagramConnected?: boolean;
   instagramUsername?: string;
   instagramTokenExpiresAt?: string;
+  brandContext?: string;
+  brandContextHint?: string;
+  brandContextNeedsAttention?: boolean;
+  logoUrl?: string;
 }
 
 const NICHE_OPTIONS: { value: string; label: string; emoji: string }[] = [
-  { value: 'fitness',     label: 'Fitness / Academia',    emoji: '💪' },
-  { value: 'tecnologia',  label: 'Tecnologia',            emoji: '💻' },
-  { value: 'gastronomia', label: 'Gastronomia',           emoji: '🍽️' },
-  { value: 'moda',        label: 'Moda',                  emoji: '👗' },
-  { value: 'juridico',    label: 'Juridico',              emoji: '⚖️' },
-  { value: 'imobiliario', label: 'Imobiliario',           emoji: '🏠' },
-  { value: 'educacao',    label: 'Educacao',              emoji: '📚' },
-  { value: 'saude',       label: 'Saude',                 emoji: '🏥' },
+  { value: 'fitness',     label: 'Fitness / Academia',     emoji: '💪' },
+  { value: 'tecnologia',  label: 'Tecnologia',             emoji: '💻' },
+  { value: 'gastronomia', label: 'Gastronomia',            emoji: '🍽️' },
+  { value: 'moda',        label: 'Moda',                   emoji: '👗' },
+  { value: 'juridico',    label: 'Jurídico / Advocacia',   emoji: '⚖️' },
+  { value: 'imobiliario', label: 'Imobiliário',            emoji: '🏠' },
+  { value: 'educacao',    label: 'Educação',               emoji: '📚' },
+  { value: 'saude',       label: 'Saúde / Bem-estar',      emoji: '🏥' },
+  { value: 'esportivo',   label: 'Esportivo',              emoji: '⚽' },
+  { value: 'nutricao',    label: 'Nutrição',               emoji: '🥗' },
+  { value: 'medicina',    label: 'Medicina',               emoji: '⚕️' },
+  { value: 'agronomia',   label: 'Agronomia / Agro',       emoji: '🌾' },
+  { value: 'veterinaria', label: 'Veterinária / Pet',      emoji: '🐾' },
+  { value: 'financas',    label: 'Finanças / Investimentos', emoji: '💰' },
+  { value: 'noticias',    label: 'Notícias / Mídia',       emoji: '📰' },
 ];
 
 interface BillingStatus {
@@ -53,7 +65,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
 @Component({
   selector: 'app-client-app',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <section class="app-shell" *ngIf="client">
       <aside class="app-sidebar">
@@ -129,6 +141,51 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
             </div>
           </div>
 
+          <!-- TINDER-STYLE PROFILE COMPLETION BANNER -->
+          <div *ngIf="profile?.selectedNiche && profile?.brandContextNeedsAttention && !brandContextEditing"
+               class="profile-completion-banner">
+            <div class="profile-completion-banner__bar">
+              <div class="profile-completion-banner__bar-fill" [style.width.%]="completionPercent"></div>
+            </div>
+            <div class="profile-completion-banner__content">
+              <div class="profile-completion-banner__text">
+                <h3>Seu perfil está {{ completionPercent }}% pronto</h3>
+                <p>Conta pra IA <strong>como sua marca fala</strong> — assim os posts ficam com a sua cara, não genéricos.</p>
+              </div>
+              <button class="btn btn--spark" (click)="startBrandContextEdit()">
+                Completar agora →
+              </button>
+            </div>
+          </div>
+
+          <!-- BRAND CONTEXT EDITOR -->
+          <div *ngIf="brandContextEditing" class="app-action app-action--brand-edit">
+            <h3>✨ Conta pra IA sobre sua marca</h3>
+            <p class="brand-edit-desc">
+              Esse texto guia o tom, o público e o estilo dos posts. Quanto mais específico, melhor.
+              <strong *ngIf="profile?.brandContextHint">Já preenchemos um rascunho do seu nicho — adapte para a sua realidade:</strong>
+            </p>
+            <textarea class="brand-edit-textarea"
+                      rows="8"
+                      [(ngModel)]="brandContextDraft"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="Ex: Sou uma confeitaria artesanal em Florianópolis. Atendo casamentos e aniversários sofisticados. Tom acolhedor mas elegante, sempre destacando ingredientes premium."></textarea>
+            <div class="brand-edit-row">
+              <label class="brand-edit-label">URL do seu logo (opcional, mas recomendado)</label>
+              <input class="brand-edit-input" type="url"
+                     [(ngModel)]="logoUrlDraft"
+                     [ngModelOptions]="{standalone: true}"
+                     placeholder="https://meusite.com/logo.png">
+            </div>
+            <div class="brand-edit-actions">
+              <button class="btn btn--outline" (click)="cancelBrandContextEdit()" [disabled]="brandContextSaving">Cancelar</button>
+              <button class="btn btn--spark" (click)="saveBrandContext()" [disabled]="brandContextSaving || !brandContextDraft.trim()">
+                {{ brandContextSaving ? 'Salvando...' : 'Salvar perfil →' }}
+              </button>
+            </div>
+            <p class="brand-edit-error" *ngIf="brandContextError">{{ brandContextError }}</p>
+          </div>
+
           <div class="app-actions">
             <!-- Instagram card -->
             <div class="app-action" [class.app-action--primary]="!profile?.instagramConnected"
@@ -184,9 +241,16 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
               </p>
 
               <!-- Niche picker collapsed view -->
-              <button *ngIf="!showNichePicker" type="button" class="btn btn--outline" (click)="showNichePicker = true; nicheSaved = false">
-                {{ profile?.selectedNiche ? 'Mudar nicho' : 'Escolher nicho →' }}
-              </button>
+              <div *ngIf="!showNichePicker" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn--outline" (click)="showNichePicker = true; nicheSaved = false">
+                  {{ profile?.selectedNiche ? 'Mudar nicho' : 'Escolher nicho →' }}
+                </button>
+                <button *ngIf="profile?.selectedNiche && !brandContextEditing"
+                        type="button" class="btn btn--outline"
+                        (click)="startBrandContextEdit()">
+                  ✨ {{ profile?.brandContextNeedsAttention ? 'Personalizar perfil da marca' : 'Editar perfil da marca' }}
+                </button>
+              </div>
 
               <!-- Niche grid -->
               <div class="app-niche-grid" *ngIf="showNichePicker">
@@ -428,6 +492,88 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan';
   `,
   styles: [`
     :host { display: block; background: #050912; min-height: 100vh; }
+
+    /* TINDER-STYLE PROFILE COMPLETION BANNER */
+    .profile-completion-banner {
+      background: linear-gradient(135deg, rgba(251,191,36,.08), rgba(124,58,237,.08));
+      border: 1px solid rgba(251,191,36,.25);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      animation: slideInBanner .35s ease-out;
+    }
+    @keyframes slideInBanner {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .profile-completion-banner__bar {
+      height: 6px; background: rgba(255,255,255,.06); border-radius: 999px;
+      overflow: hidden; margin-bottom: 16px;
+    }
+    .profile-completion-banner__bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+      border-radius: 999px;
+      transition: width .6s ease;
+      box-shadow: 0 0 12px rgba(251,191,36,.5);
+    }
+    .profile-completion-banner__content {
+      display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    }
+    .profile-completion-banner__text h3 {
+      font-size: 16px; font-weight: 700; color: #fff; margin: 0 0 4px;
+    }
+    .profile-completion-banner__text p {
+      font-size: 13px; color: #9ca3af; margin: 0; max-width: 540px;
+    }
+    .profile-completion-banner__text strong { color: #fbbf24; font-weight: 600; }
+
+    /* BRAND CONTEXT EDITOR */
+    .app-action--brand-edit {
+      grid-column: 1 / -1;
+      animation: slideInBanner .25s ease-out;
+    }
+    .brand-edit-desc {
+      font-size: 13px; color: #9ca3af; line-height: 1.6; margin: 0 0 12px;
+    }
+    .brand-edit-desc strong { color: #fbbf24; font-weight: 600; }
+    .brand-edit-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      color: #e5e7eb;
+      font-size: 14px;
+      font-family: inherit;
+      line-height: 1.55;
+      resize: vertical;
+      min-height: 140px;
+      transition: border-color .15s;
+    }
+    .brand-edit-textarea:focus {
+      outline: none; border-color: rgba(251,191,36,.5);
+    }
+    .brand-edit-row { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .brand-edit-label { font-size: 12px; color: #9ca3af; font-weight: 600; }
+    .brand-edit-input {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      color: #e5e7eb;
+      font-size: 14px;
+      transition: border-color .15s;
+    }
+    .brand-edit-input:focus { outline: none; border-color: rgba(251,191,36,.5); }
+    .brand-edit-actions {
+      display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;
+    }
+    .brand-edit-error { color: #f87171; font-size: 13px; margin: 8px 0 0; }
+
 
     .app-shell {
       display: grid; grid-template-columns: 240px 1fr; min-height: 100vh;
@@ -1023,6 +1169,70 @@ export class ClientAppComponent implements OnInit {
     this.http.get<ClientProfile>(`${environment.apiUrl}/api/v1/client/me`, { headers }).subscribe({
       next: (p) => { this.profile = p; },
       error: () => {}
+    });
+  }
+
+  // ─── Brand context (Tinder-style profile completion) ───────────
+  brandContextEditing = false;
+  brandContextDraft = '';
+  logoUrlDraft = '';
+  brandContextSaving = false;
+  brandContextError = '';
+
+  get completionPercent(): number {
+    if (!this.profile) return 0;
+    let pct = 0;
+    if (this.profile.selectedNiche) pct += 35;
+    if (this.profile.instagramConnected) pct += 30;
+    if (this.profile.brandContext && this.profile.brandContext.trim() &&
+        this.profile.brandContext !== this.profile.brandContextHint) pct += 25;
+    if (this.profile.logoUrl && this.profile.logoUrl.trim()) pct += 10;
+    return Math.min(pct, 100);
+  }
+
+  startBrandContextEdit(): void {
+    // Pre-fill the draft with the current value, or with the hint as starter rascunho
+    this.brandContextDraft = (this.profile?.brandContext && this.profile.brandContext.trim())
+      ? this.profile.brandContext
+      : (this.profile?.brandContextHint || '');
+    this.logoUrlDraft = this.profile?.logoUrl || '';
+    this.brandContextEditing = true;
+    this.brandContextError = '';
+  }
+
+  cancelBrandContextEdit(): void {
+    this.brandContextEditing = false;
+    this.brandContextError = '';
+  }
+
+  saveBrandContext(): void {
+    if (this.brandContextSaving) return;
+    const text = this.brandContextDraft.trim();
+    if (!text) return;
+    this.brandContextSaving = true;
+    this.brandContextError = '';
+    const headers = this.auth.authHeaders();
+    this.http.put(`${environment.apiUrl}/api/v1/client/brand-context`,
+      { brandContext: text, logoUrl: this.logoUrlDraft.trim() || null },
+      { headers }
+    ).subscribe({
+      next: () => {
+        this.brandContextSaving = false;
+        this.brandContextEditing = false;
+        if (this.profile) {
+          this.profile = {
+            ...this.profile,
+            brandContext: text,
+            logoUrl: this.logoUrlDraft.trim() || this.profile.logoUrl,
+            brandContextNeedsAttention: false,
+          };
+        }
+        this.showNicheToast('Perfil da marca salvo! ✨ Os próximos posts vão ficar com a sua cara.');
+      },
+      error: (err) => {
+        this.brandContextSaving = false;
+        this.brandContextError = err?.error?.detail || 'Erro ao salvar. Tente novamente.';
+      }
     });
   }
 

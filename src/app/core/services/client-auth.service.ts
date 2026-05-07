@@ -125,6 +125,14 @@ export class ClientAuthService {
     try { return JSON.parse(raw) as ClientInfo; } catch { return null; }
   }
 
+  /** Patch specific fields in the stored ClientInfo without touching the token. */
+  updateStoredClient(updates: Partial<ClientInfo>): void {
+    if (!this.isBrowser) return;
+    const current = this.getClient();
+    if (!current) return;
+    sessionStorage.setItem(CLIENT_KEY, JSON.stringify({ ...current, ...updates }));
+  }
+
   private persist(res: LoginResponse): void {
     if (!this.isBrowser) return;
     sessionStorage.setItem(TOKEN_KEY, res.token);
