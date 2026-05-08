@@ -76,6 +76,24 @@ const NICHE_OPTIONS: { value: string; label: string; emoji: string }[] = [
   { value: 'noticias',    label: 'Notícias / Mídia',       emoji: '📰' },
 ];
 
+const NICHE_SEARCH_TOPICS: Record<string, string> = {
+  fitness: 'Treinos, exercícios e técnicas de HOJE em musculação, funcional, crossfit e emagrecimento. PRIORIZE: novos estudos científicos sobre hipertrofia e queima de gordura, tendências de treino, erros comuns na academia, alimentos que potencializam resultados, comparações de métodos (HIIT vs cardio, etc). Foque em temas que gerem ENGAJAMENTO: dicas práticas, dados surpreendentes, mitos desmentidos e provocações sobre sedentarismo.',
+  tecnologia: 'Tendencias, noticias e acontecimentos de HOJE em tecnologia, inteligencia artificial generativa, automacao, cloud computing, startups e inovacao digital no Brasil e no mundo. PRIORIZE: lancamentos recentes, atualizacoes de grandes empresas (Google, OpenAI, Meta, Microsoft, Apple), dados salariais e de mercado, comparacoes polemicas, debates sobre futuro do trabalho e IA. Foque em temas que gerem ENGAJAMENTO: dados surpreendentes, provocacoes, tendencias que impactam profissionais de tecnologia.',
+  gastronomia: 'Tendências e novidades de HOJE em gastronomia, culinária, restaurantes e alimentação. PRIORIZE: receitas virais, técnicas de preparo, ingredientes da temporada, aberturas de restaurantes, chefs em destaque, culinária regional brasileira e internacional, vinhos e harmonizações. Foque em temas que gerem ENGAJAMENTO: receitas fáceis com resultado impressionante, segredos de chef, ingredientes secretos, comparações de pratos e tendências gastronômicas.',
+  moda: 'Tendências, lançamentos e estilos de HOJE em moda, looks, styling e comportamento fashion. PRIORIZE: tendências de temporada, peças-chave do momento, combinações de estilo, marcas em alta no Brasil e no mundo, dicas de custo-benefício, moda sustentável, fast fashion vs slow fashion. Foque em temas que gerem ENGAJAMENTO: looks do dia, peças coringa, erros de moda, estilo de celebridades e debates sobre consumo consciente.',
+  juridico: 'Notícias e atualizações jurídicas de HOJE no Brasil. PRIORIZE: novas leis e regulamentações, decisões do STF e STJ com impacto prático, mudanças trabalhistas, direitos do consumidor, temas que afetam empresas e cidadãos comuns. Foque em temas que gerem ENGAJAMENTO: direitos que as pessoas não sabem que têm, golpes e fraudes jurídicas, situações cotidianas com implicação legal, diferenças entre CLT e PJ, proteção de dados (LGPD).',
+  imobiliario: 'Notícias e tendências de HOJE no mercado imobiliário brasileiro. PRIORIZE: variação de preços nas principais cidades, taxa Selic e impacto no financiamento, novos empreendimentos, bairros em valorização, dicas de compra e investimento, programas habitacionais. Foque em temas que gerem ENGAJAMENTO: alugar vs comprar, apartamento vs casa, dados de valorização surpreendentes, erros na hora de financiar, oportunidades de investimento imobiliário.',
+  educacao: 'Tendências e novidades de HOJE em educação, aprendizado, carreira e desenvolvimento profissional. PRIORIZE: novas metodologias de ensino, tecnologia na educação, cursos em alta, dados do mercado de trabalho, habilidades mais valorizadas pelas empresas, ensino superior vs técnico. Foque em temas que gerem ENGAJAMENTO: cursos que abrem portas, salários por área, mitos da faculdade, aprendizado autodidata, certificações que valem a pena.',
+  saude: 'Pesquisas, tendências e notícias de HOJE em saúde, bem-estar, longevidade e qualidade de vida. PRIORIZE: novos estudos científicos sobre saúde preventiva, hábitos que impactam a expectativa de vida, saúde mental, sono, hidratação e alimentação funcional. Foque em temas que gerem ENGAJAMENTO: hábitos simples com grande impacto, dados surpreendentes sobre doenças modernas, comparações de estilos de vida, mitos da saúde desmentidos por ciência.',
+  esportivo: 'Notícias, resultados e bastidores do esporte de HOJE no Brasil e no mundo. PRIORIZE: futebol brasileiro e europeu, competições em andamento, desempenho de atletas, transferências, polêmicas e bastidores. Foque em temas que gerem ENGAJAMENTO: análises táticas, recordes históricos, comparações entre atletas e eras, dados estatísticos surpreendentes, momentos marcantes do esporte nacional.',
+  nutricao: 'Pesquisas, dicas e tendências de HOJE em nutrição, dieta, alimentos funcionais e composição corporal. PRIORIZE: novos estudos sobre alimentos e saúde, dietas em alta (low carb, jejum intermitente, etc), suplementação baseada em evidências, mitos alimentares desmentidos, superalimentos. Foque em temas que gerem ENGAJAMENTO: o que comer antes e após treinos, combinações de alimentos que funcionam, alimentos que sabotam a dieta, dados sobre obesidade e hábitos alimentares no Brasil.',
+  medicina: 'Pesquisas médicas, avanços e notícias de HOJE em medicina e saúde. PRIORIZE: novos tratamentos e medicamentos aprovados, estudos clínicos relevantes, doenças prevalentes no Brasil, prevenção, diagnóstico precoce e saúde pública. Foque em temas que gerem ENGAJAMENTO: sintomas que as pessoas ignoram, avanços da medicina que salvam vidas, diferenças entre plano de saúde e SUS, quando procurar um médico, medicina preventiva vs curativa.',
+  agronomia: 'Notícias, tecnologias e tendências de HOJE no agronegócio, agricultura e pecuária brasileira. PRIORIZE: preços de commodities, novas tecnologias agrícolas (drones, IA, precision farming), clima e safras, regulamentações, exportações do agro brasileiro, sustentabilidade no campo. Foque em temas que gerem ENGAJAMENTO: dados de produtividade, impacto do agro na economia, inovações que aumentam produção, debate desmatamento vs produção, agricultura familiar.',
+  veterinaria: 'Notícias, dicas e tendências de HOJE em medicina veterinária, cuidados com pets e bem-estar animal. PRIORIZE: doenças sazonais em cães e gatos, vacinas e prevenção, alimentação animal, novos tratamentos e medicamentos, comportamento animal, adoção responsável. Foque em temas que gerem ENGAJAMENTO: sinais de saúde que tutores ignoram, erros comuns no cuidado de pets, alimentos proibidos para animais, comparação de rações, custos de veterinário.',
+  financas: 'Notícias e tendências de HOJE em finanças pessoais, investimentos e economia brasileira. PRIORIZE: variação de Selic, IPCA e câmbio, rendimento de investimentos (Tesouro, CDB, FIIs, ações), oportunidades de mercado, armadilhas financeiras, educação financeira e comportamento do consumidor. Foque em temas que gerem ENGAJAMENTO: comparações de investimentos, dados sobre endividamento no Brasil, erros que impedem enriquecimento, quanto rende R$1.000 em cada aplicação, mentalidade de rico vs pobre.',
+  noticias: 'Principais notícias e acontecimentos de HOJE no Brasil e no mundo. PRIORIZE: política, economia, tecnologia, ciência e comportamento social — fatos com impacto direto na vida das pessoas, debates públicos relevantes, dados e estatísticas surpreendentes. Foque em temas que gerem ENGAJAMENTO: controvérsias, revelações inesperadas, tendências que mudam comportamentos, impactos econômicos no cotidiano, comparações entre realidades diferentes.',
+};
+
 interface BillingStatus {
   planTier: string;
   planValue: number;
@@ -91,6 +109,24 @@ interface BillingStatus {
 interface PlanPrices {
   starter: { monthly: string; annual: string; annualMonthly: string };
   pro:     { monthly: string; annual: string; annualMonthly: string };
+}
+
+interface MyPost {
+  id: string;
+  status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'RUNNING' | string;
+  topicUsed: string | null;
+  caption: string | null;
+  postFormat: 'SINGLE' | 'CAROUSEL' | string;
+  imageUrlTemp: string | null;
+  instagramPermalink: string | null;
+  facebookPermalink: string | null;
+  scheduledFor: string | null;
+  executedAt: string | null;
+  likes: number;
+  comments: number;
+  saves: number;
+  errorMessage: string | null;
+  retryCount: number;
 }
 
 type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
@@ -112,7 +148,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             <span>Inicio</span>
           </button>
-          <button type="button" class="app-nav__item" [class.app-nav__item--active]="tab === 'posts'" (click)="tab = 'posts'">
+          <button type="button" class="app-nav__item" [class.app-nav__item--active]="tab === 'posts'" (click)="tab = 'posts'; loadMyPosts()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
             <span>Posts</span>
           </button>
@@ -517,42 +553,32 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                            [(ngModel)]="s.carouselCount" [ngModelOptions]="{standalone: true}"
                            title="Slides">
                     <label class="toggle-story-c" title="Publicar também no Story">
-                      <input type="checkbox" [(ngModel)]="s.publishStory" [ngModelOptions]="{standalone: true}">
-                      <span>Story</span>
+                      <input type="checkbox" class="toggle-story-inp" [(ngModel)]="s.publishStory" [ngModelOptions]="{standalone: true}">
+                      <span class="toggle-story-track"><span class="toggle-story-thumb"></span></span>
+                      <span class="toggle-story-label">Story</span>
                     </label>
                     <button class="schedule-remove" (click)="removeSlot(i)" aria-label="Remover">×</button>
                   </div>
 
-                  <!-- Network selector (Instagram / Facebook / Ambas) -->
+                  <!-- Network selector (Instagram / Facebook — independentes) -->
                   <div class="slot-network-row">
                     <span class="slot-network-label">Publicar em:</span>
                     <!-- Instagram: always available -->
                     <button type="button" class="slot-net-btn"
-                            [class.slot-net-btn--ig]="slotHasNetwork(s, 'instagram')"
-                            (click)="setSlotNetwork(s, 'instagram')">
+                            [class.slot-net-btn--ig]="slotNetActive(s, 'instagram')"
+                            (click)="toggleSlotNetwork(s, 'instagram')">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                       Instagram
                     </button>
                     <!-- Facebook: Pro+ only -->
                     <div class="slot-net-wrapper" [title]="!profile?.facebookEnabled ? 'Disponível no plano Pro ou superior' : ''">
                       <button type="button" class="slot-net-btn"
-                              [class.slot-net-btn--fb]="slotHasNetwork(s, 'facebook')"
+                              [class.slot-net-btn--fb]="slotNetActive(s, 'facebook')"
                               [class.slot-net-btn--locked]="!profile?.facebookEnabled"
                               [disabled]="!profile?.facebookEnabled"
-                              (click)="profile?.facebookEnabled && setSlotNetwork(s, 'facebook')">
+                              (click)="profile?.facebookEnabled && toggleSlotNetwork(s, 'facebook')">
                         <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                         Facebook
-                        <span *ngIf="!profile?.facebookEnabled" class="slot-net-lock">🔒</span>
-                      </button>
-                    </div>
-                    <!-- Ambas: Pro+ only -->
-                    <div class="slot-net-wrapper" [title]="!profile?.facebookEnabled ? 'Disponível no plano Pro ou superior' : ''">
-                      <button type="button" class="slot-net-btn"
-                              [class.slot-net-btn--both]="slotHasNetwork(s, 'both')"
-                              [class.slot-net-btn--locked]="!profile?.facebookEnabled"
-                              [disabled]="!profile?.facebookEnabled"
-                              (click)="profile?.facebookEnabled && setSlotNetwork(s, 'both')">
-                        Ambas
                         <span *ngIf="!profile?.facebookEnabled" class="slot-net-lock">🔒</span>
                       </button>
                     </div>
@@ -562,7 +588,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     <input class="cfg-input slot-topic"
                            type="text"
                            [(ngModel)]="s.searchTopic" [ngModelOptions]="{standalone: true}"
-                           [placeholder]="'Tema do post (padrão: ' + (profile?.searchDescription || 'descrição do nicho') + ')'">
+                           [placeholder]="getSlotTopicPlaceholder()">
                   </div>
                   <p *ngIf="slotWarnings[i]" class="slot-warning">⚠️ {{ slotWarnings[i] }}</p>
                 </div>
@@ -585,13 +611,83 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
         <div *ngIf="tab === 'posts'">
           <header class="app-page-header">
             <h1>Seus posts</h1>
-            <p>Aprove, edite ou reagende os posts gerados pela IA.</p>
+            <p>Histórico dos últimos 30 posts gerados pela IA.</p>
           </header>
-          <div class="app-empty">
+
+          <!-- Loading skeleton -->
+          <div *ngIf="myPostsLoading" class="posts-grid">
+            <div class="post-card post-card--skeleton" *ngFor="let n of [1,2,3]">
+              <div class="post-card__img skeleton"></div>
+              <div class="post-card__body">
+                <div class="skeleton" style="height:12px;width:60%;border-radius:4px;margin-bottom:8px"></div>
+                <div class="skeleton" style="height:10px;width:90%;border-radius:4px;margin-bottom:6px"></div>
+                <div class="skeleton" style="height:10px;width:75%;border-radius:4px"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div *ngIf="!myPostsLoading && myPostsLoaded && myPosts.length === 0" class="app-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
             <h3>Nenhum post ainda</h3>
-            <p>Conecte seu Instagram para a IA comecar a gerar posts automaticamente.</p>
-            <button type="button" class="btn btn--spark" (click)="tab = 'overview'">Ir para o inicio</button>
+            <p>Quando a IA gerar seu primeiro post, ele aparecerá aqui.</p>
+            <button type="button" class="btn btn--spark" (click)="tab = 'overview'">Ir para o início</button>
+          </div>
+
+          <!-- Post list -->
+          <div *ngIf="!myPostsLoading && myPosts.length > 0" class="posts-grid">
+            <div class="post-card" *ngFor="let p of myPosts">
+              <!-- Thumbnail -->
+              <div class="post-card__img-wrap">
+                <img *ngIf="p.imageUrlTemp" [src]="p.imageUrlTemp" alt="Imagem do post" class="post-card__img" loading="lazy">
+                <div *ngIf="!p.imageUrlTemp" class="post-card__img post-card__img--placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+              </div>
+
+              <div class="post-card__body">
+                <!-- Status + date row -->
+                <div class="post-card__meta">
+                  <span class="post-badge" [ngClass]="postStatusClass(p.status)">{{ postStatusLabel(p.status) }}</span>
+                  <span class="post-card__date">
+                    {{ (p.executedAt || p.scheduledFor) | date:'dd/MM HH:mm' }}
+                  </span>
+                  <span class="post-card__format" *ngIf="p.postFormat === 'CAROUSEL'">Carrossel</span>
+                </div>
+
+                <!-- Topic -->
+                <p *ngIf="p.topicUsed" class="post-card__topic">{{ p.topicUsed }}</p>
+
+                <!-- Caption preview -->
+                <p *ngIf="p.caption" class="post-card__caption">
+                  {{ p.caption.length > 120 ? (p.caption.slice(0, 120) + '…') : p.caption }}
+                </p>
+
+                <!-- Error message -->
+                <p *ngIf="p.status === 'FAILED' && p.errorMessage" class="post-card__error">
+                  ⚠ {{ p.errorMessage.length > 80 ? (p.errorMessage.slice(0, 80) + '…') : p.errorMessage }}
+                </p>
+
+                <!-- Engagement (SUCCESS only) -->
+                <div *ngIf="p.status === 'SUCCESS'" class="post-card__stats">
+                  <span title="Curtidas">❤ {{ p.likes }}</span>
+                  <span title="Comentários">💬 {{ p.comments }}</span>
+                  <span title="Salvos">🔖 {{ p.saves }}</span>
+                </div>
+
+                <!-- Links -->
+                <div class="post-card__links">
+                  <a *ngIf="p.instagramPermalink" [href]="p.instagramPermalink" target="_blank" rel="noopener" class="post-card__link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                    Ver no Instagram
+                  </a>
+                  <a *ngIf="p.facebookPermalink" [href]="p.facebookPermalink" target="_blank" rel="noopener" class="post-card__link post-card__link--fb">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    Ver no Facebook
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -986,6 +1082,19 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       color: #e5e7eb;
       font-size: 13px;
     }
+    select.cfg-input {
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: #0f1623;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239ca3af' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+    select.cfg-input option {
+      background-color: #0f1623;
+      color: #e5e7eb;
+    }
     .cfg-input--sm { font-size: 12px; padding: 6px 8px; }
     .cfg-input:focus { outline: none; border-color: rgba(251,191,36,.5); }
     .cfg-warning { font-size: 12px; color: #fbbf24; margin: 4px 0 0; }
@@ -1089,9 +1198,29 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .slot-sep { color: #9ca3af; font-size: 13px; }
     .slot-topic-row { margin-top: 8px; }
     .slot-topic { width: 100%; font-size: 13px; }
+    /* Story toggle switch */
     .toggle-story-c {
-      display: flex; align-items: center; gap: 6px; font-size: 12px; color: #9ca3af; cursor: pointer;
+      display: flex; align-items: center; gap: 7px; font-size: 12px; color: #9ca3af; cursor: pointer;
+      user-select: none;
     }
+    .toggle-story-inp { display: none; }
+    .toggle-story-track {
+      position: relative; width: 34px; height: 18px;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 9999px; transition: background .2s, border-color .2s; flex-shrink: 0;
+    }
+    .toggle-story-thumb {
+      position: absolute; top: 2px; left: 2px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #9ca3af; transition: transform .2s, background .2s;
+    }
+    .toggle-story-inp:checked ~ .toggle-story-track {
+      background: rgba(251,191,36,.25); border-color: rgba(251,191,36,.5);
+    }
+    .toggle-story-inp:checked ~ .toggle-story-track .toggle-story-thumb {
+      transform: translateX(16px); background: #fbbf24;
+    }
+    .toggle-story-label { color: #9ca3af; }
     .schedule-remove {
       margin-left: auto;
       background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25);
@@ -1339,6 +1468,56 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .app-empty h3 { font-size: 17px; font-weight: 700; color: #fff; margin: 0 0 6px; }
     .app-empty p { font-size: 14px; color: #9ca3af; max-width: 360px; margin: 0 auto 20px; }
 
+    /* Posts grid */
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .post-card {
+      background: #111827; border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: border-color .15s;
+    }
+    .post-card:hover { border-color: rgba(251,191,36,.25); }
+    .post-card--skeleton { pointer-events: none; }
+    .post-card__img-wrap { width: 100%; aspect-ratio: 1; overflow: hidden; background: #0f1623; }
+    .post-card__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .post-card__img--placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center; color: #374151;
+    }
+    .post-card__img--placeholder svg { width: 36px; height: 36px; }
+    .post-card__body { padding: 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .post-card__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .post-card__date { font-size: 11px; color: #6b7280; margin-left: auto; }
+    .post-card__format { font-size: 10px; color: #9ca3af; background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 4px; }
+    .post-card__topic { font-size: 12px; color: #fbbf24; font-weight: 600; margin: 0; line-height: 1.4; }
+    .post-card__caption { font-size: 12px; color: #d1d5db; margin: 0; line-height: 1.5; }
+    .post-card__error { font-size: 11px; color: #f87171; margin: 0; line-height: 1.4; }
+    .post-card__stats { display: flex; gap: 12px; font-size: 12px; color: #9ca3af; margin-top: 2px; }
+    .post-card__links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+    .post-card__link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600; color: #e1306c; text-decoration: none;
+      padding: 4px 10px; border-radius: 6px;
+      background: rgba(225,48,108,.1); border: 1px solid rgba(225,48,108,.2);
+      transition: background .15s;
+    }
+    .post-card__link:hover { background: rgba(225,48,108,.2); }
+    .post-card__link--fb { color: #4e9af1; background: rgba(78,154,241,.1); border-color: rgba(78,154,241,.2); }
+    .post-card__link--fb:hover { background: rgba(78,154,241,.2); }
+    /* Status badges */
+    .post-badge {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      padding: 2px 8px; border-radius: 9999px; border: 1px solid;
+    }
+    .post-badge--success { background: rgba(34,197,94,.12); color: #4ade80; border-color: rgba(34,197,94,.3); }
+    .post-badge--failed  { background: rgba(239,68,68,.12);  color: #f87171; border-color: rgba(239,68,68,.3); }
+    .post-badge--running { background: rgba(251,191,36,.12); color: #fbbf24; border-color: rgba(251,191,36,.3); }
+    .post-badge--pending { background: rgba(156,163,175,.1); color: #9ca3af; border-color: rgba(156,163,175,.2); }
+
     /* Referral */
     .app-referral-card {
       padding: 24px; border-radius: 14px; margin-bottom: 24px;
@@ -1545,9 +1724,6 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .slot-net-btn--fb {
       background: rgba(24,119,242,.14); border-color: rgba(24,119,242,.45); color: #4e9af1;
     }
-    .slot-net-btn--both {
-      background: rgba(251,191,36,.12); border-color: rgba(251,191,36,.45); color: #fbbf24;
-    }
     .slot-net-btn--locked {
       opacity: .45; cursor: not-allowed;
     }
@@ -1665,6 +1841,11 @@ export class ClientAppComponent implements OnInit {
     avgLikes: number; avgReach: number; avgComments: number; avgSaves: number;
   } | null = null;
   analyticsLoading = false;
+
+  // Posts tab
+  myPosts: MyPost[] = [];
+  myPostsLoading = false;
+  myPostsLoaded = false;
 
   // Apagar conta
   showDeleteConfirm = false;
@@ -2020,6 +2201,43 @@ export class ClientAppComponent implements OnInit {
     });
   }
 
+  loadMyPosts(): void {
+    if (this.myPostsLoading) return;
+    this.myPostsLoading = true;
+    const headers = this.auth.authHeaders();
+    this.http.get<MyPost[]>(`${environment.apiUrl}/api/v1/client/my-posts`, { headers }).subscribe({
+      next: (posts) => {
+        this.myPosts = posts;
+        this.myPostsLoading = false;
+        this.myPostsLoaded = true;
+      },
+      error: () => {
+        this.myPostsLoading = false;
+        this.myPostsLoaded = true;
+      }
+    });
+  }
+
+  postStatusLabel(status: string): string {
+    switch (status) {
+      case 'SUCCESS': return 'Publicado';
+      case 'FAILED':  return 'Erro';
+      case 'RUNNING': return 'Processando';
+      case 'PENDING': return 'Agendado';
+      default:        return status;
+    }
+  }
+
+  postStatusClass(status: string): string {
+    switch (status) {
+      case 'SUCCESS': return 'post-badge--success';
+      case 'FAILED':  return 'post-badge--failed';
+      case 'RUNNING': return 'post-badge--running';
+      case 'PENDING': return 'post-badge--pending';
+      default:        return '';
+    }
+  }
+
   deleteAccount(): void {
     if (this.deleteConfirmText.toLowerCase() !== 'apagar') return;
     this.deletingAccount = true;
@@ -2167,8 +2385,13 @@ export class ClientAppComponent implements OnInit {
   }
 
   addSlot(): void {
-    const defaultTopic = this.profile?.searchDescription || null;
-    // Default: publish to both networks if facebook is enabled, else instagram only
+    // Preenche searchTopic com o tema do nicho — salvo no banco e visível no admin.
+    // O usuário pode editar por slot se quiser um tema diferente.
+    const niche = this.profile?.selectedNiche || '';
+    const nicheDesc = (niche && NICHE_SEARCH_TOPICS[niche])
+      ? NICHE_SEARCH_TOPICS[niche]
+      : (this.profile?.searchDescription || null);
+
     const defaultNetworks = this.profile?.facebookEnabled
       ? ['instagram', 'facebook']
       : ['instagram'];
@@ -2178,26 +2401,43 @@ export class ClientAppComponent implements OnInit {
       format: 'SINGLE',
       carouselCount: 3,
       publishStory: false,
-      searchTopic: defaultTopic,
+      searchTopic: nicheDesc,
       networks: defaultNetworks,
     });
     this.recomputeSlotWarnings();
   }
 
-  /** Returns which network key is "active" for the slot: 'instagram', 'facebook', or 'both' */
-  slotHasNetwork(slot: PostSlot, key: 'instagram' | 'facebook' | 'both'): boolean {
-    const nets = slot.networks ?? ['instagram'];
-    if (key === 'both') return nets.includes('instagram') && nets.includes('facebook');
-    if (key === 'instagram') return nets.includes('instagram') && !nets.includes('facebook');
-    if (key === 'facebook') return nets.includes('facebook') && !nets.includes('instagram');
-    return false;
+  getSlotTopicPlaceholder(): string {
+    return 'Tema do post (deixe vazio para usar o padrão do nicho)';
   }
 
-  /** Toggle/set the network selection for a slot */
+  /** Returns true if the given network is active for this slot */
+  slotNetActive(slot: PostSlot, net: 'instagram' | 'facebook'): boolean {
+    return (slot.networks ?? ['instagram']).includes(net);
+  }
+
+  /** Toggle a network on/off for a slot — at least one must remain active */
+  toggleSlotNetwork(slot: PostSlot, net: 'instagram' | 'facebook'): void {
+    const nets = slot.networks ? [...slot.networks] : ['instagram'];
+    const idx = nets.indexOf(net);
+    if (idx >= 0) {
+      if (nets.length > 1) nets.splice(idx, 1);
+    } else {
+      nets.push(net);
+    }
+    slot.networks = nets;
+  }
+
+  /** @deprecated kept for backward compat */
+  slotHasNetwork(slot: PostSlot, key: 'instagram' | 'facebook' | 'both'): boolean {
+    if (key === 'both') return this.slotNetActive(slot, 'instagram') && this.slotNetActive(slot, 'facebook');
+    return this.slotNetActive(slot, key);
+  }
+
+  /** @deprecated kept for backward compat */
   setSlotNetwork(slot: PostSlot, key: 'instagram' | 'facebook' | 'both'): void {
-    if (key === 'instagram') slot.networks = ['instagram'];
-    else if (key === 'facebook') slot.networks = ['facebook'];
-    else slot.networks = ['instagram', 'facebook'];
+    if (key === 'both') { slot.networks = ['instagram', 'facebook']; return; }
+    this.toggleSlotNetwork(slot, key);
   }
 
   removeSlot(idx: number): void {
