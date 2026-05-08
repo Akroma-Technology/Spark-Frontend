@@ -688,7 +688,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     <span title="Curtidas">❤ {{ p.igLikes }}</span>
                     <span title="Comentários">💬 {{ p.igComments }}</span>
                     <span title="Salvos">🔖 {{ p.igSaves }}</span>
-                    <span *ngIf="p.igReach > 0" title="Alcance">👁 {{ p.igReach }}</span>
+                    <span title="Alcance">👁 {{ p.igReach }}</span>
                   </div>
                   <div *ngIf="p.facebookPermalink" class="post-card__stats">
                     <span class="post-card__stats-label">
@@ -697,7 +697,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     <span title="Curtidas">❤ {{ p.fbLikes }}</span>
                     <span title="Comentários">💬 {{ p.fbComments }}</span>
                     <span title="Compartilhamentos">↗ {{ p.fbShares }}</span>
-                    <span *ngIf="p.fbReach > 0" title="Alcance">👁 {{ p.fbReach }}</span>
+                    <span title="Alcance">👁 {{ p.fbReach }}</span>
                   </div>
                 </ng-container>
 
