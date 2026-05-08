@@ -1926,9 +1926,13 @@ export class ClientAppComponent implements OnInit {
     const igParam = this.route.snapshot.queryParamMap.get('ig');
     if (igParam === 'connected') {
       this.loadProfile();
+      // Remove query params from URL so a hard-refresh doesn't re-trigger this
+      this.router.navigate([], { replaceUrl: true, queryParams: {} });
     } else if (igParam === 'error') {
       const reason = this.route.snapshot.queryParamMap.get('ig_reason') || '';
       this.igError = this.translateIgError(reason);
+      // Remove query params from URL so a hard-refresh doesn't re-show the error modal
+      this.router.navigate([], { replaceUrl: true, queryParams: {} });
     }
   }
 
