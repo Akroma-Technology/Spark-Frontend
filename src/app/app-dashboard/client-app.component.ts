@@ -117,14 +117,14 @@ interface MyPost {
   topicUsed: string | null;
   caption: string | null;
   postFormat: 'SINGLE' | 'CAROUSEL' | string;
-  imageUrlTemp: string | null;
+  imageUrl: string | null;
   instagramPermalink: string | null;
   facebookPermalink: string | null;
+  publishStory: boolean;
   scheduledFor: string | null;
   executedAt: string | null;
-  likes: number;
-  comments: number;
-  saves: number;
+  igLikes: number; igComments: number; igSaves: number; igReach: number;
+  fbLikes: number; fbComments: number; fbShares: number; fbReach: number;
   errorMessage: string | null;
   retryCount: number;
 }
@@ -639,20 +639,31 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
             <div class="post-card" *ngFor="let p of myPosts">
               <!-- Thumbnail -->
               <div class="post-card__img-wrap">
-                <img *ngIf="p.imageUrlTemp" [src]="p.imageUrlTemp" alt="Imagem do post" class="post-card__img" loading="lazy">
-                <div *ngIf="!p.imageUrlTemp" class="post-card__img post-card__img--placeholder">
+                <img *ngIf="p.imageUrl" [src]="p.imageUrl" alt="Imagem do post" class="post-card__img" loading="lazy">
+                <div *ngIf="!p.imageUrl" class="post-card__img post-card__img--placeholder">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                 </div>
               </div>
 
               <div class="post-card__body">
-                <!-- Status + date row -->
+                <!-- Status + format + story badges -->
                 <div class="post-card__meta">
                   <span class="post-badge" [ngClass]="postStatusClass(p.status)">{{ postStatusLabel(p.status) }}</span>
-                  <span class="post-card__date">
-                    {{ (p.executedAt || p.scheduledFor) | date:'dd/MM HH:mm' }}
-                  </span>
                   <span class="post-card__format" *ngIf="p.postFormat === 'CAROUSEL'">Carrossel</span>
+                  <span class="post-card__format post-card__format--story" *ngIf="p.publishStory">Story ✓</span>
+                  <span class="post-card__date">{{ (p.executedAt || p.scheduledFor) | date:'dd/MM HH:mm' }}</span>
+                </div>
+
+                <!-- Networks published -->
+                <div class="post-card__networks">
+                  <span *ngIf="p.instagramPermalink" class="post-card__net post-card__net--ig">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                    Instagram
+                  </span>
+                  <span *ngIf="p.facebookPermalink" class="post-card__net post-card__net--fb">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    Facebook
+                  </span>
                 </div>
 
                 <!-- Topic -->
@@ -668,12 +679,27 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                   ⚠ {{ p.errorMessage.length > 80 ? (p.errorMessage.slice(0, 80) + '…') : p.errorMessage }}
                 </p>
 
-                <!-- Engagement (SUCCESS only) -->
-                <div *ngIf="p.status === 'SUCCESS'" class="post-card__stats">
-                  <span title="Curtidas">❤ {{ p.likes }}</span>
-                  <span title="Comentários">💬 {{ p.comments }}</span>
-                  <span title="Salvos">🔖 {{ p.saves }}</span>
-                </div>
+                <!-- Engagement per network (SUCCESS only) -->
+                <ng-container *ngIf="p.status === 'SUCCESS'">
+                  <div *ngIf="p.instagramPermalink" class="post-card__stats">
+                    <span class="post-card__stats-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/></svg>
+                    </span>
+                    <span title="Curtidas">❤ {{ p.igLikes }}</span>
+                    <span title="Comentários">💬 {{ p.igComments }}</span>
+                    <span title="Salvos">🔖 {{ p.igSaves }}</span>
+                    <span title="Alcance">👁 {{ p.igReach }}</span>
+                  </div>
+                  <div *ngIf="p.facebookPermalink" class="post-card__stats">
+                    <span class="post-card__stats-label">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width:10px;height:10px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    </span>
+                    <span title="Curtidas">❤ {{ p.fbLikes }}</span>
+                    <span title="Comentários">💬 {{ p.fbComments }}</span>
+                    <span title="Compartilhamentos">↗ {{ p.fbShares }}</span>
+                    <span title="Alcance">👁 {{ p.fbReach }}</span>
+                  </div>
+                </ng-container>
 
                 <!-- Links -->
                 <div class="post-card__links">
@@ -1493,6 +1519,12 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .post-card__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .post-card__date { font-size: 11px; color: #6b7280; margin-left: auto; }
     .post-card__format { font-size: 10px; color: #9ca3af; background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 4px; }
+    .post-card__format--story { color: #a78bfa; background: rgba(167,139,250,.1); }
+    .post-card__networks { display: flex; gap: 6px; flex-wrap: wrap; }
+    .post-card__net { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+    .post-card__net--ig { color: #e1306c; background: rgba(225,48,108,.1); }
+    .post-card__net--fb { color: #4e9af1; background: rgba(78,154,241,.1); }
+    .post-card__stats-label { color: #6b7280; }
     .post-card__topic { font-size: 12px; color: #fbbf24; font-weight: 600; margin: 0; line-height: 1.4; }
     .post-card__caption { font-size: 12px; color: #d1d5db; margin: 0; line-height: 1.5; }
     .post-card__error { font-size: 11px; color: #f87171; margin: 0; line-height: 1.4; }
@@ -1894,9 +1926,13 @@ export class ClientAppComponent implements OnInit {
     const igParam = this.route.snapshot.queryParamMap.get('ig');
     if (igParam === 'connected') {
       this.loadProfile();
+      // Remove query params from URL so a hard-refresh doesn't re-trigger this
+      this.router.navigate([], { replaceUrl: true, queryParams: {} });
     } else if (igParam === 'error') {
       const reason = this.route.snapshot.queryParamMap.get('ig_reason') || '';
       this.igError = this.translateIgError(reason);
+      // Remove query params from URL so a hard-refresh doesn't re-show the error modal
+      this.router.navigate([], { replaceUrl: true, queryParams: {} });
     }
   }
 
