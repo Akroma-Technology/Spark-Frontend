@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ClientAuthService } from '../core/services/client-auth.service';
+import { FingerprintService } from '../core/services/fingerprint.service';
 import { SeoService } from '../core/services/seo.service';
 import { SparkTopbarComponent } from '../shared/components/topbar/topbar.component';
 
@@ -280,6 +281,7 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
 export class CadastroComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private auth = inject(ClientAuthService);
+  private fp = inject(FingerprintService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private seo = inject(SeoService);
@@ -354,23 +356,25 @@ export class CadastroComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = '';
 
-    this.auth.signup(this.form.value).subscribe({
-      next: (res: any) => {
-        this.loading = false;
-        this.pendingEmail = res.email;
-      },
-      error: (err: HttpErrorResponse) => {
-        if (err.status === 409) {
-          this.error = 'Este e-mail ja esta cadastrado. Que tal fazer login?';
-        } else if (err.status === 0) {
-          this.error = 'Sem conexao com o servidor. Verifique sua internet.';
-        } else if (err.error?.error) {
-          this.error = err.error.error;
-        } else {
-          this.error = `Erro ao criar conta (${err.status}). Tente novamente em instantes.`;
+    this.fp.getVisitorId().then(visitorId => {
+      this.auth.signup(this.form.value, visitorId).subscribe({
+        next: (res: any) => {
+          this.loading = false;
+          this.pendingEmail = res.email;
+        },
+        error: (err: HttpErrorResponse) => {
+          if (err.status === 409) {
+            this.error = 'Este e-mail ja esta cadastrado. Que tal fazer login?';
+          } else if (err.status === 0) {
+            this.error = 'Sem conexao com o servidor. Verifique sua internet.';
+          } else if (err.error?.error) {
+            this.error = err.error.error;
+          } else {
+            this.error = `Erro ao criar conta (${err.status}). Tente novamente em instantes.`;
+          }
+          this.loading = false;
         }
-        this.loading = false;
-      }
+      });
     });
   }
 

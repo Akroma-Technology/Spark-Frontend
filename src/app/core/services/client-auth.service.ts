@@ -48,8 +48,11 @@ export class ClientAuthService {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  signup(payload: SignupRequest): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/api/v1/client-auth/signup`, payload);
+  signup(payload: SignupRequest, fingerprint = ''): Observable<any> {
+    const headers = fingerprint
+      ? new HttpHeaders({ 'X-Client-Fingerprint': fingerprint })
+      : undefined;
+    return this.http.post<any>(`${this.apiUrl}/api/v1/client-auth/signup`, payload, { headers });
   }
 
   verifyCode(email: string, code: string): Observable<any> {
