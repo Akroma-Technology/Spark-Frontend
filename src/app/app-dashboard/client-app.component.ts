@@ -126,6 +126,9 @@ interface MyPost {
   igLikes: number; igComments: number; igSaves: number; igReach: number;
   fbLikes: number; fbComments: number; fbShares: number; fbReach: number;
   errorMessage: string | null;
+  partialErrorMessage: string | null;
+  /** Networks the slot requested (e.g. ['instagram', 'facebook']). */
+  networks: string[] | null;
   retryCount: number;
 }
 
@@ -591,6 +594,11 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                            [placeholder]="getSlotTopicPlaceholder()">
                   </div>
                   <p *ngIf="slotWarnings[i]" class="slot-warning">⚠️ {{ slotWarnings[i] }}</p>
+                  <!-- Hint when Facebook is connected but not enabled for this slot -->
+                  <p *ngIf="profile?.facebookEnabled && profile?.facebookPageId && !slotNetActive(s, 'facebook')"
+                     class="slot-hint">
+                    💡 Você tem Facebook conectado — clique em <strong>Facebook</strong> acima para publicar também na sua página.
+                  </p>
                 </div>
                 <p *ngIf="!postConfigDraft.scheduleTimes.length" class="cfg-empty">
                   Nenhuma postagem agendada ainda. Clique em <strong>+ Adicionar postagem</strong> para começar.
@@ -656,15 +664,36 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
                 <!-- Networks published -->
                 <div class="post-card__networks">
+                  <!-- Instagram: published -->
                   <span *ngIf="p.instagramPermalink" class="post-card__net post-card__net--ig">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                     Instagram
                   </span>
+                  <!-- Instagram: requested but failed -->
+                  <span *ngIf="!p.instagramPermalink && (p.networks ?? ['instagram']).includes('instagram') && p.status === 'SUCCESS'"
+                        class="post-card__net post-card__net--missing"
+                        title="Slot pediu Instagram mas a publicação não foi confirmada">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/></svg>
+                    Instagram não publicado
+                  </span>
+                  <!-- Facebook: published -->
                   <span *ngIf="p.facebookPermalink" class="post-card__net post-card__net--fb">
                     <svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                     Facebook
                   </span>
+                  <!-- Facebook: requested but failed (most common bug) -->
+                  <span *ngIf="!p.facebookPermalink && (p.networks ?? []).includes('facebook') && p.status === 'SUCCESS'"
+                        class="post-card__net post-card__net--missing"
+                        title="Este slot pediu Facebook mas a publicação não saiu — veja o aviso abaixo">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    Facebook não publicado
+                  </span>
                 </div>
+
+                <!-- Partial errors (e.g. Facebook not connected) -->
+                <p *ngIf="p.status === 'SUCCESS' && p.partialErrorMessage" class="post-card__partial-error">
+                  ⓘ {{ p.partialErrorMessage }}
+                </p>
 
                 <!-- Topic -->
                 <p *ngIf="p.topicUsed" class="post-card__topic">{{ p.topicUsed }}</p>
@@ -1258,6 +1287,12 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .slot-warning {
       margin: 8px 0 0; font-size: 12px; color: #fbbf24;
     }
+    .slot-hint {
+      margin: 6px 0 0; font-size: 11px; color: #93c5fd;
+      background: rgba(59,130,246,.06); padding: 6px 8px; border-radius: 4px;
+      border-left: 2px solid rgba(59,130,246,.4);
+    }
+    .slot-hint strong { color: #4e9af1; }
 
 
     .app-shell {
@@ -1524,10 +1559,19 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .post-card__net { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
     .post-card__net--ig { color: #e1306c; background: rgba(225,48,108,.1); }
     .post-card__net--fb { color: #4e9af1; background: rgba(78,154,241,.1); }
+    .post-card__net--missing {
+      color: #fbbf24; background: rgba(251,191,36,.10);
+      border: 1px dashed rgba(251,191,36,.4); cursor: help;
+    }
     .post-card__stats-label { color: #6b7280; }
     .post-card__topic { font-size: 12px; color: #fbbf24; font-weight: 600; margin: 0; line-height: 1.4; }
     .post-card__caption { font-size: 12px; color: #d1d5db; margin: 0; line-height: 1.5; }
     .post-card__error { font-size: 11px; color: #f87171; margin: 0; line-height: 1.4; }
+    .post-card__partial-error {
+      font-size: 11px; color: #fbbf24; margin: 4px 0 0; line-height: 1.4;
+      background: rgba(251,191,36,.06); padding: 6px 8px; border-radius: 4px;
+      border-left: 2px solid rgba(251,191,36,.4);
+    }
     .post-card__stats { display: flex; gap: 12px; font-size: 12px; color: #9ca3af; margin-top: 2px; }
     .post-card__links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
     .post-card__link {
