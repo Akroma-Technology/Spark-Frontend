@@ -209,7 +209,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
             </div>
             <div class="app-stat">
               <span class="app-stat__label">Plano atual</span>
-              <span class="app-stat__value">{{ client.planTier }}</span>
+              <span class="app-stat__value">{{ billingStatus?.planTier || client.planTier }}</span>
               <span class="app-stat__hint">{{ trialActive ? 'Em teste gratis' : 'Ativo' }}</span>
             </div>
             <div class="app-stat">
@@ -1921,6 +1921,10 @@ export class ClientAppComponent implements OnInit {
     this.loadProfile();
     this.loadAnalytics();
     this.loadReferralStats(); // carrega o referralCode logo no início
+    // Always refresh billing status so the home overview reflects any
+    // server-side plan changes (e.g. webhook activation, admin grant-plan)
+    // even when the user hasn't opened the "Plano" tab yet.
+    this.loadPlanData();
 
     // After Instagram OAuth callback, handle success or error
     const igParam = this.route.snapshot.queryParamMap.get('ig');
@@ -2013,13 +2017,18 @@ export class ClientAppComponent implements OnInit {
   }
 
   get trialActive(): boolean {
+    // Prefer the live billing status when loaded — it reflects server-side
+    // changes (admin grant-plan, webhook activation) immediately.
+    if (this.billingStatus) return this.billingStatus.trialActive;
     if (!this.client?.trialEndsAt) return false;
     return new Date(this.client.trialEndsAt).getTime() > Date.now();
   }
 
   get trialDaysLeft(): number | null {
-    if (!this.client?.trialEndsAt) return null;
-    const ms = new Date(this.client.trialEndsAt).getTime() - Date.now();
+    const trialEndsAt = this.billingStatus?.trialEndsAt ?? this.client?.trialEndsAt;
+    if (!trialEndsAt) return null;
+    if (this.billingStatus && !this.billingStatus.trialActive) return null;
+    const ms = new Date(trialEndsAt).getTime() - Date.now();
     return ms > 0 ? Math.floor(ms / (1000 * 60 * 60 * 24)) : 0;
   }
 
@@ -2066,6 +2075,17 @@ export class ClientAppComponent implements OnInit {
     this.http.get<BillingStatus>(`${environment.apiUrl}/api/v1/client-billing/status`, { headers }).subscribe({
       next: (status) => {
         this.billingStatus = status;
+        // Sync the cached client object so the home overview (which reads
+        // from this.client.*) reflects the latest server-side plan state.
+        // Without this, the JWT-cached plan_tier and trial_ends_at would
+        // remain stale until the user logs out and back in.
+        if (this.client) {
+          this.client = {
+            ...this.client,
+            planTier: status.planTier,
+            trialEndsAt: status.trialActive ? (status.trialEndsAt ?? undefined) : undefined,
+          };
+        }
         // Pre-select current plan tier if on a paid plan
         if (status.planTier && status.planTier !== 'FREE') {
           this.selectedPlanTier = status.planTier as 'STARTER' | 'PRO';
