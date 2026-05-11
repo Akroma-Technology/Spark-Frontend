@@ -140,7 +140,14 @@ export class VerificarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const jwt = this.route.snapshot.queryParamMap.get('jwt');
+    // Magic link JWT is delivered via URL fragment (#jwt=...) to prevent
+    // it from appearing in server logs, Cloudflare logs, or browser history.
+    // Fragments are never sent to servers — client-side only.
+    const fragment = this.route.snapshot.fragment ?? '';
+    const fragmentParams = new URLSearchParams(fragment);
+    const jwt =
+      fragmentParams.get('jwt') ||          // new: #jwt=... (never logged)
+      this.route.snapshot.queryParamMap.get('jwt'); // legacy: ?jwt=... fallback
     const token = this.route.snapshot.queryParamMap.get('token');
     const error = this.route.snapshot.queryParamMap.get('error');
 
