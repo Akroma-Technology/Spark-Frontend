@@ -881,7 +881,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     [disabled]="checkoutLoading || !planPrices"
                     (click)="startCheckout()">
               <span *ngIf="!checkoutLoading">
-                Assinar {{ selectedPlanTier | titlecase }} {{ selectedCycle === 'ANNUAL' ? 'Anual' : 'Mensal' }} &rarr;
+                Assinar {{ selectedPlanTier | titlecase }} {{ selectedCycle === 'ANNUAL' ? 'Anual' : 'Mensal' }}
               </span>
               <span *ngIf="checkoutLoading">Redirecionando para pagamento...</span>
             </button>
