@@ -37,6 +37,8 @@ interface ClientProfile {
   planTier?: string;
   maxPostsPerDay?: number;
   facebookEnabled?: boolean;
+  linkedinEnabled?: boolean;
+  linkedinConnected?: boolean;
   postsPerDay?: number;
   activeDays?: string[];
   scheduleTimes?: PostSlot[];
@@ -583,6 +585,18 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                         <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                         Facebook
                         <span *ngIf="!profile?.facebookEnabled" class="slot-net-lock">🔒</span>
+                      </button>
+                    </div>
+                    <!-- LinkedIn: Pro+ only -->
+                    <div class="slot-net-wrapper" [title]="!profile?.linkedinEnabled ? 'Disponível no plano Pro ou superior' : ''">
+                      <button type="button" class="slot-net-btn"
+                              [class.slot-net-btn--li]="slotNetActive(s, 'linkedin')"
+                              [class.slot-net-btn--locked]="!profile?.linkedinEnabled"
+                              [disabled]="!profile?.linkedinEnabled"
+                              (click)="profile?.linkedinEnabled && toggleSlotNetwork(s, 'linkedin')">
+                        <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px"><path d="M20.5 2h-17A1.5 1.5 0 0 0 2 3.5v17A1.5 1.5 0 0 0 3.5 22h17a1.5 1.5 0 0 0 1.5-1.5v-17A1.5 1.5 0 0 0 20.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 1 1 8.3 6.5a1.78 1.78 0 0 1-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0 0 13 14.19V19h-3v-9h2.9v1.3a3.11 3.11 0 0 1 2.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+                        LinkedIn
+                        <span *ngIf="!profile?.linkedinEnabled" class="slot-net-lock">🔒</span>
                       </button>
                     </div>
                   </div>
@@ -1800,6 +1814,9 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .slot-net-btn--fb {
       background: rgba(24,119,242,.14); border-color: rgba(24,119,242,.45); color: #4e9af1;
     }
+    .slot-net-btn--li {
+      background: rgba(10,102,194,.18); border-color: rgba(10,102,194,.50); color: #93c5fd;
+    }
     .slot-net-btn--locked {
       opacity: .45; cursor: not-allowed;
     }
@@ -2512,12 +2529,12 @@ export class ClientAppComponent implements OnInit {
   }
 
   /** Returns true if the given network is active for this slot */
-  slotNetActive(slot: PostSlot, net: 'instagram' | 'facebook'): boolean {
+  slotNetActive(slot: PostSlot, net: 'instagram' | 'facebook' | 'linkedin'): boolean {
     return (slot.networks ?? ['instagram']).includes(net);
   }
 
   /** Toggle a network on/off for a slot — at least one must remain active */
-  toggleSlotNetwork(slot: PostSlot, net: 'instagram' | 'facebook'): void {
+  toggleSlotNetwork(slot: PostSlot, net: 'instagram' | 'facebook' | 'linkedin'): void {
     const nets = slot.networks ? [...slot.networks] : ['instagram'];
     const idx = nets.indexOf(net);
     if (idx >= 0) {
