@@ -70,6 +70,7 @@ import { filter } from 'rxjs/operators';
   styles: [`
     :host {
       display: block;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --ak-accent:       #fbbf24;
       --ak-accent-2:     #f59e0b;
       --ak-accent-deep:  #d97706;
