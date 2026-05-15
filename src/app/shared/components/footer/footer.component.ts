@@ -41,12 +41,17 @@ import { RouterModule } from '@angular/router';
             <a routerLink="/como-funciona" class="ak-footer__link">Como funciona</a>
             <a routerLink="/recursos" class="ak-footer__link">Recursos</a>
             <a routerLink="/planos" class="ak-footer__link">Planos</a>
-            <a routerLink="/cadastro" class="ak-footer__link">Teste grátis 7 dias</a>
           </div>
           <div class="ak-footer__col">
             <h4 class="ak-footer__heading">Empresa</h4>
             <a href="https://akroma.com.br/sobre" class="ak-footer__link">Sobre a Akroma</a>
             <a href="https://akroma.com.br/servicos" class="ak-footer__link">Outros serviços</a>
+            <a href="https://akroma.com.br/trabalhe-conosco" class="ak-footer__link">Trabalhe Conosco</a>
+          </div>
+          <div class="ak-footer__col">
+            <h4 class="ak-footer__heading">Acesso</h4>
+            <a routerLink="/entrar" class="ak-footer__link">Entrar</a>
+            <a routerLink="/cadastro" class="ak-footer__link">Teste grátis 7 dias</a>
             <a routerLink="/contato" class="ak-footer__link">Fale Conosco</a>
           </div>
           <div class="ak-footer__col">
@@ -125,7 +130,7 @@ import { RouterModule } from '@angular/router';
     }
     .trust-badge svg { width: 12px; height: 12px; color: var(--ak-accent); flex-shrink: 0; }
 
-    .ak-footer__nav { display: flex; gap: 48px; padding-top: 4px; }
+    .ak-footer__nav { display: flex; gap: 32px; padding-top: 4px; }
     .ak-footer__col { display: flex; flex-direction: column; gap: 10px; flex: 1; }
     .ak-footer__heading {
       font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
