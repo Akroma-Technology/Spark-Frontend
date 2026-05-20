@@ -1,6 +1,7 @@
 import { Routes, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { ClientAuthService } from './core/services/client-auth.service';
+import { AdminAuthService } from './core/services/admin-auth.service';
 
 const clientAuthGuard = () => {
   const auth = inject(ClientAuthService);
@@ -8,6 +9,29 @@ const clientAuthGuard = () => {
   if (auth.isLoggedIn()) return true;
   router.navigate(['/entrar']);
   return false;
+};
+
+/**
+ * Guards `/admin/*` — requires a non-expired IDP JWT with akroma_level of
+ * `akroma_staff` or `akroma_super_admin` (or the legacy `is_admin === true`
+ * fallback during the unified-roles transition).
+ *
+ * Non-admin users are bounced to `/entrar` instead of `/admin/...` so a
+ * customer who lands on `/admin/nichos` doesn't see a half-rendered admin
+ * shell asking for credentials they can't satisfy.
+ */
+const adminAuthGuard = () => {
+  const auth = inject(AdminAuthService);
+  const router = inject(Router);
+  if (auth.isLoggedIn() && auth.isAdmin()) return true;
+  // Allow the unauthenticated state to reach the admin login form on the page
+  // itself — only bounce users who are clearly customers (have a valid token
+  // but are not admin).
+  if (auth.getToken() && !auth.isAdmin()) {
+    router.navigate(['/entrar']);
+    return false;
+  }
+  return true;
 };
 
 export const routes: Routes = [
@@ -62,6 +86,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
+    canActivate: [adminAuthGuard],
+    canActivateChild: [adminAuthGuard],
     children: [
       {
         path: 'nichos',

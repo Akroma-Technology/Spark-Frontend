@@ -224,7 +224,14 @@ export class AdminNichosComponent implements OnInit {
     this.loggingIn = true;
     this.loginError = '';
     this.adminAuth.login(this.loginEmail, this.loginPassword).subscribe({
-      next: () => { this.loggingIn = false; this.loadTemplates(); },
+      next: () => {
+        this.loggingIn = false;
+        if (!this.adminAuth.isAdmin()) {
+          this.loginError = 'Esta conta não tem permissão de administrador.';
+          return;
+        }
+        this.loadTemplates();
+      },
       error: () => { this.loggingIn = false; this.loginError = 'Credenciais inválidas.'; }
     });
   }
