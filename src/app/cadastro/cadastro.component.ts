@@ -30,32 +30,10 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
           <div class="verify-icon">✉️</div>
           <h2 class="verify-title">Confirme seu e-mail</h2>
           <p class="verify-desc">
-            Enviamos um código de 6 dígitos para <strong>{{ pendingEmail }}</strong>.<br>
-            Verifique também a caixa de spam.
+            Enviamos um link de confirmação para <strong>{{ pendingEmail }}</strong>.<br>
+            Clique no link para ativar sua conta. Verifique também a caixa de spam.
           </p>
-          <form [formGroup]="codeForm" (ngSubmit)="submitCode()" class="verify-form">
-            <input
-              formControlName="code"
-              type="text"
-              inputmode="numeric"
-              maxlength="6"
-              placeholder="000000"
-              class="signup-field input code-input"
-              autocomplete="one-time-code"
-            />
-            <div class="signup-error signup-error--banner" *ngIf="codeError">{{ codeError }}</div>
-            <button type="submit" class="btn btn--spark btn--full" [disabled]="codeLoading">
-              {{ codeLoading ? 'Verificando...' : 'Confirmar →' }}
-            </button>
-          </form>
-          <button
-            type="button"
-            class="resend-btn"
-            (click)="resendCode()"
-            [disabled]="resendCooldown > 0"
-          >
-            {{ resendCooldown > 0 ? 'Reenviar em ' + resendCooldown + 's' : 'Reenviar código' }}
-          </button>
+          <a routerLink="/app" class="btn btn--spark btn--full">Ir para o painel →</a>
         </div>
 
         <!-- SIGNUP FORM (shown before verification) -->
@@ -287,17 +265,11 @@ export class CadastroComponent implements OnInit, OnDestroy {
   private seo = inject(SeoService);
 
   form!: FormGroup;
-  codeForm!: FormGroup;
 
   error = '';
   loading = false;
 
   pendingEmail = '';
-  codeError = '';
-  codeLoading = false;
-  resendCooldown = 0;
-
-  private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     this.seo.setPage({
@@ -311,12 +283,13 @@ export class CadastroComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Redirect from login when email is not yet verified
+    // Redirect from login when email is not yet verified. The IDP re-sends
+    // the verification link automatically the next time the user attempts to
+    // login, so we only need to surface the "check your inbox" UI here.
     const emailParam = this.route.snapshot.queryParamMap.get('email');
     const verifyParam = this.route.snapshot.queryParamMap.get('verify');
     if (emailParam && verifyParam === '1') {
       this.pendingEmail = emailParam;
-      this.auth.resendCode(emailParam).subscribe();
     }
 
     const ref = this.route.snapshot.queryParamMap.get('ref') ?? '';
@@ -326,10 +299,6 @@ export class CadastroComponent implements OnInit, OnDestroy {
       password: ['', [Validators.required, Validators.minLength(6)]],
       whatsapp: [''],
       referralCode: [ref]
-    });
-
-    this.codeForm = this.fb.group({
-      code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern(/^\d{6}$/)]]
     });
 
     // Phone mask: (xx) x xxxx-xxxx
@@ -346,9 +315,7 @@ export class CadastroComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.cooldownInterval) {
-      clearInterval(this.cooldownInterval);
-    }
+    // No-op — kept for interface stability.
   }
 
   submit(): void {
@@ -357,16 +324,22 @@ export class CadastroComponent implements OnInit, OnDestroy {
     this.error = '';
 
     this.fp.getVisitorId().then(visitorId => {
+      const email = this.form.value.email;
       this.auth.signup(this.form.value, visitorId).subscribe({
-        next: (res: any) => {
+        next: () => {
           this.loading = false;
-          this.pendingEmail = res.email;
+          // The IDP issued a Spark-scoped JWT and emailed a verification link.
+          // We could push straight to /app, but for trust we surface the
+          // "check your inbox" step. The session is already persisted.
+          this.pendingEmail = email;
         },
         error: (err: HttpErrorResponse) => {
           if (err.status === 409) {
             this.error = 'Este e-mail ja esta cadastrado. Que tal fazer login?';
           } else if (err.status === 0) {
             this.error = 'Sem conexao com o servidor. Verifique sua internet.';
+          } else if (err.error?.detail) {
+            this.error = err.error.detail;
           } else if (err.error?.error) {
             this.error = err.error.error;
           } else {
@@ -375,42 +348,6 @@ export class CadastroComponent implements OnInit, OnDestroy {
           this.loading = false;
         }
       });
-    });
-  }
-
-  submitCode(): void {
-    if (this.codeForm.invalid) { this.codeForm.markAllAsTouched(); return; }
-    this.codeLoading = true;
-    this.codeError = '';
-    const { code } = this.codeForm.value;
-    this.auth.verifyCode(this.pendingEmail, code).subscribe({
-      next: (res: any) => {
-        this.auth.saveSession(res);
-        this.router.navigate(['/app'], { queryParams: { welcome: '1' } });
-      },
-      error: (err: HttpErrorResponse) => {
-        this.codeLoading = false;
-        this.codeError = err.error?.detail || 'Código inválido. Tente novamente.';
-      }
-    });
-  }
-
-  resendCode(): void {
-    if (this.resendCooldown > 0) return;
-    this.auth.resendCode(this.pendingEmail).subscribe({
-      next: () => {
-        this.resendCooldown = 60;
-        this.cooldownInterval = setInterval(() => {
-          this.resendCooldown--;
-          if (this.resendCooldown <= 0) {
-            clearInterval(this.cooldownInterval!);
-            this.cooldownInterval = null;
-          }
-        }, 1000);
-      },
-      error: () => {
-        // Silent fail — don't expose info
-      }
     });
   }
 

@@ -159,8 +159,8 @@ export class VerificarComponent implements OnInit {
       // Should not happen on frontend — token goes to backend first.
       // Redirect to backend to trigger magic link verification.
       this.state = 'loading';
-      // The backend /client-auth/verify-magic-link redirects back here with ?jwt=...
-      // If somehow the raw token ended up here, just mark error.
+      // The IDP magic-link handler redirects here with #jwt=...
+      // A raw ?token=... query should not reach the FE; mark as error.
       this.state = 'error';
     } else if (error) {
       this.state = 'error';
