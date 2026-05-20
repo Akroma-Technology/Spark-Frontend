@@ -10,8 +10,8 @@
 //   3) Persist access_token (session) + refresh_token (local)
 //
 // Admin authority is decided from the JWT claims:
-//   - `akroma_level === 'akroma_super_admin' | 'akroma_staff'`  (preferred)
-//   - `is_admin === true`                                       (legacy fallback)
+//   - `akroma_level === 'akroma_super_admin' | 'akroma_staff'`
+// (The pre-Plan-1 `is_admin` boolean fallback was removed in Plan 7 follow-up #5.)
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -120,9 +120,7 @@ export class AdminAuthService {
   private isAdminFromClaims(claims: Record<string, any> | null): boolean {
     if (!claims) return false;
     const level = claims['akroma_level'];
-    if (level === 'akroma_super_admin' || level === 'akroma_staff') return true;
-    // Transition fallback for tokens minted before Plan 1 rollout.
-    return claims['is_admin'] === true;
+    return level === 'akroma_super_admin' || level === 'akroma_staff';
   }
 
   private persist(pair: TokenPair): void {
