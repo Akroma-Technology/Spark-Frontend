@@ -13,247 +13,245 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, SparkTopbarComponent],
   template: `
-    <app-spark-topbar></app-spark-topbar>
+    <div class="login-wrapper">
+      <app-spark-topbar></app-spark-topbar>
 
-    <section class="signup-section">
-      <div class="signup-container">
-        <div class="signup-header">
-          <span class="signup-badge">TRIAL STARTER — 7 DIAS GRATIS</span>
-          <h1 class="signup-title">Crie sua conta e ative o Spark</h1>
-          <p class="signup-subtitle">
-            Sem cartao de credito. Cancele quando quiser. Primeiro post publicado em minutos.
-          </p>
-        </div>
+      <div class="page">
+        <div class="page__glow"></div>
 
-        <!-- VERIFICATION STEP (shown after signup) -->
-        <div *ngIf="pendingEmail" class="verify-step">
-          <div class="verify-icon">✉️</div>
-          <h2 class="verify-title">Confirme seu e-mail</h2>
-          <p class="verify-desc">
-            Enviamos um link de confirmação para <strong>{{ pendingEmail }}</strong>.<br>
-            Clique no link para ativar sua conta. Verifique também a caixa de spam.
-          </p>
-          <a routerLink="/app" class="btn btn--spark btn--full">Ir para o painel →</a>
-        </div>
-
-        <!-- SIGNUP FORM (shown before verification) -->
-        <form *ngIf="!pendingEmail" [formGroup]="form" (ngSubmit)="submit()" class="signup-form">
-          <div class="signup-field">
-            <label for="name">Seu nome</label>
-            <input id="name" type="text" formControlName="name" autocomplete="name" placeholder="Como quer ser chamado" />
-            <span class="signup-error" *ngIf="hasError('name')">{{ getError('name') }}</span>
+        <div class="card">
+          <div class="card__brand">
+            <img src="/assets/akroma-icon.svg" alt="" class="card__logo" aria-hidden="true" onerror="this.style.display='none'">
+            <span class="card__brand-name">Akroma <span class="card__brand-accent">Spark</span></span>
           </div>
 
-          <div class="signup-field">
-            <label for="email">E-mail profissional</label>
-            <input id="email" type="email" formControlName="email" autocomplete="email" placeholder="voce@empresa.com" />
-            <span class="signup-error" *ngIf="hasError('email')">{{ getError('email') }}</span>
-          </div>
-
-          <div class="signup-field">
-            <label for="password">Senha</label>
-            <input id="password" type="password" formControlName="password" autocomplete="new-password" placeholder="Minimo 6 caracteres" />
-            <span class="signup-error" *ngIf="hasError('password')">{{ getError('password') }}</span>
-          </div>
-
-          <div class="signup-field">
-            <label for="whatsapp">WhatsApp <span class="signup-field__opt">(opcional)</span></label>
-            <input id="whatsapp" type="tel" formControlName="whatsapp" autocomplete="tel" placeholder="(11) 9 9999-9999" maxlength="16" />
-          </div>
-
-          <div class="signup-field">
-            <label for="referralCode">Codigo de indicacao <span class="signup-field__opt">(opcional)</span></label>
-            <input id="referralCode" type="text" formControlName="referralCode" autocapitalize="characters" placeholder="Se um amigo te indicou" />
-          </div>
-
-          <div class="signup-error signup-error--banner" *ngIf="error">{{ error }}</div>
-
-          <button type="submit" class="btn btn--spark" [disabled]="loading">
-            <span *ngIf="!loading">Comecar teste gratis &rarr;</span>
-            <span *ngIf="loading">Criando conta...</span>
-          </button>
-
-          <p class="signup-tos">
-            Ao continuar, voce aceita os
-            <a href="https://akroma.com.br/termos-de-uso" target="_blank" rel="noopener">Termos de Uso</a> e a
-            <a href="https://akroma.com.br/politica-privacidade" target="_blank" rel="noopener">Politica de Privacidade</a>.
-          </p>
-
-          <div class="signup-alt">
-            Ja tem conta? <a routerLink="/entrar">Entrar</a>
-          </div>
-        </form>
-
-        <div class="signup-perks" *ngIf="!pendingEmail">
-          <div class="signup-perk">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <div>
-              <strong>7 dias gratis no plano Starter</strong>
-              <span>Acesso completo a recursos premium. Sem cobrancas automaticas.</span>
+          @if (pendingEmail) {
+            <div class="verify-step">
+              <div class="verify-icon">✉️</div>
+              <h1 class="card__title">Confirme seu e-mail</h1>
+              <p class="card__sub">
+                Enviamos um link de confirmação para <strong class="verify-email">{{ pendingEmail }}</strong>.
+                Clique no link para ativar sua conta. Verifique também a caixa de spam.
+              </p>
+              <a routerLink="/app" class="btn-submit">Ir para o painel →</a>
             </div>
-          </div>
-          <div class="signup-perk">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <div>
-              <strong>Primeiro post em minutos</strong>
-              <span>Conecte seu Instagram e a IA comeca a trabalhar imediatamente.</span>
-            </div>
-          </div>
-          <div class="signup-perk">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <div>
-              <strong>Ganhe meses gratis indicando</strong>
-              <span>Seu codigo de indicacao e criado automaticamente na conta.</span>
-            </div>
-          </div>
+          } @else {
+            <div class="badge">TRIAL STARTER — 7 DIAS GRÁTIS</div>
+            <h1 class="card__title">Crie sua conta</h1>
+            <p class="card__sub">Sem cartão de crédito. Cancele quando quiser.</p>
+
+            <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+              <label class="field">
+                <span class="field__label">Seu nome</span>
+                <input
+                  class="field__input"
+                  type="text"
+                  formControlName="name"
+                  placeholder="Como quer ser chamado"
+                  autocomplete="name"
+                />
+                @if (hasError('name')) { <span class="field__error">{{ getError('name') }}</span> }
+              </label>
+
+              <label class="field">
+                <span class="field__label">E-mail profissional</span>
+                <input
+                  class="field__input"
+                  type="email"
+                  formControlName="email"
+                  placeholder="voce@empresa.com"
+                  autocomplete="email"
+                />
+                @if (hasError('email')) { <span class="field__error">{{ getError('email') }}</span> }
+              </label>
+
+              <label class="field">
+                <span class="field__label">Senha</span>
+                <input
+                  class="field__input"
+                  type="password"
+                  formControlName="password"
+                  placeholder="Mínimo 6 caracteres"
+                  autocomplete="new-password"
+                />
+                @if (hasError('password')) { <span class="field__error">{{ getError('password') }}</span> }
+              </label>
+
+              <label class="field">
+                <span class="field__label">WhatsApp <span class="field__opt">(opcional)</span></span>
+                <input
+                  class="field__input"
+                  type="tel"
+                  formControlName="whatsapp"
+                  placeholder="(11) 9 9999-9999"
+                  autocomplete="tel"
+                  maxlength="16"
+                />
+              </label>
+
+              <label class="field">
+                <span class="field__label">Código de indicação <span class="field__opt">(opcional)</span></span>
+                <input
+                  class="field__input"
+                  type="text"
+                  formControlName="referralCode"
+                  placeholder="Se um amigo te indicou"
+                  autocapitalize="characters"
+                />
+              </label>
+
+              @if (error) { <div class="alert">{{ error }}</div> }
+
+              <button type="submit" class="btn-submit" [disabled]="loading">
+                @if (loading) { <span class="spinner"></span> Criando conta… }
+                @else { Começar teste grátis → }
+              </button>
+            </form>
+
+            <p class="card__switch">
+              Já tem conta? <a routerLink="/entrar" class="link">Entrar</a>
+            </p>
+
+            <p class="card__legal">
+              Ao continuar, você concorda com os
+              <a href="https://akroma.com.br/termos-de-uso" target="_blank" rel="noopener">Termos de Uso</a>
+              e a
+              <a href="https://akroma.com.br/politica-privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.
+            </p>
+          }
         </div>
       </div>
-    </section>
+    </div>
   `,
   styles: [`
-    :host { display: block; background: #050912; min-height: 100vh; }
-    .signup-section { padding: 88px 16px 40px; display: flex; justify-content: center; }
-    .signup-container {
-      max-width: 960px; width: 100%; display: grid;
-      grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: start;
-    }
-    @media (max-width: 860px) { .signup-container { grid-template-columns: 1fr; } }
-
-    .signup-header { grid-column: 1 / -1; text-align: center; margin-bottom: 16px; }
-    .signup-badge {
-      display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 2px;
-      color: #fbbf24; padding: 4px 12px; border-radius: 20px;
-      background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.25);
-      margin-bottom: 16px;
-    }
-    .signup-title {
-      font-size: clamp(24px, 3.5vw, 34px); font-weight: 800; color: #fff;
-      margin: 0 0 12px; line-height: 1.2;
-    }
-    .signup-subtitle { font-size: 15px; color: #9ca3af; line-height: 1.6; max-width: 540px; margin: 0 auto; }
-
-    .signup-form {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px; padding: 32px;
-      display: flex; flex-direction: column; gap: 16px;
-    }
-    .signup-field { display: flex; flex-direction: column; gap: 6px; }
-    .signup-field label { font-size: 13px; font-weight: 600; color: #d1d5db; }
-    .signup-field__opt { color: #6b7280; font-weight: 400; margin-left: 4px; }
-    .signup-field input, .signup-field.input {
-      padding: 12px 14px; border-radius: 10px; font-size: 15px;
-      background: rgba(255,255,255,0.05); color: #fff;
-      border: 1px solid rgba(255,255,255,0.1);
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .signup-field input:focus, .signup-field.input:focus {
-      outline: none; border-color: rgba(251,191,36,0.5); background: rgba(255,255,255,0.07);
-    }
-    .signup-error { font-size: 12px; color: #f87171; }
-    .signup-error--banner {
-      padding: 10px 14px; border-radius: 10px;
-      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
-      margin-top: 4px;
+    :host {
+      display: block;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --ak-accent:      #f97316;
+      --ak-accent-2:    #fb923c;
+      --ak-accent-deep: #ea580c;
+      --ak-logo-filter: brightness(0) saturate(100%) invert(56%) sepia(72%) saturate(1800%) hue-rotate(5deg) brightness(105%) contrast(101%);
     }
 
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 15px;
-      border: none; cursor: pointer; text-decoration: none;
-      transition: all 0.2s;
+    .login-wrapper {
+      min-height: 100vh;
+      background: #050810;
+      display: flex; flex-direction: column;
     }
-    .btn--spark {
-      background: linear-gradient(135deg, #f59e0b, #d97706); color: #000;
-      border: 1px solid rgba(251,191,36,0.4);
-      box-shadow: 0 4px 16px -4px rgba(245,158,11,0.3);
-      margin-top: 8px;
+
+    .page {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      padding: 72px 24px 40px;
     }
-    .btn--spark:hover:not(:disabled) {
-      filter: brightness(1.08); transform: translateY(-1px);
-      box-shadow: 0 8px 24px -6px rgba(245,158,11,0.4);
+    .page__glow {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--ak-accent-deep) 12%, transparent), transparent 70%);
+      pointer-events: none;
     }
-    .btn--spark:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn--full { width: 100%; }
 
-    .signup-tos { font-size: 12px; color: #6b7280; text-align: center; margin: 0; line-height: 1.6; }
-    .signup-tos a { color: #fbbf24; text-decoration: none; }
-    .signup-tos a:hover { text-decoration: underline; }
-
-    .signup-alt { font-size: 13px; color: #9ca3af; text-align: center; margin-top: 8px; }
-    .signup-alt a { color: #fbbf24; text-decoration: none; font-weight: 600; }
-    .signup-alt a:hover { text-decoration: underline; }
-
-    .signup-perks { display: flex; flex-direction: column; gap: 20px; padding-top: 24px; }
-    .signup-perk {
-      display: flex; gap: 14px; align-items: flex-start;
-    }
-    .signup-perk svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; }
-    .signup-perk strong { display: block; font-size: 14px; color: #fff; font-weight: 700; margin-bottom: 4px; }
-    .signup-perk span { font-size: 13px; color: #9ca3af; line-height: 1.5; }
-
-    /* Verification step */
-    .verify-step {
-      grid-column: 1 / -1;
-      max-width: 440px;
-      margin: 0 auto;
+    .card {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 460px;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
-      padding: 40px 32px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      text-align: center;
+      padding: 40px;
+      backdrop-filter: blur(10px);
     }
-    .verify-icon { font-size: 48px; line-height: 1; }
-    .verify-title { font-size: 22px; font-weight: 800; color: #fff; margin: 0; }
-    .verify-desc { font-size: 14px; color: #9ca3af; line-height: 1.6; margin: 0; }
-    .verify-desc strong { color: #e5e7eb; }
-    .verify-form {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 8px;
+
+    .card__brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .card__logo { height: 36px; width: auto; filter: var(--ak-logo-filter); }
+    .card__brand-name { font-size: 17px; font-weight: 700; color: #fff; }
+    .card__brand-accent {
+      background: linear-gradient(135deg, var(--ak-accent), var(--ak-accent-2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .code-input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 16px 14px;
+
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--ak-accent-2);
+      padding: 4px 12px; border-radius: 20px;
+      background: color-mix(in srgb, var(--ak-accent) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--ak-accent) 25%, transparent);
+      margin-bottom: 16px;
+    }
+
+    .card__title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: #fff; margin: 0 0 6px; }
+    .card__sub { font-size: 0.9rem; color: #6b7280; margin: 0 0 28px; line-height: 1.5; }
+
+    .form { display: flex; flex-direction: column; gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field__label { font-size: 13px; font-weight: 600; color: #9ca3af; }
+    .field__opt { color: #6b7280; font-weight: 400; margin-left: 4px; }
+    .field__input {
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px;
-      font-size: 28px;
-      font-weight: 800;
-      font-family: monospace;
-      letter-spacing: 10px;
-      text-align: center;
-      background: rgba(255,255,255,0.05);
-      color: #fbbf24;
-      border: 1px solid rgba(251,191,36,0.3);
+      font-size: 15px; color: #fff; outline: none;
       transition: border-color 0.15s, background 0.15s;
+      width: 100%; box-sizing: border-box;
     }
-    .code-input:focus {
-      outline: none;
-      border-color: rgba(251,191,36,0.6);
-      background: rgba(255,255,255,0.07);
+    .field__input::placeholder { color: #374151; }
+    .field__input:focus {
+      border-color: color-mix(in srgb, var(--ak-accent) 50%, transparent);
+      background: rgba(255,255,255,0.06);
     }
-    .resend-btn {
-      background: none;
-      border: none;
-      color: #fbbf24;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 8px;
-      text-decoration: underline;
-      transition: opacity 0.15s;
+    .field__error { font-size: 12px; color: #fca5a5; }
+
+    .alert {
+      padding: 10px 14px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px;
+      font-size: 13px; color: #fca5a5;
     }
-    .resend-btn:disabled {
-      color: #6b7280;
+
+    .btn-submit {
+      margin-top: 4px;
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--ak-accent), var(--ak-accent-deep));
+      color: #fff; font-size: 15px; font-weight: 700;
+      border: none; border-radius: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--ak-accent) 50%, transparent);
+      transition: filter 0.15s, transform 0.15s;
       text-decoration: none;
-      cursor: default;
     }
-    .resend-btn:hover:not(:disabled) { opacity: 0.8; }
+    .btn-submit:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .card__switch { margin-top: 20px; text-align: center; font-size: 14px; color: #6b7280; }
+    .link { color: var(--ak-accent-2); font-weight: 600; text-decoration: none; transition: color 0.15s; }
+    .link:hover { color: var(--ak-accent); }
+
+    .card__legal {
+      margin-top: 18px;
+      font-size: 11px; color: #374151;
+      text-align: center; line-height: 1.6;
+    }
+    .card__legal a { color: #4b5563; text-decoration: none; transition: color 0.15s; }
+    .card__legal a:hover { color: #9ca3af; }
+
+    .verify-step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; }
+    .verify-icon { font-size: 48px; line-height: 1; }
+    .verify-email { color: #e5e7eb; }
+    .verify-step .btn-submit { margin-top: 12px; }
+
+    @media (max-width: 480px) { .card { padding: 28px 20px; } }
   `]
 })
 export class CadastroComponent implements OnInit, OnDestroy {
@@ -265,16 +263,14 @@ export class CadastroComponent implements OnInit, OnDestroy {
   private seo = inject(SeoService);
 
   form!: FormGroup;
-
   error = '';
   loading = false;
-
   pendingEmail = '';
 
   ngOnInit(): void {
     this.seo.setPage({
       title: 'Cadastro — Akroma Spark',
-      description: 'Crie sua conta e comece o teste gratis de 7 dias do Akroma Spark.',
+      description: 'Crie sua conta e comece o teste grátis de 7 dias do Akroma Spark.',
       noindex: true
     });
 
@@ -283,9 +279,6 @@ export class CadastroComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Redirect from login when email is not yet verified. The IDP re-sends
-    // the verification link automatically the next time the user attempts to
-    // login, so we only need to surface the "check your inbox" UI here.
     const emailParam = this.route.snapshot.queryParamMap.get('email');
     const verifyParam = this.route.snapshot.queryParamMap.get('verify');
     if (emailParam && verifyParam === '1') {
@@ -301,7 +294,6 @@ export class CadastroComponent implements OnInit, OnDestroy {
       referralCode: [ref]
     });
 
-    // Phone mask: (xx) x xxxx-xxxx
     this.form.get('whatsapp')?.valueChanges.subscribe(val => {
       if (!val) return;
       const d = String(val).replace(/\D/g, '').slice(0, 11);
@@ -314,9 +306,7 @@ export class CadastroComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    // No-op — kept for interface stability.
-  }
+  ngOnDestroy(): void {}
 
   submit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
@@ -328,16 +318,13 @@ export class CadastroComponent implements OnInit, OnDestroy {
       this.auth.signup(this.form.value, visitorId).subscribe({
         next: () => {
           this.loading = false;
-          // The IDP issued a Spark-scoped JWT and emailed a verification link.
-          // We could push straight to /app, but for trust we surface the
-          // "check your inbox" step. The session is already persisted.
           this.pendingEmail = email;
         },
         error: (err: HttpErrorResponse) => {
           if (err.status === 409) {
-            this.error = 'Este e-mail ja esta cadastrado. Que tal fazer login?';
+            this.error = 'Este e-mail já está cadastrado. Que tal fazer login?';
           } else if (err.status === 0) {
-            this.error = 'Sem conexao com o servidor. Verifique sua internet.';
+            this.error = 'Sem conexão com o servidor. Verifique sua internet.';
           } else if (err.error?.detail) {
             this.error = err.error.detail;
           } else if (err.error?.error) {
@@ -359,9 +346,9 @@ export class CadastroComponent implements OnInit, OnDestroy {
   getError(field: string): string {
     const ctrl = this.form?.get(field);
     if (!ctrl?.errors || !ctrl?.touched) return '';
-    if (ctrl.errors['required']) return 'Campo obrigatorio.';
-    if (ctrl.errors['email']) return 'E-mail invalido.';
-    if (ctrl.errors['minlength']) return `Minimo de ${ctrl.errors['minlength'].requiredLength} caracteres.`;
+    if (ctrl.errors['required']) return 'Campo obrigatório.';
+    if (ctrl.errors['email']) return 'E-mail inválido.';
+    if (ctrl.errors['minlength']) return `Mínimo de ${ctrl.errors['minlength'].requiredLength} caracteres.`;
     return '';
   }
 }

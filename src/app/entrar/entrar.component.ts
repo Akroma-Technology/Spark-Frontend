@@ -12,102 +12,181 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, SparkTopbarComponent],
   template: `
-    <app-spark-topbar></app-spark-topbar>
+    <div class="login-wrapper">
+      <app-spark-topbar></app-spark-topbar>
 
-    <section class="login-section">
-      <div class="login-container">
-        <h1 class="login-title">Entrar na sua conta</h1>
+      <div class="page">
+        <div class="page__glow"></div>
 
-        <p class="login-subtitle">Acesse seu painel do Akroma Spark.</p>
-
-        <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
-          <div class="login-field">
-            <label for="email">E-mail</label>
-            <input id="email" type="email" formControlName="email" autocomplete="email" placeholder="voce@empresa.com" />
-            <span class="login-error" *ngIf="hasError('email')">{{ getError('email') }}</span>
+        <div class="card">
+          <div class="card__brand">
+            <img src="/assets/akroma-icon.svg" alt="" class="card__logo" aria-hidden="true" onerror="this.style.display='none'">
+            <span class="card__brand-name">Akroma <span class="card__brand-accent">Spark</span></span>
           </div>
 
-          <div class="login-field">
-            <label for="password">Senha</label>
-            <input id="password" type="password" formControlName="password" autocomplete="current-password" />
-            <span class="login-error" *ngIf="hasError('password')">{{ getError('password') }}</span>
-          </div>
+          <h1 class="card__title">Bem-vindo de volta</h1>
+          <p class="card__sub">Entre com sua conta para continuar</p>
 
-          <div class="login-error login-error--banner" *ngIf="error">{{ error }}</div>
+          <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+            <label class="field">
+              <span class="field__label">E-mail</span>
+              <input
+                class="field__input"
+                type="email"
+                formControlName="email"
+                placeholder="voce@empresa.com"
+                autocomplete="email"
+              />
+              @if (hasError('email')) { <span class="field__error">{{ getError('email') }}</span> }
+            </label>
 
-          <button type="submit" class="btn btn--spark" [disabled]="loading">
-            <span *ngIf="!loading">Entrar &rarr;</span>
-            <span *ngIf="loading">Entrando...</span>
-          </button>
+            <label class="field">
+              <span class="field__label">Senha</span>
+              <input
+                class="field__input"
+                type="password"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+              @if (hasError('password')) { <span class="field__error">{{ getError('password') }}</span> }
+            </label>
 
-          <div class="login-alt">
-            Ainda nao tem conta? <a routerLink="/cadastro">Criar conta gratis</a>
-          </div>
-        </form>
+            @if (error) { <div class="alert">{{ error }}</div> }
+
+            <button type="submit" class="btn-submit" [disabled]="loading">
+              @if (loading) { <span class="spinner"></span> Entrando… }
+              @else { Entrar }
+            </button>
+          </form>
+
+          <p class="card__switch">
+            Não tem conta? <a routerLink="/cadastro" class="link">Cadastre-se aqui</a>
+          </p>
+
+          <p class="card__legal">
+            Ao continuar, você concorda com os
+            <a href="https://akroma.com.br/termos-de-uso" target="_blank" rel="noopener">Termos de Uso</a>
+            e a
+            <a href="https://akroma.com.br/politica-privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.
+          </p>
+        </div>
       </div>
-    </section>
+    </div>
   `,
   styles: [`
-    :host { display: block; background: #050912; }
-    .login-section {
-      height: 100vh;
-      padding-top: 72px;
-      box-sizing: border-box;
+    :host {
+      display: block;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --ak-accent:      #f97316;
+      --ak-accent-2:    #fb923c;
+      --ak-accent-deep: #ea580c;
+      --ak-logo-filter: brightness(0) saturate(100%) invert(56%) sepia(72%) saturate(1800%) hue-rotate(5deg) brightness(105%) contrast(101%);
+    }
+
+    .login-wrapper {
+      min-height: 100vh;
+      background: #050810;
+      display: flex; flex-direction: column;
+    }
+
+    .page {
+      flex: 1;
       display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
+      position: relative; overflow: hidden;
+      padding: 72px 24px 40px;
     }
-    .login-container {
-      max-width: 420px; width: 100%; text-align: center;
+    .page__glow {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--ak-accent-deep) 12%, transparent), transparent 70%);
+      pointer-events: none;
     }
-    .login-title {
-      font-size: clamp(22px, 3vw, 28px); font-weight: 800; color: #fff;
-      margin: 0 0 8px;
-    }
-    .login-subtitle { font-size: 14px; color: #9ca3af; margin: 0 0 32px; }
 
-    .login-form {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px; padding: 32px;
-      display: flex; flex-direction: column; gap: 16px; text-align: left;
+    .card {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 420px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 40px;
+      backdrop-filter: blur(10px);
     }
-    .login-field { display: flex; flex-direction: column; gap: 6px; }
-    .login-field label { font-size: 13px; font-weight: 600; color: #d1d5db; }
-    .login-field input {
-      padding: 12px 14px; border-radius: 10px; font-size: 15px;
-      background: rgba(255,255,255,0.05); color: #fff;
+
+    .card__brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .card__logo { height: 36px; width: auto; filter: var(--ak-logo-filter); }
+    .card__brand-name { font-size: 17px; font-weight: 700; color: #fff; }
+    .card__brand-accent {
+      background: linear-gradient(135deg, var(--ak-accent), var(--ak-accent-2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card__title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: #fff; margin: 0 0 6px; }
+    .card__sub { font-size: 0.9rem; color: #6b7280; margin: 0 0 28px; }
+
+    .form { display: flex; flex-direction: column; gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field__label { font-size: 13px; font-weight: 600; color: #9ca3af; }
+    .field__input {
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      font-size: 15px; color: #fff; outline: none;
       transition: border-color 0.15s, background 0.15s;
+      width: 100%; box-sizing: border-box;
     }
-    .login-field input:focus {
-      outline: none; border-color: rgba(251,191,36,0.5); background: rgba(255,255,255,0.07);
+    .field__input::placeholder { color: #374151; }
+    .field__input:focus {
+      border-color: color-mix(in srgb, var(--ak-accent) 50%, transparent);
+      background: rgba(255,255,255,0.06);
     }
-    .login-error { font-size: 12px; color: #f87171; }
-    .login-error--banner {
-      padding: 10px 14px; border-radius: 10px;
-      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+    .field__error { font-size: 12px; color: #fca5a5; }
+
+    .alert {
+      padding: 10px 14px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px;
+      font-size: 13px; color: #fca5a5;
     }
 
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 15px;
-      border: none; cursor: pointer; text-decoration: none;
-      transition: all 0.2s;
+    .btn-submit {
+      margin-top: 4px;
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--ak-accent), var(--ak-accent-deep));
+      color: #fff; font-size: 15px; font-weight: 700;
+      border: none; border-radius: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--ak-accent) 50%, transparent);
+      transition: filter 0.15s, transform 0.15s;
     }
-    .btn--spark {
-      background: linear-gradient(135deg, #f59e0b, #d97706); color: #000;
-      border: 1px solid rgba(251,191,36,0.4);
-      box-shadow: 0 4px 16px -4px rgba(245,158,11,0.3);
-      margin-top: 8px;
-    }
-    .btn--spark:hover:not(:disabled) {
-      filter: brightness(1.08); transform: translateY(-1px);
-      box-shadow: 0 8px 24px -6px rgba(245,158,11,0.4);
-    }
-    .btn--spark:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-submit:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .login-alt { font-size: 13px; color: #9ca3af; text-align: center; }
-    .login-alt a { color: #fbbf24; text-decoration: none; font-weight: 600; }
-    .login-alt a:hover { text-decoration: underline; }
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .card__switch { margin-top: 20px; text-align: center; font-size: 14px; color: #6b7280; }
+    .link { color: var(--ak-accent-2); font-weight: 600; text-decoration: none; transition: color 0.15s; }
+    .link:hover { color: var(--ak-accent); }
+
+    .card__legal {
+      margin-top: 18px;
+      font-size: 11px; color: #374151;
+      text-align: center; line-height: 1.6;
+    }
+    .card__legal a { color: #4b5563; text-decoration: none; transition: color 0.15s; }
+    .card__legal a:hover { color: #9ca3af; }
+
+    @media (max-width: 480px) { .card { padding: 28px 20px; } }
   `]
 })
 export class EntrarComponent implements OnInit {
@@ -152,7 +231,7 @@ export class EntrarComponent implements OnInit {
           this.router.navigate(['/cadastro'], { queryParams: { email, verify: '1' } });
           return;
         } else if (err.status === 0) {
-          this.error = 'Sem conexao com o servidor. Verifique sua internet.';
+          this.error = 'Sem conexão com o servidor. Verifique sua internet.';
         } else {
           this.error = `Erro ao entrar (${err.status}). Tente novamente em instantes.`;
         }
@@ -169,8 +248,8 @@ export class EntrarComponent implements OnInit {
   getError(field: string): string {
     const ctrl = this.form?.get(field);
     if (!ctrl?.errors || !ctrl?.touched) return '';
-    if (ctrl.errors['required']) return 'Campo obrigatorio.';
-    if (ctrl.errors['email']) return 'E-mail invalido.';
+    if (ctrl.errors['required']) return 'Campo obrigatório.';
+    if (ctrl.errors['email']) return 'E-mail inválido.';
     return '';
   }
 }
