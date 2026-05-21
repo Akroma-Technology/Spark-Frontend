@@ -6,28 +6,33 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ClientAuthService } from '../core/services/client-auth.service';
 import { SeoService } from '../core/services/seo.service';
 import { SparkTopbarComponent } from '../shared/components/topbar/topbar.component';
+import { ParticleNetworkComponent } from '../shared/components/particle-network.component';
 
 @Component({
   selector: 'app-entrar',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, SparkTopbarComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, SparkTopbarComponent, ParticleNetworkComponent],
   template: `
     <div class="login-wrapper">
+      <app-particle-network color="#fbbf24" />
       <app-spark-topbar></app-spark-topbar>
+      <div class="topbar-divider" aria-hidden="true"></div>
 
       <div class="page">
         <div class="page__glow"></div>
 
         <div class="card">
           <div class="card__brand">
-            <img src="/assets/akroma-icon.svg" alt="" class="card__logo" aria-hidden="true" onerror="this.style.display='none'">
+            <img src="assets/icone-akroma.png" alt="" class="card__logo" aria-hidden="true">
             <span class="card__brand-name">Akroma <span class="card__brand-accent">Spark</span></span>
           </div>
 
           <h1 class="card__title">Bem-vindo de volta</h1>
           <p class="card__sub">Entre com sua conta para continuar</p>
 
-          <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+          <form [formGroup]="form" (ngSubmit)="submit()" class="form" [attr.aria-busy]="loading">
+            <input type="text" formControlName="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+
             <label class="field">
               <span class="field__label">E-mail</span>
               <input
@@ -36,25 +41,43 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
                 formControlName="email"
                 placeholder="voce@empresa.com"
                 autocomplete="email"
+                autofocus
               />
               @if (hasError('email')) { <span class="field__error">{{ getError('email') }}</span> }
             </label>
 
             <label class="field">
               <span class="field__label">Senha</span>
-              <input
-                class="field__input"
-                type="password"
-                formControlName="password"
-                placeholder="••••••••"
-                autocomplete="current-password"
-              />
+              <div class="field__password">
+                <input
+                  class="field__input"
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  (keyup)="onCapsKey($event)"
+                  (keydown)="onCapsKey($event)"
+                />
+                <button type="button" class="field__eye" (click)="toggleShow()" [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Mostrar senha'">
+                  @if (showPassword) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.45 18.45 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
+              @if (capsOn) { <span class="field__caps" role="status">⚠ Caps Lock ativado</span> }
               @if (hasError('password')) { <span class="field__error">{{ getError('password') }}</span> }
             </label>
 
-            @if (error) { <div class="alert">{{ error }}</div> }
+            @if (error) {
+              <div class="alert" role="alert" aria-live="polite">
+                <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{{ error }}</span>
+              </div>
+            }
 
-            <button type="submit" class="btn-submit" [disabled]="loading">
+            <button type="submit" class="btn-submit" [disabled]="!form?.valid || loading">
               @if (loading) { <span class="spinner"></span> Entrando… }
               @else { Entrar }
             </button>
@@ -78,16 +101,28 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
     :host {
       display: block;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --ak-accent:      #f97316;
-      --ak-accent-2:    #fb923c;
-      --ak-accent-deep: #ea580c;
-      --ak-logo-filter: brightness(0) saturate(100%) invert(56%) sepia(72%) saturate(1800%) hue-rotate(5deg) brightness(105%) contrast(101%);
+      --ak-accent:      #fbbf24;
+      --ak-accent-2:    #f59e0b;
+      --ak-accent-deep: #d97706;
+      --ak-logo-filter: brightness(0) saturate(100%) invert(76%) sepia(43%) saturate(1100%) hue-rotate(358deg) brightness(101%) contrast(99%);
     }
 
     .login-wrapper {
       min-height: 100vh;
       background: #050810;
       display: flex; flex-direction: column;
+    }
+
+    .topbar-divider {
+      position: fixed;
+      top: 72px;
+      left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--ak-accent) 50%, transparent 100%);
+      box-shadow: 0 0 16px color-mix(in srgb, var(--ak-accent) 60%, transparent);
+      z-index: 51;
+      pointer-events: none;
+      opacity: 0.55;
     }
 
     .page {
@@ -105,11 +140,11 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
 
     .card {
       position: relative; z-index: 1;
-      width: 100%; max-width: 420px;
+      width: 100%; max-width: 380px;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
-      padding: 40px;
+      padding: 32px 28px;
       backdrop-filter: blur(10px);
     }
 
@@ -127,7 +162,7 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
 
     .form { display: flex; flex-direction: column; gap: 16px; }
     .field { display: flex; flex-direction: column; gap: 6px; }
-    .field__label { font-size: 13px; font-weight: 600; color: #9ca3af; }
+    .field__label { font-size: 13px; font-weight: 600; color: #cbd5e1; }
     .field__input {
       padding: 12px 14px;
       background: rgba(255,255,255,0.04);
@@ -138,19 +173,40 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
       width: 100%; box-sizing: border-box;
     }
     .field__input::placeholder { color: #374151; }
-    .field__input:focus {
+    .field__input:focus-visible {
       border-color: color-mix(in srgb, var(--ak-accent) 50%, transparent);
       background: rgba(255,255,255,0.06);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ak-accent) 20%, transparent);
     }
     .field__error { font-size: 12px; color: #fca5a5; }
+    .field__caps { font-size: 12px; color: #fcd34d; }
+    .field__password { position: relative; }
+    .field__password .field__input { padding-right: 44px; }
+    .field__eye {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; color: #9ca3af; cursor: pointer;
+      padding: 6px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.15s, background 0.15s;
+    }
+    .field__eye:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .field__eye svg { width: 18px; height: 18px; }
+    .honeypot {
+      position: absolute !important;
+      left: -9999px !important;
+      width: 1px !important; height: 1px !important;
+      opacity: 0 !important; pointer-events: none;
+    }
 
     .alert {
+      display: flex; align-items: flex-start; gap: 8px;
       padding: 10px 14px;
       background: rgba(239,68,68,0.1);
       border: 1px solid rgba(239,68,68,0.2);
       border-radius: 8px;
       font-size: 13px; color: #fca5a5;
     }
+    .alert__icon { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
 
     .btn-submit {
       margin-top: 4px;
@@ -198,6 +254,13 @@ export class EntrarComponent implements OnInit {
   form!: FormGroup;
   error = '';
   loading = false;
+  showPassword = false;
+  capsOn = false;
+
+  toggleShow(): void { this.showPassword = !this.showPassword; }
+  onCapsKey(e: KeyboardEvent): void {
+    this.capsOn = e.getModifierState?.('CapsLock') ?? false;
+  }
 
   ngOnInit(): void {
     this.seo.setPage({
@@ -213,11 +276,13 @@ export class EntrarComponent implements OnInit {
 
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
+      website: [''],  // honeypot
     });
   }
 
   submit(): void {
+    if (this.form.value.website) return;  // honeypot
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.loading = true;
     this.error = '';
