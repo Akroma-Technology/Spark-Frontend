@@ -47,12 +47,12 @@ import { RouterModule } from '@angular/router';
             <a href="https://akroma.com.br/sobre" class="ak-footer__link">Sobre a Akroma</a>
             <a href="https://akroma.com.br/servicos" class="ak-footer__link">Outros serviços</a>
             <a href="https://akroma.com.br/trabalhe-conosco" class="ak-footer__link">Trabalhe Conosco</a>
+            <a href="https://akroma.com.br/contato" class="ak-footer__link">Fale Conosco</a>
           </div>
           <div class="ak-footer__col">
             <h4 class="ak-footer__heading">Acesso</h4>
             <a routerLink="/entrar" class="ak-footer__link">Entrar</a>
             <a routerLink="/cadastro" class="ak-footer__link">Teste grátis 7 dias</a>
-            <a routerLink="/contato" class="ak-footer__link">Fale Conosco</a>
           </div>
           <div class="ak-footer__col">
             <h4 class="ak-footer__heading">Legal</h4>

@@ -76,7 +76,7 @@ import { SparkFooterComponent } from '../shared/components/footer/footer.compone
       <div class="container page-cta__inner">
         <h2 class="page-cta__title">Escolha o plano certo para você</h2>
         <p class="page-cta__desc">Todos os recursos disponíveis a partir do plano Starter.</p>
-        <a routerLink="/planos" class="btn btn--spark btn--lg">Ver planos &rarr;</a>
+        <a routerLink="/planos" class="btn btn--spark btn--lg">Ver planos</a>
       </div>
     </section>
 

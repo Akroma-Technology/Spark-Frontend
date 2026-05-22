@@ -157,7 +157,7 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
           Enquanto você trabalha, a IA pesquisa, escreve e publica. Todo dia. No seu nome.
         </p>
         <div class="spark-hero__ctas">
-          <a routerLink="/cadastro" class="btn btn--spark">Teste grátis 7 dias &rarr;</a>
+          <a routerLink="/cadastro" class="btn btn--spark">Teste grátis 7 dias</a>
           <button type="button" class="btn btn--outline" (click)="scrollToDemo()">Ver demonstração</button>
         </div>
         <p class="spark-hero__trial-note">Sem cartão de crédito · Cancele quando quiser · Resultado em 24h</p>
@@ -354,7 +354,7 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
         </div>
         <div class="steps-more">
           <a routerLink="/como-funciona" class="btn btn--outline-accent">
-            Ver como funciona em detalhes &rarr;
+            Ver como funciona em detalhes
           </a>
         </div>
       </div>
@@ -375,7 +375,7 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
               dar às PMEs as ferramentas que grandes empresas já têm — agora no social media.
             </p>
             <a href="https://akroma.com.br" target="_blank" rel="noopener" class="btn btn--outline btn--sm">
-              Conheça a Akroma &rarr;
+              Conheça a Akroma
             </a>
           </div>
         </div>
@@ -387,7 +387,7 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
       <div class="container spark-cta__inner">
         <h2 class="spark-cta__title">Pronto para automatizar seu social media?</h2>
         <p class="spark-cta__desc">7 dias grátis. Sem cartão. Se não gostar, cancela com um clique.</p>
-        <a routerLink="/cadastro" class="btn btn--spark btn--lg">Começar agora &rarr;</a>
+        <a routerLink="/cadastro" class="btn btn--spark btn--lg">Começar agora</a>
       </div>
     </section>
 

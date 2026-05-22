@@ -104,7 +104,7 @@ import { NICHES, NicheInfo } from './niches.data';
             <li *ngFor="let b of activeNiche.benefits">{{ b }}</li>
           </ul>
           <a routerLink="/cadastro" [queryParams]="{ niche: activeNiche.value }" class="btn btn--spark btn--full">
-            Começar teste grátis no nicho {{ activeNiche.label }} &rarr;
+            Começar teste grátis no nicho {{ activeNiche.label }}
           </a>
         </div>
       </div>
@@ -115,7 +115,7 @@ import { NICHES, NicheInfo } from './niches.data';
       <div class="container page-cta__inner">
         <h2 class="page-cta__title">Pronto para ver na prática?</h2>
         <p class="page-cta__desc">7 dias grátis. Sem cartão. Cancela quando quiser.</p>
-        <a routerLink="/cadastro" class="btn btn--spark btn--lg">Começar agora &rarr;</a>
+        <a routerLink="/cadastro" class="btn btn--spark btn--lg">Começar agora</a>
       </div>
     </section>
 

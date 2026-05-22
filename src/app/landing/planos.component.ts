@@ -106,7 +106,7 @@ import { environment } from '../../environments/environment';
               </div>
             </div>
           </div>
-          <a routerLink="/cadastro" class="btn btn--spark">Criar conta e indicar amigos &rarr;</a>
+          <a routerLink="/cadastro" class="btn btn--spark">Criar conta e indicar amigos</a>
         </div>
       </div>
     </section>
@@ -116,7 +116,7 @@ import { environment } from '../../environments/environment';
       <div class="container page-cta__inner">
         <h2 class="page-cta__title">Comece hoje, veja resultado essa semana</h2>
         <p class="page-cta__desc">7 dias grátis. Sem cartão. Se não gostar, cancela com um clique.</p>
-        <a routerLink="/cadastro" class="btn btn--spark btn--lg">Teste grátis 7 dias &rarr;</a>
+        <a routerLink="/cadastro" class="btn btn--spark btn--lg">Teste grátis 7 dias</a>
       </div>
     </section>
 
