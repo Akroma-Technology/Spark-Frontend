@@ -75,6 +75,10 @@ export class ClientAuthService {
   // side-effect; the magic-link landing page (/verificar) handles the rest.
   // -------------------------------------------------------------------------
   signup(payload: SignupRequest, fingerprint = ''): Observable<TokenPair> {
+    // Plan 7 hardening (2026-05-22): Spark é 100% IDP, sem end users.
+    // Quem se cadastra aqui é cliente Akroma virando tenant_owner.
+    // O backend Spark cuida do auto-create do tenant na primeira chamada
+    // autenticada (bridge em src/core/dependencies.py).
     const body = {
       email: payload.email,
       password: payload.password,
@@ -82,7 +86,7 @@ export class ClientAuthService {
       phone: payload.whatsapp || undefined,
       fingerprint: fingerprint || undefined,
       product: 'spark',
-      role: 'end_user' as const,
+      role: 'tenant_owner' as const,
     };
     return this.http.post<IdpLoginResponse>(`${this.idpBase}/auth/register`, body).pipe(
       switchMap(res => this.exchange(res.refresh_token)),
