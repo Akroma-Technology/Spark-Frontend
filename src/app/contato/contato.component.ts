@@ -50,7 +50,7 @@ interface NicheOpt { value: string; label: string; }
               </div>
               <div>
                 <p class="contact-channel__label">WhatsApp</p>
-                <a href="https://wa.me/5521983833318" target="_blank" rel="noopener" class="contact-channel__value">+55 (21) 98383-3318</a>
+                <a href="https://wa.me/5511939330671" target="_blank" rel="noopener" class="contact-channel__value">+55 (11) 9 3933-0671</a>
               </div>
             </div>
 
