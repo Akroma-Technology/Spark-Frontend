@@ -127,7 +127,7 @@ import { ParticleNetworkComponent } from '../shared/components/particle-network.
 
               <button type="submit" class="btn-submit" [disabled]="!form?.valid || loading">
                 @if (loading) { <span class="spinner"></span> Criando conta… }
-                @else { Começar teste grátis → }
+                @else { Começar teste grátis }
               </button>
             </form>
 
