@@ -81,6 +81,10 @@ import { ParticleNetworkComponent } from '../shared/components/particle-network.
               @if (loading) { <span class="spinner"></span> Entrando… }
               @else { Entrar }
             </button>
+
+            <p class="card__forgot">
+              <a [routerLink]="'/esqueci-senha'" [queryParams]="{ email: form?.get('email')?.value || null }" class="link">Esqueci a senha</a>
+            </p>
           </form>
 
           <p class="card__switch">
@@ -231,6 +235,7 @@ import { ParticleNetworkComponent } from '../shared/components/particle-network.
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .card__switch { margin-top: 20px; text-align: center; font-size: 14px; color: #6b7280; }
+    .card__forgot { margin: 12px 0 0; text-align: center; font-size: 13px; }
     .link { color: var(--ak-accent-2); font-weight: 600; text-decoration: none; transition: color 0.15s; }
     .link:hover { color: var(--ak-accent); }
 

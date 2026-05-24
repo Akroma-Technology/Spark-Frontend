@@ -112,6 +112,32 @@ export class ClientAuthService {
       );
   }
 
+  // -------------------------------------------------------------------------
+  // Forgot password — 6-digit code flow
+  // -------------------------------------------------------------------------
+  requestResetCode(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.idpBase}/auth/forgot-password-code`,
+      { email },
+    );
+  }
+
+  verifyResetCode(email: string, code: string): Observable<{ valid: boolean }> {
+    return this.http.post<{ valid: boolean }>(
+      `${this.idpBase}/auth/verify-reset-code`,
+      { email, code },
+    );
+  }
+
+  resetPasswordWithCode(
+    email: string, code: string, newPassword: string,
+  ): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.idpBase}/auth/reset-password-with-code`,
+      { email, code, new_password: newPassword },
+    );
+  }
+
   /**
    * Persist a JWT obtained from a magic-link redirect (#jwt=...).
    * Used by /verificar after the IDP redirects the user back to the FE.
