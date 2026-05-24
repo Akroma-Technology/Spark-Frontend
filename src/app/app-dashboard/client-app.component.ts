@@ -2042,6 +2042,17 @@ export class ClientAppComponent implements OnInit {
       };
     }
 
+    if (r.includes('callback_misrouted')) {
+      return {
+        title: 'Configuração de domínio',
+        what: 'O callback do Instagram chegou no domínio antigo (api.akroma.com.br) em vez do novo (api.spark.akroma.com.br). A configuração do app do Facebook precisa ser atualizada.',
+        steps: [
+          'Avise o suporte que apareceu "callback_misrouted"',
+          'Enquanto isso, tente Conectar Instagram novamente',
+        ],
+      };
+    }
+
     if (r.includes('invalid_state') || r.includes('missing_code') || r.includes('expired')) {
       return {
         title: 'Sessao expirada',
