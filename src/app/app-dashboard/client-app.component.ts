@@ -308,7 +308,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
               <button *ngIf="!profile?.instagramConnected" type="button"
                       class="btn btn--spark" [disabled]="igConnecting" (click)="connectInstagram()">
-                {{ igConnecting ? 'Redirecionando...' : 'Conectar Instagram →' }}
+                {{ igConnecting ? 'Redirecionando...' : 'Conectar Instagram' }}
               </button>
               <button *ngIf="profile?.instagramConnected" type="button"
                       class="btn btn--outline" [disabled]="igConnecting" (click)="connectInstagram()">
@@ -364,7 +364,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
               <!-- Niche picker collapsed view -->
               <button *ngIf="!showNichePicker" type="button" class="btn btn--outline" (click)="showNichePicker = true; nicheSaved = false">
-                {{ profile?.selectedNiche ? 'Mudar nicho' : 'Escolher nicho →' }}
+                {{ profile?.selectedNiche ? 'Mudar nicho' : 'Escolher nicho' }}
               </button>
 
               <!-- Niche grid -->
@@ -513,7 +513,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                 no seu Instagram. Sem essa conexão, a IA não consegue postar.
               </p>
               <button class="btn btn--spark" (click)="tab = 'overview'">
-                ← Ir para a tela inicial e conectar
+                Ir para a tela inicial e conectar
               </button>
               <p class="schedule-lock__hint">
                 Você precisa de uma conta Instagram <strong>Business</strong> ou
