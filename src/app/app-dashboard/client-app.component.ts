@@ -461,6 +461,22 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
             </div>
 
             <div class="cfg-section">
+              <h2 class="cfg-section__title">Hashtags fixas <span class="cfg-section__badge">opcional</span></h2>
+              <p class="cfg-section__desc">As tags que você sempre quer usar nos seus posts. Adicione com #, separadas por espaço.</p>
+              <textarea class="brand-edit-textarea" rows="3"
+                        [(ngModel)]="fixedHashtagsDraft" [ngModelOptions]="{standalone: true}"
+                        placeholder="#suamarca #seunicho #brasil"></textarea>
+            </div>
+
+            <div class="cfg-section">
+              <h2 class="cfg-section__title">Tópicos proibidos <span class="cfg-section__badge">opcional</span></h2>
+              <p class="cfg-section__desc">Temas que a IA <strong>nunca</strong> deve abordar nos seus posts (concorrentes, polêmicas, palavras-tabu).</p>
+              <textarea class="brand-edit-textarea" rows="4"
+                        [(ngModel)]="negativeTopicsDraft" [ngModelOptions]="{standalone: true}"
+                        placeholder="Não falar de política, religião, ou mencionar a marca X..."></textarea>
+            </div>
+
+            <div class="cfg-section">
               <h2 class="cfg-section__title">🎨 Estilo visual <span class="cfg-section__badge">avançado</span></h2>
               <p class="cfg-section__desc">
                 Esse texto guia o gerador de imagem da IA. Já vem com um padrão profissional do nicho <strong>{{ nicheLabel(profile?.selectedNiche) }}</strong> (cores, tipografia, regras).
@@ -1319,7 +1335,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
     .app-sidebar {
       background: #07091a; border-right: 1px solid rgba(255,255,255,0.05);
-      padding: 24px 16px; display: flex; flex-direction: column; gap: 24px;
+      padding: 16px 16px 16px; display: flex; flex-direction: column; gap: 16px;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
     }
     .app-logo {
       display: flex; align-items: center; gap: 8px;
@@ -1348,7 +1365,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       background: rgba(251,191,36,0.08); color: #fbbf24;
     }
 
-    .app-sidebar__footer { padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .app-sidebar__footer { padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 0; }
     .app-logout {
       display: flex; align-items: center; gap: 10px;
       width: 100%; padding: 10px 14px; border-radius: 8px;
@@ -2386,6 +2403,8 @@ export class ClientAppComponent implements OnInit {
   brandContextDraft = '';
   logoUrlDraft = '';
   imageStyleDraft = '';
+  fixedHashtagsDraft = '';
+  negativeTopicsDraft = '';
   brandContextSaving = false;
   brandContextError = '';
   confirmResetImageStyle = false;
@@ -2419,6 +2438,8 @@ export class ClientAppComponent implements OnInit {
         this.imageStyleDraft = (p.imageStyle && p.imageStyle.trim())
           ? p.imageStyle
           : (p.imageStyleTemplateDefault || '');
+        this.fixedHashtagsDraft = p.fixedHashtags || '';
+        this.negativeTopicsDraft = p.negativeTopics || '';
       },
       error: () => {
         // Fallback to cached profile values if API call fails
@@ -2429,6 +2450,8 @@ export class ClientAppComponent implements OnInit {
         this.imageStyleDraft = (this.profile?.imageStyle && this.profile.imageStyle.trim())
           ? this.profile.imageStyle
           : (this.profile?.imageStyleTemplateDefault || '');
+        this.fixedHashtagsDraft = this.profile?.fixedHashtags || '';
+        this.negativeTopicsDraft = this.profile?.negativeTopics || '';
       }
     });
   }
@@ -2630,7 +2653,12 @@ export class ClientAppComponent implements OnInit {
     // Save brand context first; if image_style differs from server, save that too
     const tasks: Promise<any>[] = [];
     tasks.push(this.http.put(`${environment.apiUrl}/api/v1/client/brand-context`,
-      { brandContext: text, logoUrl: this.logoUrlDraft.trim() || null },
+      {
+        brandContext: text,
+        logoUrl: this.logoUrlDraft.trim() || null,
+        fixedHashtags: (this.fixedHashtagsDraft || '').trim(),
+        negativeTopics: (this.negativeTopicsDraft || '').trim(),
+      },
       { headers }).toPromise());
     if (imgStyle && imgStyle !== (this.profile?.imageStyle || '')) {
       tasks.push(this.http.put(`${environment.apiUrl}/api/v1/client/image-style`,
@@ -2645,6 +2673,8 @@ export class ClientAppComponent implements OnInit {
           brandContext: text,
           logoUrl: this.logoUrlDraft.trim() || this.profile.logoUrl,
           imageStyle: imgStyle || this.profile.imageStyle,
+          fixedHashtags: (this.fixedHashtagsDraft || '').trim(),
+          negativeTopics: (this.negativeTopicsDraft || '').trim(),
           brandContextNeedsAttention: false,
         };
       }
