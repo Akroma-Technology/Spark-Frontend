@@ -37,7 +37,7 @@ import { SparkTopbarComponent } from '../shared/components/topbar/topbar.compone
               <button type="button" class="link-btn" (click)="resendCode()" [disabled]="loading">
                 Reenviar código
               </button>
-              <a class="back-link" routerLink="/entrar">← Voltar para login</a>
+              <a class="back-link" routerLink="/entrar">Voltar para login</a>
             </div>
           </form>
         </ng-container>

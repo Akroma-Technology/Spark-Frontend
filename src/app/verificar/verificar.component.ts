@@ -17,7 +17,7 @@ import { ClientAuthService } from '../core/services/client-auth.service';
         <div class="verify-checkmark">✓</div>
         <h2 class="verify-heading">E-mail confirmado!</h2>
         <p class="verify-msg">Sua conta está ativa. Bem-vindo ao Spark.</p>
-        <a routerLink="/app" class="btn btn--spark">Ir para o Spark →</a>
+        <a routerLink="/app" class="btn btn--spark">Ir para o Spark</a>
       </div>
       <div *ngIf="state === 'error'" class="verify-state verify-state--error">
         <div class="verify-x">✕</div>

@@ -31,7 +31,7 @@ type Step = 'email' | 'code' | 'password' | 'done';
               <button class="btn-primary" type="submit" [disabled]="!emailForm.valid || loading">
                 {{ loading ? 'Enviando…' : 'Enviar código' }}
               </button>
-              <a class="back-link" routerLink="/entrar">← Voltar para login</a>
+              <a class="back-link" routerLink="/entrar">Voltar para login</a>
             </form>
           </ng-container>
 
@@ -53,7 +53,7 @@ type Step = 'email' | 'code' | 'password' | 'done';
                 <button type="button" class="link-btn" (click)="resendCode()" [disabled]="loading">
                   Reenviar código
                 </button>
-                <a class="back-link" routerLink="/entrar">← Voltar para login</a>
+                <a class="back-link" routerLink="/entrar">Voltar para login</a>
               </div>
             </form>
           </ng-container>
@@ -76,7 +76,7 @@ type Step = 'email' | 'code' | 'password' | 'done';
                 [disabled]="!pwdForm.valid || newPassword !== confirmPassword || loading">
                 {{ loading ? 'Salvando…' : 'Alterar senha' }}
               </button>
-              <a class="back-link" routerLink="/entrar">← Voltar para login</a>
+              <a class="back-link" routerLink="/entrar">Voltar para login</a>
             </form>
           </ng-container>
 

@@ -236,7 +236,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                 <p>Conta pra IA <strong>como sua marca fala</strong> — assim os posts ficam com a sua cara, não genéricos.</p>
               </div>
               <button class="btn btn--spark" (click)="openBrandTab()">
-                Completar agora →
+                Completar agora
               </button>
             </div>
           </div>
