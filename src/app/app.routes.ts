@@ -64,6 +64,10 @@ export const routes: Routes = [
     loadComponent: () => import('./esqueci-senha/esqueci-senha.component').then(m => m.EsqueciSenhaComponent)
   },
   {
+    path: 'verificar-email',
+    loadComponent: () => import('./verificar-email/verificar-email.component').then(m => m.VerificarEmailComponent)
+  },
+  {
     path: 'app',
     loadComponent: () => import('./app-dashboard/client-app.component').then(m => m.ClientAppComponent),
     canActivate: [clientAuthGuard]

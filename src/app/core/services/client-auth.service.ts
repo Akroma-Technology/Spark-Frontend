@@ -231,6 +231,21 @@ export class ClientAuthService {
       );
   }
 
+  /**
+   * Force re-exchange the stored refresh_token for a fresh access_token.
+   * Used after email verification so the access_token's email_verified claim
+   * is updated server-side without forcing the user to log in again.
+   */
+  refreshTokens(): Observable<TokenPair | null> {
+    if (!this.isBrowser) return of(null);
+    const rt = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!rt) return of(null);
+    return this.exchange(rt).pipe(
+      tap(pair => this.persistTokens(pair)),
+      catchError(() => of(null))
+    );
+  }
+
   // -------------------------------------------------------------------------
   // Internal helpers
   // -------------------------------------------------------------------------

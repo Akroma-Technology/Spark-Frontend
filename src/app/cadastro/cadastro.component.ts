@@ -383,6 +383,8 @@ export class CadastroComponent implements OnInit, OnDestroy {
         next: () => {
           this.loading = false;
           this.pendingEmail = email;
+          // After signup, force the user through the verification gate.
+          this.router.navigate(['/verificar-email'], { queryParams: { email } });
         },
         error: (err: HttpErrorResponse) => {
           if (err.status === 409) {
