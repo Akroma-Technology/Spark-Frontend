@@ -36,7 +36,7 @@ import { ParticleNetworkComponent } from '../shared/components/particle-network.
                 Enviamos um link de confirmação para <strong class="verify-email">{{ pendingEmail }}</strong>.
                 Clique no link para ativar sua conta. Verifique também a caixa de spam.
               </p>
-              <a routerLink="/app" class="btn-submit">Ir para o painel →</a>
+              <a routerLink="/app" class="btn-submit">Ir para o painel</a>
             </div>
           } @else {
             <div class="badge">TRIAL STARTER — 7 DIAS GRÁTIS</div>
