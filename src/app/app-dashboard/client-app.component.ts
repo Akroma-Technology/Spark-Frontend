@@ -567,7 +567,9 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     <input type="time" class="cfg-input slot-time" [(ngModel)]="s.time" [ngModelOptions]="{standalone: true}">
                     <select class="cfg-input slot-format" [(ngModel)]="s.format" [ngModelOptions]="{standalone: true}">
                       <option value="SINGLE">Imagem única</option>
-                      <option *ngIf="canCarousel" value="CAROUSEL">Carrossel</option>
+                      <option value="CAROUSEL" [disabled]="!canCarousel && s.format !== 'CAROUSEL'">
+                        Carrossel{{ !canCarousel ? ' 🔒' : '' }}
+                      </option>
                     </select>
                     <input *ngIf="s.format === 'CAROUSEL'" type="number" min="2" max="10"
                            class="cfg-input slot-count"
@@ -2520,12 +2522,12 @@ export class ClientAppComponent implements OnInit {
       activeDays: [...(this.profile?.activeDays ?? ['MON','TUE','WED','THU','FRI'])],
       scheduleTimes: (this.profile?.scheduleTimes ?? []).map(s => ({
         ...s,
-        // sanitize: if plan doesn't allow carousel, force SINGLE
-        format: (!this.canCarousel && s.format === 'CAROUSEL') ? 'SINGLE' : s.format,
-        // sanitize: if facebook not enabled on this plan, force instagram only
-        networks: !this.profile?.facebookEnabled
-          ? ['instagram']
-          : (s.networks ?? ['instagram']),
+        // Trust what the admin/server saved. Plan limits gate NEW selections
+        // (option disabled, button locked) — but if admin overrode plan caps
+        // for a specific client (e.g. enabled Facebook for a STARTER trial),
+        // the slot config must round-trip unchanged.
+        format: s.format,
+        networks: s.networks ?? ['instagram'],
       })),
       negativeTopics: this.profile?.negativeTopics ?? '',
       fixedHashtags: this.profile?.fixedHashtags ?? '',
