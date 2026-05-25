@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ClientAuthService, ClientInfo } from '../core/services/client-auth.service';
 import { SeoService } from '../core/services/seo.service';
 import { environment } from '../../environments/environment';
@@ -940,16 +941,76 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
             <!-- Checkout button -->
             <button type="button" class="btn btn--spark app-plan-cta"
                     [disabled]="checkoutLoading || !planPrices"
-                    (click)="startCheckout()">
+                    (click)="openCheckoutModal()">
               <span *ngIf="!checkoutLoading">
                 Assinar {{ selectedPlanTier | titlecase }} {{ selectedCycle === 'ANNUAL' ? 'Anual' : 'Mensal' }}
               </span>
-              <span *ngIf="checkoutLoading">Redirecionando para pagamento...</span>
+              <span *ngIf="checkoutLoading">Preparando pagamento...</span>
             </button>
             <p class="app-plan-note">
-              Voce sera redirecionado para o checkout seguro. Aceitamos PIX, cartao de credito e debito.
+              Pagamento seguro direto no Spark. Aceitamos PIX e cartao de credito.
             </p>
             <div class="app-plan-error" *ngIf="checkoutError">{{ checkoutError }}</div>
+
+            <!-- ── In-app checkout modal ───────────────────────────────── -->
+            <div class="ck-modal" *ngIf="checkoutModalOpen" (click)="closeCheckoutModal()">
+              <div class="ck-modal__card" (click)="$event.stopPropagation()">
+                <button type="button" class="ck-modal__close" (click)="closeCheckoutModal()"
+                        aria-label="Fechar">&times;</button>
+                <h3 class="ck-modal__title">
+                  Assinar {{ selectedPlanTier | titlecase }}
+                  {{ selectedCycle === 'ANNUAL' ? 'Anual' : 'Mensal' }}
+                </h3>
+                <div class="ck-modal__amount" *ngIf="checkoutAmount != null">
+                  R$ {{ checkoutAmount | number:'1.2-2' }}
+                </div>
+
+                <div class="ck-tabs">
+                  <button type="button" class="ck-tab"
+                          [class.ck-tab--active]="checkoutMethod === 'PIX'"
+                          (click)="switchCheckoutMethod('PIX')">PIX</button>
+                  <button type="button" class="ck-tab"
+                          [class.ck-tab--active]="checkoutMethod === 'CARD'"
+                          (click)="switchCheckoutMethod('CARD')">Cartao</button>
+                </div>
+
+                <div class="ck-body">
+                  <div *ngIf="checkoutLoading" class="ck-loading">Gerando pagamento...</div>
+
+                  <!-- PIX -->
+                  <div *ngIf="!checkoutLoading && checkoutMethod === 'PIX' && pixBrCodeBase64"
+                       class="ck-pix">
+                    <img class="ck-pix__qr" [src]="pixBrCodeBase64" alt="QR Code PIX" />
+                    <p class="ck-pix__hint">Abra o app do seu banco e escaneie o QR Code, ou copie o codigo:</p>
+                    <div class="ck-pix__code">
+                      <input type="text" readonly [value]="pixBrCode" #pixInput />
+                      <button type="button" class="btn btn--outline btn--sm"
+                              (click)="copyPixCode(pixInput)">
+                        {{ pixCopied ? 'Copiado!' : 'Copiar' }}
+                      </button>
+                    </div>
+                    <div class="ck-pix__timer" *ngIf="pixExpiresIn">
+                      Expira em {{ pixExpiresIn }}
+                    </div>
+                  </div>
+
+                  <!-- CARD -->
+                  <div *ngIf="!checkoutLoading && checkoutMethod === 'CARD' && cardIframeUrl"
+                       class="ck-card">
+                    <iframe class="ck-card__iframe" [src]="cardIframeUrl"
+                            title="Pagamento com cartao"></iframe>
+                    <p class="ck-card__hint">
+                      Pagamento processado com seguranca pela AbacatePay. Seus dados nao ficam armazenados no Spark.
+                    </p>
+                  </div>
+
+                  <div class="ck-status" *ngIf="checkoutStatus === 'PAID'">
+                    ✓ Pagamento confirmado! Atualizando seu plano...
+                  </div>
+                  <div class="app-plan-error" *ngIf="checkoutError">{{ checkoutError }}</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Cancel subscription (only for paying, non-canceled clients) -->
@@ -1767,6 +1828,76 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #f87171;
     }
 
+    /* ── In-app checkout modal ─────────────────────────────────────────── */
+    .ck-modal {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .ck-modal__card {
+      position: relative; width: 100%; max-width: 480px;
+      background: #0d1117; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px; padding: 28px 24px;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .ck-modal__close {
+      position: absolute; top: 12px; right: 14px;
+      background: none; border: none; color: #9ca3af;
+      font-size: 26px; cursor: pointer; line-height: 1;
+    }
+    .ck-modal__close:hover { color: #fff; }
+    .ck-modal__title {
+      margin: 0 0 4px; font-size: 18px; font-weight: 700; color: #fff;
+    }
+    .ck-modal__amount {
+      font-size: 14px; color: #9ca3af; margin-bottom: 20px;
+    }
+    .ck-tabs {
+      display: flex; gap: 6px; padding: 4px;
+      background: rgba(255,255,255,0.04); border-radius: 10px; margin-bottom: 20px;
+    }
+    .ck-tab {
+      flex: 1; padding: 10px; border: none; background: transparent;
+      color: #9ca3af; font-weight: 600; font-size: 14px;
+      border-radius: 8px; cursor: pointer; transition: all 0.15s;
+    }
+    .ck-tab--active { background: #6366f1; color: #fff; }
+    .ck-loading { padding: 40px 0; text-align: center; color: #9ca3af; }
+    .ck-pix { text-align: center; }
+    .ck-pix__qr {
+      width: 240px; height: 240px; border-radius: 12px;
+      background: #fff; padding: 8px; margin: 0 auto 16px; display: block;
+    }
+    .ck-pix__hint { font-size: 13px; color: #9ca3af; margin: 0 0 12px; }
+    .ck-pix__code {
+      display: flex; gap: 8px; align-items: stretch;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px; padding: 6px;
+    }
+    .ck-pix__code input {
+      flex: 1; min-width: 0; background: transparent; border: none;
+      color: #d1d5db; font-size: 11px; font-family: monospace; padding: 6px;
+    }
+    .ck-pix__code input:focus { outline: none; }
+    .ck-pix__timer {
+      margin-top: 14px; font-size: 13px; color: #fbbf24;
+    }
+    .ck-card__iframe {
+      width: 100%; height: 520px; border: none; border-radius: 12px;
+      background: #fff;
+    }
+    .ck-card__hint {
+      font-size: 11px; color: #6b7280; margin: 10px 0 0; text-align: center;
+    }
+    .ck-status {
+      margin-top: 18px; padding: 14px;
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 10px; color: #4ade80; text-align: center; font-weight: 600;
+    }
+    .btn--sm { padding: 6px 14px; font-size: 12px; }
+
     /* Cancel section */
     .app-cancel-section {
       margin-top: 40px; padding: 24px; border-radius: 14px;
@@ -1944,6 +2075,21 @@ export class ClientAppComponent implements OnInit {
   selectedCycle: 'MONTHLY' | 'ANNUAL' = 'MONTHLY';
   checkoutLoading = false;
   checkoutError = '';
+  // In-app checkout modal state
+  checkoutModalOpen = false;
+  checkoutMethod: 'PIX' | 'CARD' = 'PIX';
+  checkoutBillingId: string | null = null;
+  checkoutAmount: number | null = null;
+  checkoutStatus: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'CANCELLED' = 'PENDING';
+  pixBrCode = '';
+  pixBrCodeBase64 = '';
+  pixExpiresAt: string | null = null;
+  pixExpiresIn = '';
+  pixCopied = false;
+  cardIframeUrl: SafeResourceUrl | null = null;
+  private checkoutPollTimer: ReturnType<typeof setInterval> | null = null;
+  private pixCountdownTimer: ReturnType<typeof setInterval> | null = null;
+  private sanitizer = inject(DomSanitizer);
   cancelConfirm = false;
   cancelLoading = false;
   cancelError = '';
@@ -2215,25 +2361,165 @@ export class ClientAppComponent implements OnInit {
     });
   }
 
-  startCheckout(): void {
+  openCheckoutModal(): void {
     if (this.checkoutLoading || !this.planPrices) return;
+    this.checkoutModalOpen = true;
+    this.checkoutMethod = 'PIX';
+    this.checkoutStatus = 'PENDING';
+    this.checkoutError = '';
+    this.pixCopied = false;
+    this.startCheckoutRequest();
+  }
+
+  switchCheckoutMethod(method: 'PIX' | 'CARD'): void {
+    if (this.checkoutMethod === method) return;
+    this.checkoutMethod = method;
+    this.checkoutError = '';
+    this.pixCopied = false;
+    this.startCheckoutRequest();
+  }
+
+  closeCheckoutModal(): void {
+    this.checkoutModalOpen = false;
+    this.stopCheckoutPolling();
+    this.stopPixCountdown();
+    this.checkoutBillingId = null;
+    this.pixBrCode = '';
+    this.pixBrCodeBase64 = '';
+    this.cardIframeUrl = null;
+  }
+
+  private startCheckoutRequest(): void {
     this.checkoutLoading = true;
     this.checkoutError = '';
-    const headers = this.auth.authHeaders();
+    this.stopCheckoutPolling();
+    this.stopPixCountdown();
+    this.pixBrCode = '';
+    this.pixBrCodeBase64 = '';
+    this.cardIframeUrl = null;
 
-    this.http.post<{ paymentUrl: string }>(
+    const headers = this.auth.authHeaders();
+    this.http.post<{
+      billingId: string;
+      paymentMethod: 'PIX' | 'CARD';
+      brCode?: string;
+      brCodeBase64?: string;
+      expiresAt?: string;
+      amount?: number;
+      paymentUrl?: string;
+    }>(
       `${environment.apiUrl}/api/v1/client-billing/checkout`,
-      { planTier: this.selectedPlanTier, billingCycle: this.selectedCycle },
+      {
+        planTier: this.selectedPlanTier,
+        billingCycle: this.selectedCycle,
+        paymentMethod: this.checkoutMethod,
+      },
       { headers }
     ).subscribe({
       next: (res) => {
         this.checkoutLoading = false;
-        window.location.href = res.paymentUrl;
+        this.checkoutBillingId = res.billingId;
+        this.checkoutAmount = res.amount ?? this.checkoutAmount;
+        if (res.paymentMethod === 'PIX') {
+          this.pixBrCode = res.brCode || '';
+          this.pixBrCodeBase64 = res.brCodeBase64 || '';
+          this.pixExpiresAt = res.expiresAt || null;
+          this.startPixCountdown();
+        } else {
+          this.cardIframeUrl = res.paymentUrl
+            ? this.sanitizer.bypassSecurityTrustResourceUrl(res.paymentUrl)
+            : null;
+        }
+        this.startCheckoutPolling();
       },
       error: (err) => {
         this.checkoutLoading = false;
-        this.checkoutError = err.error?.error || 'Erro ao iniciar pagamento. Tente novamente.';
+        this.checkoutError = err.error?.error || err.error?.detail?.error
+          || 'Erro ao iniciar pagamento. Tente novamente.';
       }
+    });
+  }
+
+  private startCheckoutPolling(): void {
+    if (!this.checkoutBillingId) return;
+    const headers = this.auth.authHeaders();
+    const url = `${environment.apiUrl}/api/v1/client-billing/status/${this.checkoutBillingId}`;
+    this.checkoutPollTimer = setInterval(() => {
+      this.http.get<{ status: string; planActive: boolean }>(url, { headers })
+        .subscribe({
+          next: (res) => {
+            if (res.status === 'PAID') {
+              this.checkoutStatus = 'PAID';
+              this.stopCheckoutPolling();
+              this.stopPixCountdown();
+              // Refresh plan status then close modal after a short success view
+              this.loadBillingStatus();
+              setTimeout(() => this.closeCheckoutModal(), 2500);
+            } else if (['FAILED', 'EXPIRED', 'CANCELLED'].includes(res.status)) {
+              this.checkoutStatus = res.status as any;
+              this.stopCheckoutPolling();
+            }
+          },
+          error: () => { /* transient — keep polling */ }
+        });
+    }, 4000);
+  }
+
+  private stopCheckoutPolling(): void {
+    if (this.checkoutPollTimer) {
+      clearInterval(this.checkoutPollTimer);
+      this.checkoutPollTimer = null;
+    }
+  }
+
+  private startPixCountdown(): void {
+    this.stopPixCountdown();
+    if (!this.pixExpiresAt) return;
+    const tick = () => {
+      const remaining = new Date(this.pixExpiresAt!).getTime() - Date.now();
+      if (remaining <= 0) {
+        this.pixExpiresIn = 'Expirado';
+        this.stopPixCountdown();
+        return;
+      }
+      const hours = Math.floor(remaining / 3600000);
+      const minutes = Math.floor((remaining % 3600000) / 60000);
+      const seconds = Math.floor((remaining % 60000) / 1000);
+      this.pixExpiresIn = hours > 0
+        ? `${hours}h ${minutes}m`
+        : `${minutes}m ${String(seconds).padStart(2, '0')}s`;
+    };
+    tick();
+    this.pixCountdownTimer = setInterval(tick, 1000);
+  }
+
+  private stopPixCountdown(): void {
+    if (this.pixCountdownTimer) {
+      clearInterval(this.pixCountdownTimer);
+      this.pixCountdownTimer = null;
+    }
+  }
+
+  copyPixCode(input: HTMLInputElement): void {
+    input.select();
+    try {
+      navigator.clipboard.writeText(this.pixBrCode);
+      this.pixCopied = true;
+      setTimeout(() => { this.pixCopied = false; }, 2500);
+    } catch {
+      document.execCommand('copy');
+      this.pixCopied = true;
+      setTimeout(() => { this.pixCopied = false; }, 2500);
+    }
+  }
+
+  private loadBillingStatus(): void {
+    const headers = this.auth.authHeaders();
+    this.http.get<BillingStatus>(
+      `${environment.apiUrl}/api/v1/client-billing/status`, { headers }
+    ).subscribe({
+      next: (s) => { this.billingStatus = s; },
+      error: () => { /* ignore */ }
     });
   }
 
