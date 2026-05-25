@@ -714,7 +714,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     Instagram
                   </span>
                   <!-- Instagram: requested but failed -->
-                  <span *ngIf="!p.instagramPermalink && (p.networks ?? ['instagram']).includes('instagram') && p.status === 'SUCCESS'"
+                  <span *ngIf="!p.instagramPermalink && (p.networks ?? ['instagram']).includes('instagram') && (p.status === 'SUCCESS' || p.status === 'PARTIAL')"
                         class="post-card__net post-card__net--missing"
                         title="Slot pediu Instagram mas a publicação não foi confirmada">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/></svg>
@@ -726,7 +726,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     Facebook
                   </span>
                   <!-- Facebook: requested but failed (most common bug) -->
-                  <span *ngIf="!p.facebookPermalink && (p.networks ?? []).includes('facebook') && p.status === 'SUCCESS'"
+                  <span *ngIf="!p.facebookPermalink && (p.networks ?? []).includes('facebook') && (p.status === 'SUCCESS' || p.status === 'PARTIAL')"
                         class="post-card__net post-card__net--missing"
                         title="Este slot pediu Facebook mas a publicação não saiu — veja o aviso abaixo">
                     <svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
@@ -734,8 +734,9 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                   </span>
                 </div>
 
-                <!-- Partial errors (e.g. Facebook not connected) -->
-                <p *ngIf="p.status === 'SUCCESS' && p.partialErrorMessage" class="post-card__partial-error">
+                <!-- Partial errors (e.g. Facebook not connected) — visible
+                     both on SUCCESS+partial and on the new PARTIAL status -->
+                <p *ngIf="(p.status === 'SUCCESS' || p.status === 'PARTIAL') && p.partialErrorMessage" class="post-card__partial-error">
                   ⓘ {{ p.partialErrorMessage }}
                 </p>
 
@@ -1709,6 +1710,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       padding: 2px 8px; border-radius: 9999px; border: 1px solid;
     }
     .post-badge--success { background: rgba(34,197,94,.12); color: #4ade80; border-color: rgba(34,197,94,.3); }
+    .post-badge--partial { background: rgba(251,146,60,.12); color: #fb923c; border-color: rgba(251,146,60,.35); }
     .post-badge--failed  { background: rgba(239,68,68,.12);  color: #f87171; border-color: rgba(239,68,68,.3); }
     .post-badge--running { background: rgba(251,191,36,.12); color: #fbbf24; border-color: rgba(251,191,36,.3); }
     .post-badge--pending { background: rgba(156,163,175,.1); color: #9ca3af; border-color: rgba(156,163,175,.2); }
@@ -2733,6 +2735,7 @@ export class ClientAppComponent implements OnInit {
   postStatusLabel(status: string): string {
     switch (status) {
       case 'SUCCESS': return 'Publicado';
+      case 'PARTIAL': return 'Parcial';
       case 'FAILED':  return 'Erro';
       case 'RUNNING': return 'Processando';
       case 'PENDING': return 'Agendado';
@@ -2743,6 +2746,7 @@ export class ClientAppComponent implements OnInit {
   postStatusClass(status: string): string {
     switch (status) {
       case 'SUCCESS': return 'post-badge--success';
+      case 'PARTIAL': return 'post-badge--partial';
       case 'FAILED':  return 'post-badge--failed';
       case 'RUNNING': return 'post-badge--running';
       case 'PENDING': return 'post-badge--pending';
