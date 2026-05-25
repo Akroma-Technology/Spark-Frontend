@@ -960,6 +960,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                 <h3 class="ck-modal__title">
                   Assinar {{ selectedPlanTier | titlecase }}
                   {{ selectedCycle === 'ANNUAL' ? 'Anual' : 'Mensal' }}
+                  <span class="ck-sandbox-badge" *ngIf="checkoutSandbox">SANDBOX</span>
                 </h3>
                 <div class="ck-modal__amount" *ngIf="checkoutAmount != null">
                   R$ {{ checkoutAmount | number:'1.2-2' }}
@@ -1008,6 +1009,18 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                     ✓ Pagamento confirmado! Atualizando seu plano...
                   </div>
                   <div class="app-plan-error" *ngIf="checkoutError">{{ checkoutError }}</div>
+
+                  <!-- Sandbox-only: simular pagamento sem precisar transferir nada -->
+                  <div class="ck-sim" *ngIf="checkoutSandbox && checkoutBillingId && checkoutStatus !== 'PAID'">
+                    <button type="button" class="ck-sim__btn"
+                            [disabled]="simulating"
+                            (click)="simulatePayment()">
+                      {{ simulating ? 'Simulando...' : '⚡ Simular pagamento (sandbox)' }}
+                    </button>
+                    <p class="ck-sim__hint">
+                      Marca como PAGO sem cobrança real — testa o webhook e a ativação do plano.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1896,6 +1909,28 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
       border-radius: 10px; color: #4ade80; text-align: center; font-weight: 600;
     }
+    .ck-sandbox-badge {
+      display: inline-block; margin-left: 10px;
+      padding: 2px 8px; border-radius: 6px;
+      background: rgba(251,191,36,0.15); color: #fbbf24;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+      vertical-align: middle;
+    }
+    .ck-sim {
+      margin-top: 20px; padding-top: 16px;
+      border-top: 1px dashed rgba(255,255,255,0.1);
+      text-align: center;
+    }
+    .ck-sim__btn {
+      width: 100%; padding: 10px 14px;
+      background: rgba(251,191,36,0.1); color: #fbbf24;
+      border: 1px dashed rgba(251,191,36,0.4); border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .ck-sim__btn:hover { background: rgba(251,191,36,0.18); }
+    .ck-sim__btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .ck-sim__hint { font-size: 11px; color: #6b7280; margin: 8px 0 0; }
     .btn--sm { padding: 6px 14px; font-size: 12px; }
 
     /* Cancel section */
@@ -2081,6 +2116,8 @@ export class ClientAppComponent implements OnInit {
   checkoutBillingId: string | null = null;
   checkoutAmount: number | null = null;
   checkoutStatus: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'CANCELLED' = 'PENDING';
+  checkoutSandbox = false;
+  simulating = false;
   pixBrCode = '';
   pixBrCodeBase64 = '';
   pixExpiresAt: string | null = null;
@@ -2402,6 +2439,7 @@ export class ClientAppComponent implements OnInit {
     this.http.post<{
       billingId: string;
       paymentMethod: 'PIX' | 'CARD';
+      sandbox?: boolean;
       brCode?: string;
       brCodeBase64?: string;
       expiresAt?: string;
@@ -2420,6 +2458,7 @@ export class ClientAppComponent implements OnInit {
         this.checkoutLoading = false;
         this.checkoutBillingId = res.billingId;
         this.checkoutAmount = res.amount ?? this.checkoutAmount;
+        this.checkoutSandbox = !!res.sandbox;
         if (res.paymentMethod === 'PIX') {
           this.pixBrCode = res.brCode || '';
           this.pixBrCodeBase64 = res.brCodeBase64 || '';
@@ -2498,6 +2537,34 @@ export class ClientAppComponent implements OnInit {
       clearInterval(this.pixCountdownTimer);
       this.pixCountdownTimer = null;
     }
+  }
+
+  simulatePayment(): void {
+    if (!this.checkoutBillingId || this.simulating) return;
+    this.simulating = true;
+    this.checkoutError = '';
+    const headers = this.auth.authHeaders();
+    this.http.post<{ status: string; billingId: string; simulated: boolean }>(
+      `${environment.apiUrl}/api/v1/client-billing/simulate-payment/${this.checkoutBillingId}`,
+      {},
+      { headers }
+    ).subscribe({
+      next: () => {
+        // Local mark_as_paid já rodou no backend. Polling vai pegar na próxima
+        // tick e fechar o modal, mas force aqui pra UX instantânea.
+        this.simulating = false;
+        this.checkoutStatus = 'PAID';
+        this.stopCheckoutPolling();
+        this.stopPixCountdown();
+        this.loadBillingStatus();
+        setTimeout(() => this.closeCheckoutModal(), 1500);
+      },
+      error: (err) => {
+        this.simulating = false;
+        this.checkoutError = err.error?.error || err.error?.detail?.error
+          || 'Falha ao simular pagamento.';
+      }
+    });
   }
 
   copyPixCode(input: HTMLInputElement): void {
