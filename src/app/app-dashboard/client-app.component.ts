@@ -121,6 +121,9 @@ interface MyPost {
   caption: string | null;
   postFormat: 'SINGLE' | 'CAROUSEL' | string;
   imageUrl: string | null;
+  instagramPostId: string | null;
+  facebookPostId: string | null;
+  linkedinPostId: string | null;
   instagramPermalink: string | null;
   facebookPermalink: string | null;
   publishStory: boolean;
@@ -706,39 +709,33 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                   <span class="post-card__date">{{ (p.executedAt || p.scheduledFor) | date:'dd/MM HH:mm' }}</span>
                 </div>
 
-                <!-- Networks published -->
+                <!-- Networks published — usa POST_ID em vez de permalink pra
+                     saber se foi de fato publicado (permalink pode estar null
+                     mesmo num post bem-sucedido se o fetch do media_info falhou). -->
                 <div class="post-card__networks">
                   <!-- Instagram: published -->
-                  <span *ngIf="p.instagramPermalink" class="post-card__net post-card__net--ig">
+                  <span *ngIf="p.instagramPostId" class="post-card__net post-card__net--ig">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                     Instagram
                   </span>
-                  <!-- Instagram: requested but failed -->
-                  <span *ngIf="!p.instagramPermalink && (p.networks ?? ['instagram']).includes('instagram') && (p.status === 'SUCCESS' || p.status === 'PARTIAL')"
-                        class="post-card__net post-card__net--missing"
-                        title="Slot pediu Instagram mas a publicação não foi confirmada">
+                  <!-- Instagram: requested but failed (post_id nunca foi setado) -->
+                  <span *ngIf="!p.instagramPostId && (p.networks ?? ['instagram']).includes('instagram') && (p.status === 'SUCCESS' || p.status === 'PARTIAL')"
+                        class="post-card__net post-card__net--missing">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/></svg>
                     Instagram não publicado
                   </span>
                   <!-- Facebook: published -->
-                  <span *ngIf="p.facebookPermalink" class="post-card__net post-card__net--fb">
+                  <span *ngIf="p.facebookPostId" class="post-card__net post-card__net--fb">
                     <svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                     Facebook
                   </span>
-                  <!-- Facebook: requested but failed (most common bug) -->
-                  <span *ngIf="!p.facebookPermalink && (p.networks ?? []).includes('facebook') && (p.status === 'SUCCESS' || p.status === 'PARTIAL')"
-                        class="post-card__net post-card__net--missing"
-                        title="Este slot pediu Facebook mas a publicação não saiu — veja o aviso abaixo">
+                  <!-- Facebook: requested but failed -->
+                  <span *ngIf="!p.facebookPostId && (p.networks ?? []).includes('facebook') && (p.status === 'SUCCESS' || p.status === 'PARTIAL')"
+                        class="post-card__net post-card__net--missing">
                     <svg viewBox="0 0 24 24" fill="currentColor" style="width:11px;height:11px"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                     Facebook não publicado
                   </span>
                 </div>
-
-                <!-- Partial errors (e.g. Facebook not connected) — visible
-                     both on SUCCESS+partial and on the new PARTIAL status -->
-                <p *ngIf="(p.status === 'SUCCESS' || p.status === 'PARTIAL') && p.partialErrorMessage" class="post-card__partial-error">
-                  ⓘ {{ p.partialErrorMessage }}
-                </p>
 
                 <!-- Topic -->
                 <p *ngIf="p.topicUsed" class="post-card__topic">{{ p.topicUsed }}</p>
@@ -748,9 +745,11 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                   {{ p.caption.length > 120 ? (p.caption.slice(0, 120) + '…') : p.caption }}
                 </p>
 
-                <!-- Error message -->
-                <p *ngIf="p.status === 'FAILED' && p.errorMessage" class="post-card__error">
-                  ⚠ {{ p.errorMessage.length > 80 ? (p.errorMessage.slice(0, 80) + '…') : p.errorMessage }}
+                <!-- Erro generico para o cliente (detalhe tecnico fica so no
+                     admin Central de Erros). Stack traces, mensagens do
+                     Gemini/Graph etc nao agregam pro cliente final. -->
+                <p *ngIf="p.status === 'FAILED'" class="post-card__error">
+                  ⚠ Erro ao publicar. Você pode tentar novamente ou contatar o suporte.
                 </p>
 
                 <!-- Engagement per network (SUCCESS only) -->
