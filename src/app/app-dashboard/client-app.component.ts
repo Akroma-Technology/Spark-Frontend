@@ -779,9 +779,14 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                   </div>
                 </ng-container>
 
-                <!-- Links -->
+                <!-- Links — usa permalink quando ele veio do Graph API,
+                     senao deriva do post_id (acontece quando get_media_info
+                     dá 400 por permissao do token mas o publish foi OK).
+                     Pra cliente, o que importa eh ter o link clicavel. -->
                 <div class="post-card__links">
-                  <a *ngIf="p.instagramPermalink" [href]="p.instagramPermalink" target="_blank" rel="noopener" class="post-card__link">
+                  <a *ngIf="p.instagramPermalink || p.instagramPostId"
+                     [href]="p.instagramPermalink || igFallbackUrl(p.instagramPostId)"
+                     target="_blank" rel="noopener" class="post-card__link">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                     Ver no Instagram
                   </a>
@@ -2797,6 +2802,29 @@ export class ClientAppComponent implements OnInit {
         this.myPostsLoaded = true;
       }
     });
+  }
+
+  /** Deriva a URL publica do post IG a partir do media_id quando o
+   *  permalink nao chegou do Graph API (acontece quando get_media_info
+   *  da 400 por permissao do token, mas o publish foi bem-sucedido).
+   *  Algoritmo de shortcode do proprio IG — base64 sobre o id em BigInt
+   *  com alfabeto custom. Funciona pra qualquer media de feed. */
+  igFallbackUrl(mediaId: string | null | undefined): string {
+    if (!mediaId) return '';
+    const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    try {
+      const raw = mediaId.split('_')[0];
+      let n = BigInt(raw);
+      let code = '';
+      while (n > 0n) {
+        const r = Number(n % 64n);
+        code = ALPHA[r] + code;
+        n = n / 64n;
+      }
+      return `https://www.instagram.com/p/${code}/`;
+    } catch {
+      return '';
+    }
   }
 
   postStatusLabel(status: string): string {
