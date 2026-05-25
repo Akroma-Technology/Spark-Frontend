@@ -107,6 +107,11 @@ interface BillingStatus {
   trialEndsAt?: string;
   canceledAt?: string;
   periodEnd?: string;
+  // Set quando o cliente agendou um downgrade — current plan continua ate
+  // nextPeriodStartsAt, ai vira nextPlanTier sem cobranca extra.
+  nextPlanTier?: string;
+  nextBillingCycle?: string;
+  nextPeriodStartsAt?: string;
 }
 
 interface PlanPrices {
@@ -868,6 +873,10 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                       *ngIf="billingStatus?.canceled">
                   Cancelado — acesso ate {{ billingStatus?.periodEnd | date:'dd/MM/yyyy' }}
                 </span>
+                <span class="app-plan-card__status app-plan-card__status--scheduled"
+                      *ngIf="!billingStatus?.canceled && billingStatus?.nextPlanTier && billingStatus?.nextPeriodStartsAt">
+                  Trocara para {{ billingStatus?.nextPlanTier }} em {{ billingStatus?.nextPeriodStartsAt | date:'dd/MM/yyyy' }}
+                </span>
               </div>
             </div>
             <p class="app-plan-card__desc" *ngIf="!billingStatus?.canceled">
@@ -987,6 +996,26 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                 </div>
 
                 <div class="ck-body">
+                  <!-- Downgrade agendado: nao cobra, so confirma a troca. -->
+                  <div *ngIf="scheduledChange" class="ck-scheduled">
+                    <div class="ck-scheduled__icon">✓</div>
+                    <h4>Troca agendada</h4>
+                    <p>
+                      Voce esta no plano <strong>{{ scheduledChange.fromTier }}</strong> ate
+                      <strong>{{ scheduledChange.for | date:'dd/MM/yyyy':'+0000':'pt-BR' }}</strong>.
+                      A partir dessa data, voce passa automaticamente para
+                      <strong>{{ scheduledChange.toTier }}</strong> e a primeira cobranca
+                      do novo plano ocorre no momento da troca.
+                    </p>
+                    <p class="ck-scheduled__hint">
+                      Voce pode cancelar essa troca a qualquer momento ate la pelas configuracoes do plano.
+                    </p>
+                    <button type="button" class="btn btn--spark" (click)="closeCheckoutModal()">
+                      Entendi
+                    </button>
+                  </div>
+
+                  <ng-container *ngIf="!scheduledChange">
                   <div *ngIf="checkoutLoading" class="ck-loading">Gerando pagamento...</div>
 
                   <!-- PIX -->
@@ -1032,6 +1061,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                       Marca como PAGO sem cobrança real — testa o webhook e a ativação do plano.
                     </p>
                   </div>
+                  </ng-container>
                 </div>
               </div>
             </div>
@@ -1769,6 +1799,23 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .app-plan-card--canceled { border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.04); }
     .app-plan-card__status--paid { background: rgba(34,197,94,0.1); color: #22c55e; }
     .app-plan-card__status--canceled { background: rgba(239,68,68,0.1); color: #f87171; }
+    .app-plan-card__status--scheduled { background: rgba(251,191,36,0.12); color: #fbbf24; }
+
+    /* Checkout modal: panel exibido quando o backend agendou a troca */
+    .ck-scheduled {
+      text-align: center; padding: 24px 8px;
+    }
+    .ck-scheduled__icon {
+      width: 56px; height: 56px; line-height: 56px; margin: 0 auto 16px;
+      border-radius: 50%; background: rgba(34,197,94,0.15); color: #4ade80;
+      font-size: 30px; font-weight: 700;
+    }
+    .ck-scheduled h4 { margin: 0 0 10px; color: #fff; font-size: 18px; }
+    .ck-scheduled p {
+      color: #cbd5e1; font-size: 14px; line-height: 1.55; margin: 0 0 12px;
+    }
+    .ck-scheduled p strong { color: #fff; }
+    .ck-scheduled__hint { color: #9ca3af; font-size: 12px; }
 
     /* Plan upgrade section */
     .app-plan-upgrade { margin-top: 32px; }
@@ -2130,6 +2177,9 @@ export class ClientAppComponent implements OnInit {
   checkoutStatus: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'CANCELLED' = 'PENDING';
   checkoutSandbox = false;
   simulating = false;
+  // Downgrade agendado: backend devolveu {scheduled: true, scheduledFor:...}.
+  // O modal nao mostra QR/iframe, mostra um banner de confirmacao.
+  scheduledChange: { for: string; fromTier: string; toTier: string } | null = null;
   pixBrCode = '';
   pixBrCodeBase64 = '';
   pixExpiresAt: string | null = null;
@@ -2436,6 +2486,7 @@ export class ClientAppComponent implements OnInit {
     this.pixBrCode = '';
     this.pixBrCodeBase64 = '';
     this.cardIframeUrl = null;
+    this.scheduledChange = null;
   }
 
   private startCheckoutRequest(): void {
@@ -2449,14 +2500,18 @@ export class ClientAppComponent implements OnInit {
 
     const headers = this.auth.authHeaders();
     this.http.post<{
-      billingId: string;
-      paymentMethod: 'PIX' | 'CARD';
+      billingId?: string;
+      paymentMethod?: 'PIX' | 'CARD';
       sandbox?: boolean;
       brCode?: string;
       brCodeBase64?: string;
       expiresAt?: string;
       amount?: number;
       paymentUrl?: string;
+      scheduled?: boolean;
+      scheduledFor?: string;
+      scheduledFromTier?: string;
+      scheduledToTier?: string;
     }>(
       `${environment.apiUrl}/api/v1/client-billing/checkout`,
       {
@@ -2468,7 +2523,20 @@ export class ClientAppComponent implements OnInit {
     ).subscribe({
       next: (res) => {
         this.checkoutLoading = false;
-        this.checkoutBillingId = res.billingId;
+        // Downgrade caso especial: backend nao cobrou — apenas agendou o
+        // troca para o fim do periodo atual. Modal mostra confirmacao em
+        // vez de PIX/cartao.
+        if (res.scheduled) {
+          this.scheduledChange = {
+            for: res.scheduledFor || '',
+            fromTier: res.scheduledFromTier || '',
+            toTier: res.scheduledToTier || '',
+          };
+          // Recarrega o status pra UI atualizar o "Trocara em" no card do plano
+          this.loadBillingStatus();
+          return;
+        }
+        this.checkoutBillingId = res.billingId ?? null;
         this.checkoutAmount = res.amount ?? this.checkoutAmount;
         this.checkoutSandbox = !!res.sandbox;
         if (res.paymentMethod === 'PIX') {
