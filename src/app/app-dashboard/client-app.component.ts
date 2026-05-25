@@ -572,10 +572,15 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                         Carrossel{{ !canCarousel ? ' 🔒' : '' }}
                       </option>
                     </select>
-                    <input *ngIf="s.format === 'CAROUSEL'" type="number" min="2" max="10"
-                           class="cfg-input slot-count"
-                           [(ngModel)]="s.carouselCount" [ngModelOptions]="{standalone: true}"
-                           title="Slides">
+                    <select *ngIf="s.format === 'CAROUSEL'"
+                            class="cfg-input slot-count"
+                            [(ngModel)]="s.carouselCount" [ngModelOptions]="{standalone: true}"
+                            title="Quantidade de imagens no carrossel (max 4)">
+                      <option [ngValue]="1">1</option>
+                      <option [ngValue]="2">2</option>
+                      <option [ngValue]="3">3</option>
+                      <option [ngValue]="4">4</option>
+                    </select>
                     <label class="toggle-story-c" title="Publicar também no Story">
                       <input type="checkbox" class="toggle-story-inp" [(ngModel)]="s.publishStory" [ngModelOptions]="{standalone: true}">
                       <span class="toggle-story-track"><span class="toggle-story-thumb"></span></span>
@@ -606,7 +611,11 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                         <span *ngIf="!profile?.facebookEnabled" class="slot-net-lock">🔒</span>
                       </button>
                     </div>
-                    <!-- LinkedIn: Pro+ only -->
+                    <!-- LinkedIn: ocultado na tela do cliente enquanto a publicação
+                         no LinkedIn não está implementada de fato. O painel
+                         admin continua mostrando, pra evitar surpresa quando
+                         a feature for ligada. -->
+                    <!--
                     <div class="slot-net-wrapper" [title]="!profile?.linkedinEnabled ? 'Disponível no plano Pro ou superior' : ''">
                       <button type="button" class="slot-net-btn"
                               [class.slot-net-btn--li]="slotNetActive(s, 'linkedin')"
@@ -618,6 +627,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                         <span *ngIf="!profile?.linkedinEnabled" class="slot-net-lock">🔒</span>
                       </button>
                     </div>
+                    -->
+
                   </div>
 
                   <div class="slot-topic-row">
