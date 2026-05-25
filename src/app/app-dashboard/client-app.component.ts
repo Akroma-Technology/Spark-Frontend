@@ -1337,8 +1337,9 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
 
     .app-sidebar {
       background: #07091a; border-right: 1px solid rgba(255,255,255,0.05);
-      padding: 16px 16px 16px; display: flex; flex-direction: column; gap: 16px;
-      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      padding: 16px 16px 16px; display: flex; flex-direction: column; gap: 8px;
+      position: sticky; top: 0; min-height: 100vh; align-self: start;
+      overflow-y: auto; max-height: 100vh;
     }
     .app-logo {
       display: flex; align-items: center; gap: 8px;
@@ -1353,7 +1354,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       background: linear-gradient(135deg, #fbbf24, #f59e0b);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    .app-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .app-nav { display: flex; flex-direction: column; gap: 4px; }
     .app-nav__item {
       display: flex; align-items: center; gap: 12px;
       padding: 10px 14px; border-radius: 8px;
@@ -1367,7 +1368,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
       background: rgba(251,191,36,0.08); color: #fbbf24;
     }
 
-    .app-sidebar__footer { padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 0; }
+    .app-sidebar__footer { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
     .app-logout {
       display: flex; align-items: center; gap: 10px;
       width: 100%; padding: 10px 14px; border-radius: 8px;
