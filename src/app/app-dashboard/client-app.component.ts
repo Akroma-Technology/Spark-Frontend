@@ -894,227 +894,42 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
               Para reativar, escolha um plano abaixo.
             </p>
 
-            <!-- Billing-6: SSO handoff pro portal akroma central -->
+            <!-- Billing-8d: portal Akroma e o unico caminho de pagamento.
+                 Trial users veem "Assinar"; ativos veem "Gerenciar"; cancelados veem "Reativar". -->
             <div class="app-plan-portal-actions">
-              <button type="button" class="btn btn--outline"
+              <button type="button" class="btn btn--spark"
                       [disabled]="portalHandoffLoading"
                       (click)="openPortalBilling('subscriptions')">
-                {{ portalHandoffLoading ? 'Abrindo portal...' : 'Gerenciar plano no portal Akroma' }}
+                <ng-container *ngIf="!portalHandoffLoading">
+                  <span *ngIf="billingStatus?.canceled">Reativar assinatura no portal</span>
+                  <span *ngIf="!billingStatus?.canceled && billingStatus?.trialActive">Assinar plano no portal Akroma</span>
+                  <span *ngIf="!billingStatus?.canceled && !billingStatus?.trialActive && billingStatus?.active">Gerenciar plano no portal Akroma</span>
+                  <span *ngIf="!billingStatus?.canceled && !billingStatus?.trialActive && !billingStatus?.active">Assinar plano no portal Akroma</span>
+                </ng-container>
+                <span *ngIf="portalHandoffLoading">Abrindo portal...</span>
               </button>
               <button type="button" class="btn btn--link"
                       [disabled]="portalHandoffLoading"
                       (click)="openPortalBilling('invoices')">
                 Ver faturas e notas fiscais
               </button>
+              <p class="app-plan-portal-actions__hint">
+                Pagamento, troca de plano e cancelamento sao gerenciados no portal central.
+              </p>
               <p class="app-plan-portal-actions__error" *ngIf="portalHandoffError">
                 {{ portalHandoffError }}
               </p>
             </div>
           </div>
 
-          <!-- Plan selector: only show if on trial or free or canceled -->
-          <div class="app-plan-upgrade" *ngIf="billingStatus?.trialActive || !billingStatus?.active || billingStatus?.canceled">
-            <h2 class="app-plan-upgrade__title">Escolha seu plano</h2>
-
-            <!-- Cycle toggle -->
-            <div class="app-cycle-toggle">
-              <button type="button" class="app-cycle-btn" [class.app-cycle-btn--active]="selectedCycle === 'MONTHLY'"
-                      (click)="selectedCycle = 'MONTHLY'">Mensal</button>
-              <button type="button" class="app-cycle-btn" [class.app-cycle-btn--active]="selectedCycle === 'ANNUAL'"
-                      (click)="selectedCycle = 'ANNUAL'">
-                Anual <span class="app-cycle-discount">2 meses gratis</span>
-              </button>
-            </div>
-
-            <!-- Plan cards -->
-            <div class="app-plan-options" *ngIf="planPrices">
-              <!-- Starter -->
-              <div class="app-plan-option" [class.app-plan-option--selected]="selectedPlanTier === 'STARTER'"
-                   (click)="selectedPlanTier = 'STARTER'">
-                <div class="app-plan-option__header">
-                  <span class="app-plan-option__name">Starter</span>
-                  <div class="app-plan-option__price">
-                    <span class="app-plan-option__price-main">
-                      R$ {{ selectedCycle === 'ANNUAL' ? planPrices.starter.annualMonthly : planPrices.starter.monthly }}
-                    </span>
-                    <span class="app-plan-option__price-label">/mes</span>
-                  </div>
-                  <div class="app-plan-option__annual-note" *ngIf="selectedCycle === 'ANNUAL'">
-                    R$ {{ planPrices.starter.annual }} cobrado anualmente
-                  </div>
-                </div>
-                <ul class="app-plan-option__features">
-                  <li>Posts automaticos diarios</li>
-                  <li>Geração de imagem por IA</li>
-                  <li>1 perfil Instagram</li>
-                  <li>Relatorios basicos</li>
-                </ul>
-              </div>
-
-              <!-- Pro -->
-              <div class="app-plan-option app-plan-option--pro" [class.app-plan-option--selected]="selectedPlanTier === 'PRO'"
-                   (click)="selectedPlanTier = 'PRO'">
-                <div class="app-plan-option__badge">RECOMENDADO</div>
-                <div class="app-plan-option__header">
-                  <span class="app-plan-option__name">Pro</span>
-                  <div class="app-plan-option__price">
-                    <span class="app-plan-option__price-main">
-                      R$ {{ selectedCycle === 'ANNUAL' ? planPrices.pro.annualMonthly : planPrices.pro.monthly }}
-                    </span>
-                    <span class="app-plan-option__price-label">/mes</span>
-                  </div>
-                  <div class="app-plan-option__annual-note" *ngIf="selectedCycle === 'ANNUAL'">
-                    R$ {{ planPrices.pro.annual }} cobrado anualmente
-                  </div>
-                </div>
-                <ul class="app-plan-option__features">
-                  <li>Tudo do Starter</li>
-                  <li>Carrossis e stories</li>
-                  <li>Multiplos perfis</li>
-                  <li>Relatorios avancados</li>
-                  <li>Suporte prioritario</li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- Loading prices -->
-            <div class="app-plan-loading" *ngIf="!planPrices && planLoading">Carregando precos...</div>
-
-            <!-- Checkout button -->
-            <button type="button" class="btn btn--spark app-plan-cta"
-                    [disabled]="checkoutLoading || !planPrices"
-                    (click)="openCheckoutModal()">
-              <span *ngIf="!checkoutLoading">
-                Assinar {{ selectedPlanTier | titlecase }} {{ selectedCycle === 'ANNUAL' ? 'Anual' : 'Mensal' }}
-              </span>
-              <span *ngIf="checkoutLoading">Preparando pagamento...</span>
-            </button>
-            <p class="app-plan-note">
-              Pagamento seguro direto no Spark. Aceitamos PIX e cartao de credito.
-            </p>
-            <div class="app-plan-error" *ngIf="checkoutError">{{ checkoutError }}</div>
-
-            <!-- ── In-app checkout modal ───────────────────────────────── -->
-            <div class="ck-modal" *ngIf="checkoutModalOpen" (click)="closeCheckoutModal()">
-              <div class="ck-modal__card" (click)="$event.stopPropagation()">
-                <button type="button" class="ck-modal__close" (click)="closeCheckoutModal()"
-                        aria-label="Fechar">&times;</button>
-                <h3 class="ck-modal__title">
-                  Assinar {{ selectedPlanTier | titlecase }}
-                  {{ selectedCycle === 'ANNUAL' ? 'Anual' : 'Mensal' }}
-                  <span class="ck-sandbox-badge" *ngIf="checkoutSandbox">SANDBOX</span>
-                </h3>
-                <div class="ck-modal__amount" *ngIf="checkoutAmount != null">
-                  R$ {{ checkoutAmount | number:'1.2-2' }}
-                </div>
-
-                <div class="ck-tabs">
-                  <button type="button" class="ck-tab"
-                          [class.ck-tab--active]="checkoutMethod === 'PIX'"
-                          (click)="switchCheckoutMethod('PIX')">PIX</button>
-                  <button type="button" class="ck-tab"
-                          [class.ck-tab--active]="checkoutMethod === 'CARD'"
-                          (click)="switchCheckoutMethod('CARD')">Cartao</button>
-                </div>
-
-                <div class="ck-body">
-                  <!-- Downgrade agendado: nao cobra, so confirma a troca. -->
-                  <div *ngIf="scheduledChange" class="ck-scheduled">
-                    <div class="ck-scheduled__icon">✓</div>
-                    <h4>Troca agendada</h4>
-                    <p>
-                      Voce esta no plano <strong>{{ scheduledChange.fromTier }}</strong> ate
-                      <strong>{{ scheduledChange.for | date:'dd/MM/yyyy':'+0000':'pt-BR' }}</strong>.
-                      A partir dessa data, voce passa automaticamente para
-                      <strong>{{ scheduledChange.toTier }}</strong> e a primeira cobranca
-                      do novo plano ocorre no momento da troca.
-                    </p>
-                    <p class="ck-scheduled__hint">
-                      Voce pode cancelar essa troca a qualquer momento ate la pelas configuracoes do plano.
-                    </p>
-                    <button type="button" class="btn btn--spark" (click)="closeCheckoutModal()">
-                      Entendi
-                    </button>
-                  </div>
-
-                  <ng-container *ngIf="!scheduledChange">
-                  <div *ngIf="checkoutLoading" class="ck-loading">Gerando pagamento...</div>
-
-                  <!-- PIX -->
-                  <div *ngIf="!checkoutLoading && checkoutMethod === 'PIX' && pixBrCodeBase64"
-                       class="ck-pix">
-                    <img class="ck-pix__qr" [src]="pixBrCodeBase64" alt="QR Code PIX" />
-                    <p class="ck-pix__hint">Abra o app do seu banco e escaneie o QR Code, ou copie o codigo:</p>
-                    <div class="ck-pix__code">
-                      <input type="text" readonly [value]="pixBrCode" #pixInput />
-                      <button type="button" class="btn btn--outline btn--sm"
-                              (click)="copyPixCode(pixInput)">
-                        {{ pixCopied ? 'Copiado!' : 'Copiar' }}
-                      </button>
-                    </div>
-                    <div class="ck-pix__timer" *ngIf="pixExpiresIn">
-                      Expira em {{ pixExpiresIn }}
-                    </div>
-                  </div>
-
-                  <!-- CARD -->
-                  <div *ngIf="!checkoutLoading && checkoutMethod === 'CARD' && cardIframeUrl"
-                       class="ck-card">
-                    <iframe class="ck-card__iframe" [src]="cardIframeUrl"
-                            title="Pagamento com cartao"></iframe>
-                    <p class="ck-card__hint">
-                      Pagamento processado com seguranca pela AbacatePay. Seus dados nao ficam armazenados no Spark.
-                    </p>
-                  </div>
-
-                  <div class="ck-status" *ngIf="checkoutStatus === 'PAID'">
-                    ✓ Pagamento confirmado! Atualizando seu plano...
-                  </div>
-                  <div class="app-plan-error" *ngIf="checkoutError">{{ checkoutError }}</div>
-
-                  <!-- Sandbox-only: simular pagamento sem precisar transferir nada -->
-                  <div class="ck-sim" *ngIf="checkoutSandbox && checkoutBillingId && checkoutStatus !== 'PAID'">
-                    <button type="button" class="ck-sim__btn"
-                            [disabled]="simulating"
-                            (click)="simulatePayment()">
-                      {{ simulating ? 'Simulando...' : '⚡ Simular pagamento (sandbox)' }}
-                    </button>
-                    <p class="ck-sim__hint">
-                      Marca como PAGO sem cobrança real — testa o webhook e a ativação do plano.
-                    </p>
-                  </div>
-                  </ng-container>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cancel subscription (only for paying, non-canceled clients) -->
-          <div class="app-cancel-section"
-               *ngIf="!billingStatus?.trialActive && billingStatus?.active && !billingStatus?.canceled && billingStatus?.planValue && billingStatus?.planValue! > 0">
-            <h3>Cancelar assinatura</h3>
-            <p>
-              Ao cancelar, nenhuma nova cobranca sera gerada. Voce mantem acesso ao Spark
-              ate o fim do periodo ja pago (<strong>{{ billingStatus?.periodEnd | date:'dd/MM/yyyy' }}</strong>).
-            </p>
-            <div *ngIf="!cancelConfirm">
-              <button type="button" class="btn app-cancel-btn" (click)="cancelConfirm = true">
-                Cancelar assinatura
-              </button>
-            </div>
-            <div class="app-cancel-confirm" *ngIf="cancelConfirm">
-              <p class="app-cancel-confirm__warning">Tem certeza? Esta acao nao pode ser desfeita.</p>
-              <div class="app-cancel-confirm__btns">
-                <button type="button" class="btn btn--outline" (click)="cancelConfirm = false"
-                        [disabled]="cancelLoading">Nao, manter assinatura</button>
-                <button type="button" class="btn app-cancel-btn--confirm"
-                        [disabled]="cancelLoading" (click)="cancelSubscription()">
-                  {{ cancelLoading ? 'Cancelando...' : 'Sim, cancelar' }}
-                </button>
-              </div>
-            </div>
-            <div class="app-plan-error" *ngIf="cancelError">{{ cancelError }}</div>
-          </div>
+          <!-- Billing-8d (2026-05-26): bloco 'Escolha seu plano' (selector + cycle toggle),
+               in-app checkout modal (PIX/Cartao) e cancel-section REMOVIDOS.
+               Todo o gerenciamento de assinatura (assinar, mudar plano, cancelar,
+               reativar) acontece via portal central:
+                 botao 'Assinar/Gerenciar plano no portal Akroma' acima dispara
+                 SSO handoff -> akroma.com.br/portal/assinaturas
+               Pagamento (PIX/Cartao) e emitido por accounts.invoices + payment_attempts
+               via webhook AbacatePay no Site backend. -->
 
           <!-- Zona de Perigo: apagar conta -->
           <div class="danger-zone">
@@ -1839,222 +1654,8 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     .app-plan-card__status--canceled { background: rgba(239,68,68,0.1); color: #f87171; }
     .app-plan-card__status--scheduled { background: rgba(251,191,36,0.12); color: #fbbf24; }
 
-    /* Checkout modal: panel exibido quando o backend agendou a troca */
-    .ck-scheduled {
-      text-align: center; padding: 24px 8px;
-    }
-    .ck-scheduled__icon {
-      width: 56px; height: 56px; line-height: 56px; margin: 0 auto 16px;
-      border-radius: 50%; background: rgba(34,197,94,0.15); color: #4ade80;
-      font-size: 30px; font-weight: 700;
-    }
-    .ck-scheduled h4 { margin: 0 0 10px; color: #fff; font-size: 18px; }
-    .ck-scheduled p {
-      color: #cbd5e1; font-size: 14px; line-height: 1.55; margin: 0 0 12px;
-    }
-    .ck-scheduled p strong { color: #fff; }
-    .ck-scheduled__hint { color: #9ca3af; font-size: 12px; }
-
-    /* Plan upgrade section */
-    .app-plan-upgrade { margin-top: 32px; }
-    .app-plan-upgrade__title {
-      font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 20px;
-    }
-
-    /* Cycle toggle */
-    .app-cycle-toggle {
-      display: inline-flex; gap: 4px; padding: 4px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px; margin-bottom: 24px;
-    }
-    .app-cycle-btn {
-      padding: 8px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
-      background: transparent; color: #9ca3af; border: none; cursor: pointer;
-      transition: all 0.2s; display: flex; align-items: center; gap: 8px;
-    }
-    .app-cycle-btn--active { background: rgba(251,191,36,0.1); color: #fbbf24; }
-    .app-cycle-discount {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-      padding: 2px 8px; border-radius: 10px;
-      background: rgba(34,197,94,0.12); color: #22c55e;
-    }
-
-    /* Plan option cards */
-    .app-plan-options {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
-    }
-    @media (max-width: 640px) { .app-plan-options { grid-template-columns: 1fr; } }
-
-    .app-plan-option {
-      position: relative; padding: 24px; border-radius: 16px; cursor: pointer;
-      background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.08);
-      transition: all 0.2s;
-    }
-    .app-plan-option:hover { border-color: rgba(251,191,36,0.3); }
-    .app-plan-option--selected { border-color: #fbbf24; background: rgba(251,191,36,0.05); }
-    .app-plan-option--pro { background: rgba(251,191,36,0.03); }
-    .app-plan-option--pro.app-plan-option--selected { border-color: #fbbf24; background: rgba(251,191,36,0.08); }
-
-    .app-plan-option__badge {
-      position: absolute; top: -1px; right: 20px;
-      font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
-      padding: 4px 12px; border-radius: 0 0 10px 10px;
-      background: linear-gradient(135deg, #f59e0b, #d97706); color: #000;
-    }
-
-    .app-plan-option__header { margin-bottom: 16px; }
-    .app-plan-option__name {
-      display: block; font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
-      color: #9ca3af; text-transform: uppercase; margin-bottom: 8px;
-    }
-    .app-plan-option__price { display: flex; align-items: baseline; gap: 4px; }
-    .app-plan-option__price-main { font-size: 28px; font-weight: 800; color: #fff; }
-    .app-plan-option__price-label { font-size: 13px; color: #6b7280; }
-    .app-plan-option__annual-note {
-      font-size: 12px; color: #6b7280; margin-top: 4px;
-    }
-
-    .app-plan-option__features {
-      list-style: none; margin: 0; padding: 0;
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .app-plan-option__features li {
-      font-size: 13px; color: #d1d5db;
-      padding-left: 18px; position: relative;
-    }
-    .app-plan-option__features li::before {
-      content: '✓'; position: absolute; left: 0;
-      color: #22c55e; font-weight: 700; font-size: 12px;
-    }
-
-    .app-plan-loading { font-size: 14px; color: #6b7280; padding: 16px 0; }
-
-    .app-plan-cta { width: 100%; padding: 14px 24px; font-size: 16px; }
-    .app-plan-note {
-      text-align: center; font-size: 12px; color: #6b7280; margin: 12px 0 0; line-height: 1.5;
-    }
-    .app-plan-error {
-      margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px;
-      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #f87171;
-    }
-
-    /* ── In-app checkout modal ─────────────────────────────────────────── */
-    .ck-modal {
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-    }
-    .ck-modal__card {
-      position: relative; width: 100%; max-width: 480px;
-      background: #0d1117; border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 18px; padding: 28px 24px;
-      box-shadow: 0 24px 48px rgba(0,0,0,0.5);
-      max-height: 90vh; overflow-y: auto;
-    }
-    .ck-modal__close {
-      position: absolute; top: 12px; right: 14px;
-      background: none; border: none; color: #9ca3af;
-      font-size: 26px; cursor: pointer; line-height: 1;
-    }
-    .ck-modal__close:hover { color: #fff; }
-    .ck-modal__title {
-      margin: 0 0 4px; font-size: 18px; font-weight: 700; color: #fff;
-    }
-    .ck-modal__amount {
-      font-size: 14px; color: #9ca3af; margin-bottom: 20px;
-    }
-    .ck-tabs {
-      display: flex; gap: 6px; padding: 4px;
-      background: rgba(255,255,255,0.04); border-radius: 10px; margin-bottom: 20px;
-    }
-    .ck-tab {
-      flex: 1; padding: 10px; border: none; background: transparent;
-      color: #9ca3af; font-weight: 600; font-size: 14px;
-      border-radius: 8px; cursor: pointer; transition: all 0.15s;
-    }
-    .ck-tab--active { background: #6366f1; color: #fff; }
-    .ck-loading { padding: 40px 0; text-align: center; color: #9ca3af; }
-    .ck-pix { text-align: center; }
-    .ck-pix__qr {
-      width: 240px; height: 240px; border-radius: 12px;
-      background: #fff; padding: 8px; margin: 0 auto 16px; display: block;
-    }
-    .ck-pix__hint { font-size: 13px; color: #9ca3af; margin: 0 0 12px; }
-    .ck-pix__code {
-      display: flex; gap: 8px; align-items: stretch;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px; padding: 6px;
-    }
-    .ck-pix__code input {
-      flex: 1; min-width: 0; background: transparent; border: none;
-      color: #d1d5db; font-size: 11px; font-family: monospace; padding: 6px;
-    }
-    .ck-pix__code input:focus { outline: none; }
-    .ck-pix__timer {
-      margin-top: 14px; font-size: 13px; color: #fbbf24;
-    }
-    .ck-card__iframe {
-      width: 100%; height: 520px; border: none; border-radius: 12px;
-      background: #fff;
-    }
-    .ck-card__hint {
-      font-size: 11px; color: #6b7280; margin: 10px 0 0; text-align: center;
-    }
-    .ck-status {
-      margin-top: 18px; padding: 14px;
-      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
-      border-radius: 10px; color: #4ade80; text-align: center; font-weight: 600;
-    }
-    .ck-sandbox-badge {
-      display: inline-block; margin-left: 10px;
-      padding: 2px 8px; border-radius: 6px;
-      background: rgba(251,191,36,0.15); color: #fbbf24;
-      font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
-      vertical-align: middle;
-    }
-    .ck-sim {
-      margin-top: 20px; padding-top: 16px;
-      border-top: 1px dashed rgba(255,255,255,0.1);
-      text-align: center;
-    }
-    .ck-sim__btn {
-      width: 100%; padding: 10px 14px;
-      background: rgba(251,191,36,0.1); color: #fbbf24;
-      border: 1px dashed rgba(251,191,36,0.4); border-radius: 8px;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      transition: background 0.15s;
-    }
-    .ck-sim__btn:hover { background: rgba(251,191,36,0.18); }
-    .ck-sim__btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .ck-sim__hint { font-size: 11px; color: #6b7280; margin: 8px 0 0; }
-    .btn--sm { padding: 6px 14px; font-size: 12px; }
-
-    /* Cancel section */
-    .app-cancel-section {
-      margin-top: 40px; padding: 24px; border-radius: 14px;
-      background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.15);
-    }
-    .app-cancel-section h3 {
-      font-size: 15px; font-weight: 700; color: #f87171; margin: 0 0 8px;
-    }
-    .app-cancel-section p { font-size: 13px; color: #9ca3af; line-height: 1.6; margin: 0 0 16px; }
-    .app-cancel-btn {
-      background: transparent; border: 1px solid rgba(239,68,68,0.3);
-      color: #f87171; font-size: 13px; padding: 8px 18px; border-radius: 8px; cursor: pointer;
-      transition: all 0.2s;
-    }
-    .app-cancel-btn:hover { background: rgba(239,68,68,0.08); }
-    .app-cancel-confirm { background: rgba(239,68,68,0.06); border-radius: 10px; padding: 16px; }
-    .app-cancel-confirm__warning { font-size: 14px; color: #fca5a5; font-weight: 600; margin: 0 0 12px; }
-    .app-cancel-confirm__btns { display: flex; gap: 12px; }
-    .app-cancel-btn--confirm {
-      padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
-      background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #f87171;
-      transition: all 0.2s;
-    }
-    .app-cancel-btn--confirm:hover:not(:disabled) { background: rgba(239,68,68,0.3); }
-    .app-cancel-btn--confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* Billing-8d (2026-05-26): CSS de .ck-* (checkout modal), .app-plan-upgrade*,
+       .app-cycle-*, .app-plan-option*, .app-cancel-* REMOVIDOS junto com o HTML/TS. */
 
     /* Connected networks (Instagram + Facebook) */
     .connected-networks { margin: 0 0 16px; }
@@ -2199,41 +1800,13 @@ export class ClientAppComponent implements OnInit {
   igConnecting = false;
   igError: IgError | null = null;
 
-  // Plan tab state
+  // Plan tab state — Billing-8d (2026-05-26): checkout/cancel state
+  // REMOVIDO. Gerenciamento via portal Akroma central.
   billingStatus: BillingStatus | null = null;
-  planPrices: PlanPrices | null = null;
   planLoading = false;
-  selectedPlanTier: 'STARTER' | 'PRO' = 'STARTER';
-  selectedCycle: 'MONTHLY' | 'ANNUAL' = 'MONTHLY';
-  checkoutLoading = false;
-  checkoutError = '';
-  // Portal SSO handoff (Billing-6) — substitui gradualmente o checkout
-  // in-app pelo portal centralizado em akroma.com.br/portal.
+  // Portal SSO handoff (Billing-6) — unico caminho de pagamento agora.
   portalHandoffLoading = false;
   portalHandoffError = '';
-  // In-app checkout modal state
-  checkoutModalOpen = false;
-  checkoutMethod: 'PIX' | 'CARD' = 'PIX';
-  checkoutBillingId: string | null = null;
-  checkoutAmount: number | null = null;
-  checkoutStatus: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'CANCELLED' = 'PENDING';
-  checkoutSandbox = false;
-  simulating = false;
-  // Downgrade agendado: backend devolveu {scheduled: true, scheduledFor:...}.
-  // O modal nao mostra QR/iframe, mostra um banner de confirmacao.
-  scheduledChange: { for: string; fromTier: string; toTier: string } | null = null;
-  pixBrCode = '';
-  pixBrCodeBase64 = '';
-  pixExpiresAt: string | null = null;
-  pixExpiresIn = '';
-  pixCopied = false;
-  cardIframeUrl: SafeResourceUrl | null = null;
-  private checkoutPollTimer: ReturnType<typeof setInterval> | null = null;
-  private pixCountdownTimer: ReturnType<typeof setInterval> | null = null;
-  private sanitizer = inject(DomSanitizer);
-  cancelConfirm = false;
-  cancelLoading = false;
-  cancelError = '';
 
   // Analytics básico
   analyticsSummary: {
@@ -2445,19 +2018,18 @@ export class ClientAppComponent implements OnInit {
   }
 
   loadPlanData(): void {
-    if (this.billingStatus && this.planPrices) return; // cached
+    // Billing-8d (2026-05-26): so o billing-status local importa agora
+    // pra renderizar o card. Preco/plano-detail vivem no portal Akroma.
+    if (this.billingStatus) return; // cached
 
     this.planLoading = true;
     const headers = this.auth.authHeaders();
 
-    // Load billing status
     this.http.get<BillingStatus>(`${environment.apiUrl}/api/v1/client-billing/status`, { headers }).subscribe({
       next: (status) => {
         this.billingStatus = status;
-        // Sync the cached client object so the home overview (which reads
-        // from this.client.*) reflects the latest server-side plan state.
-        // Without this, the JWT-cached plan_tier and trial_ends_at would
-        // remain stale until the user logs out and back in.
+        this.planLoading = false;
+        // Sync cached client (home overview reads from this.client.*).
         if (this.client) {
           this.client = {
             ...this.client,
@@ -2465,15 +2037,9 @@ export class ClientAppComponent implements OnInit {
             trialEndsAt: status.trialActive ? (status.trialEndsAt ?? undefined) : undefined,
           };
         }
-        // Pre-select current plan tier if on a paid plan
-        if (status.planTier && status.planTier !== 'FREE') {
-          this.selectedPlanTier = status.planTier as 'STARTER' | 'PRO';
-        }
-        if (status.billingCycle) {
-          this.selectedCycle = status.billingCycle as 'MONTHLY' | 'ANNUAL';
-        }
       },
       error: () => {
+        this.planLoading = false;
         // Fallback to client info from JWT
         if (this.client) {
           this.billingStatus = {
@@ -2486,18 +2052,6 @@ export class ClientAppComponent implements OnInit {
             trialEndsAt: this.client.trialEndsAt
           };
         }
-      }
-    });
-
-    // Load Spark pricing (public endpoint, no auth)
-    this.http.get<PlanPrices>(`${environment.apiUrl}/api/v1/plans/spark`).subscribe({
-      next: (prices) => { this.planPrices = prices; this.planLoading = false; },
-      error: () => {
-        this.planPrices = {
-          starter: { monthly: '97',  annual: '970',  annualMonthly: '81' },
-          pro:     { monthly: '197', annual: '1970', annualMonthly: '164' }
-        };
-        this.planLoading = false;
       }
     });
   }
@@ -2532,242 +2086,11 @@ export class ClientAppComponent implements OnInit {
     });
   }
 
-  openCheckoutModal(): void {
-    if (this.checkoutLoading || !this.planPrices) return;
-    this.checkoutModalOpen = true;
-    this.checkoutMethod = 'PIX';
-    this.checkoutStatus = 'PENDING';
-    this.checkoutError = '';
-    this.pixCopied = false;
-    this.startCheckoutRequest();
-  }
-
-  switchCheckoutMethod(method: 'PIX' | 'CARD'): void {
-    if (this.checkoutMethod === method) return;
-    this.checkoutMethod = method;
-    this.checkoutError = '';
-    this.pixCopied = false;
-    this.startCheckoutRequest();
-  }
-
-  closeCheckoutModal(): void {
-    this.checkoutModalOpen = false;
-    this.stopCheckoutPolling();
-    this.stopPixCountdown();
-    this.checkoutBillingId = null;
-    this.pixBrCode = '';
-    this.pixBrCodeBase64 = '';
-    this.cardIframeUrl = null;
-    this.scheduledChange = null;
-  }
-
-  private startCheckoutRequest(): void {
-    this.checkoutLoading = true;
-    this.checkoutError = '';
-    this.stopCheckoutPolling();
-    this.stopPixCountdown();
-    this.pixBrCode = '';
-    this.pixBrCodeBase64 = '';
-    this.cardIframeUrl = null;
-
-    const headers = this.auth.authHeaders();
-    this.http.post<{
-      billingId?: string;
-      paymentMethod?: 'PIX' | 'CARD';
-      sandbox?: boolean;
-      brCode?: string;
-      brCodeBase64?: string;
-      expiresAt?: string;
-      amount?: number;
-      paymentUrl?: string;
-      scheduled?: boolean;
-      scheduledFor?: string;
-      scheduledFromTier?: string;
-      scheduledToTier?: string;
-    }>(
-      `${environment.apiUrl}/api/v1/client-billing/checkout`,
-      {
-        planTier: this.selectedPlanTier,
-        billingCycle: this.selectedCycle,
-        paymentMethod: this.checkoutMethod,
-      },
-      { headers }
-    ).subscribe({
-      next: (res) => {
-        this.checkoutLoading = false;
-        // Downgrade caso especial: backend nao cobrou — apenas agendou o
-        // troca para o fim do periodo atual. Modal mostra confirmacao em
-        // vez de PIX/cartao.
-        if (res.scheduled) {
-          this.scheduledChange = {
-            for: res.scheduledFor || '',
-            fromTier: res.scheduledFromTier || '',
-            toTier: res.scheduledToTier || '',
-          };
-          // Recarrega o status pra UI atualizar o "Trocara em" no card do plano
-          this.loadBillingStatus();
-          return;
-        }
-        this.checkoutBillingId = res.billingId ?? null;
-        this.checkoutAmount = res.amount ?? this.checkoutAmount;
-        this.checkoutSandbox = !!res.sandbox;
-        if (res.paymentMethod === 'PIX') {
-          this.pixBrCode = res.brCode || '';
-          this.pixBrCodeBase64 = res.brCodeBase64 || '';
-          this.pixExpiresAt = res.expiresAt || null;
-          this.startPixCountdown();
-        } else {
-          this.cardIframeUrl = res.paymentUrl
-            ? this.sanitizer.bypassSecurityTrustResourceUrl(res.paymentUrl)
-            : null;
-        }
-        this.startCheckoutPolling();
-      },
-      error: (err) => {
-        this.checkoutLoading = false;
-        this.checkoutError = err.error?.error || err.error?.detail?.error
-          || 'Erro ao iniciar pagamento. Tente novamente.';
-      }
-    });
-  }
-
-  private startCheckoutPolling(): void {
-    if (!this.checkoutBillingId) return;
-    const headers = this.auth.authHeaders();
-    const url = `${environment.apiUrl}/api/v1/client-billing/status/${this.checkoutBillingId}`;
-    this.checkoutPollTimer = setInterval(() => {
-      this.http.get<{ status: string; planActive: boolean }>(url, { headers })
-        .subscribe({
-          next: (res) => {
-            if (res.status === 'PAID') {
-              this.checkoutStatus = 'PAID';
-              this.stopCheckoutPolling();
-              this.stopPixCountdown();
-              // Refresh plan status then close modal after a short success view
-              this.loadBillingStatus();
-              setTimeout(() => this.closeCheckoutModal(), 2500);
-            } else if (['FAILED', 'EXPIRED', 'CANCELLED'].includes(res.status)) {
-              this.checkoutStatus = res.status as any;
-              this.stopCheckoutPolling();
-            }
-          },
-          error: () => { /* transient — keep polling */ }
-        });
-    }, 4000);
-  }
-
-  private stopCheckoutPolling(): void {
-    if (this.checkoutPollTimer) {
-      clearInterval(this.checkoutPollTimer);
-      this.checkoutPollTimer = null;
-    }
-  }
-
-  private startPixCountdown(): void {
-    this.stopPixCountdown();
-    if (!this.pixExpiresAt) return;
-    const tick = () => {
-      const remaining = new Date(this.pixExpiresAt!).getTime() - Date.now();
-      if (remaining <= 0) {
-        this.pixExpiresIn = 'Expirado';
-        this.stopPixCountdown();
-        return;
-      }
-      const hours = Math.floor(remaining / 3600000);
-      const minutes = Math.floor((remaining % 3600000) / 60000);
-      const seconds = Math.floor((remaining % 60000) / 1000);
-      this.pixExpiresIn = hours > 0
-        ? `${hours}h ${minutes}m`
-        : `${minutes}m ${String(seconds).padStart(2, '0')}s`;
-    };
-    tick();
-    this.pixCountdownTimer = setInterval(tick, 1000);
-  }
-
-  private stopPixCountdown(): void {
-    if (this.pixCountdownTimer) {
-      clearInterval(this.pixCountdownTimer);
-      this.pixCountdownTimer = null;
-    }
-  }
-
-  simulatePayment(): void {
-    if (!this.checkoutBillingId || this.simulating) return;
-    this.simulating = true;
-    this.checkoutError = '';
-    const headers = this.auth.authHeaders();
-    this.http.post<{ status: string; billingId: string; simulated: boolean }>(
-      `${environment.apiUrl}/api/v1/client-billing/simulate-payment/${this.checkoutBillingId}`,
-      {},
-      { headers }
-    ).subscribe({
-      next: () => {
-        // Local mark_as_paid já rodou no backend. Polling vai pegar na próxima
-        // tick e fechar o modal, mas force aqui pra UX instantânea.
-        this.simulating = false;
-        this.checkoutStatus = 'PAID';
-        this.stopCheckoutPolling();
-        this.stopPixCountdown();
-        this.loadBillingStatus();
-        setTimeout(() => this.closeCheckoutModal(), 1500);
-      },
-      error: (err) => {
-        this.simulating = false;
-        this.checkoutError = err.error?.error || err.error?.detail?.error
-          || 'Falha ao simular pagamento.';
-      }
-    });
-  }
-
-  copyPixCode(input: HTMLInputElement): void {
-    input.select();
-    try {
-      navigator.clipboard.writeText(this.pixBrCode);
-      this.pixCopied = true;
-      setTimeout(() => { this.pixCopied = false; }, 2500);
-    } catch {
-      document.execCommand('copy');
-      this.pixCopied = true;
-      setTimeout(() => { this.pixCopied = false; }, 2500);
-    }
-  }
-
-  private loadBillingStatus(): void {
-    const headers = this.auth.authHeaders();
-    this.http.get<BillingStatus>(
-      `${environment.apiUrl}/api/v1/client-billing/status`, { headers }
-    ).subscribe({
-      next: (s) => { this.billingStatus = s; },
-      error: () => { /* ignore */ }
-    });
-  }
-
-  cancelSubscription(): void {
-    if (this.cancelLoading) return;
-    this.cancelLoading = true;
-    this.cancelError = '';
-    const headers = this.auth.authHeaders();
-
-    this.http.post<{ message: string; canceledAt: string; periodEnd: string }>(
-      `${environment.apiUrl}/api/v1/client-billing/cancel`,
-      {},
-      { headers }
-    ).subscribe({
-      next: (res) => {
-        this.cancelLoading = false;
-        this.cancelConfirm = false;
-        if (this.billingStatus) {
-          this.billingStatus.canceled = true;
-          this.billingStatus.canceledAt = res.canceledAt;
-          this.billingStatus.periodEnd = res.periodEnd;
-        }
-      },
-      error: (err) => {
-        this.cancelLoading = false;
-        this.cancelError = err.error?.error || 'Erro ao cancelar. Tente novamente.';
-      }
-    });
-  }
+  // Billing-8d (2026-05-26): metodos do checkout in-app + cancelSubscription
+  // REMOVIDOS. Gerenciamento e via portal central:
+  //   openPortalBilling('subscriptions')  -> handoff -> akroma.com.br/portal/assinaturas
+  // Pagamento, troca de plano e cancelamento usam as telas do portal,
+  // que opera direto em accounts.subscriptions + payment_attempts.
 
   copyCode(): void {
     const code = this.referralStats?.referralCode || this.client?.referralCode;
