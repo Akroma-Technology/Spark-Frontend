@@ -893,6 +893,23 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
               Sua assinatura foi cancelada. Voce mantem acesso ate <strong>{{ billingStatus?.periodEnd | date:'dd/MM/yyyy' }}</strong>.
               Para reativar, escolha um plano abaixo.
             </p>
+
+            <!-- Billing-6: SSO handoff pro portal akroma central -->
+            <div class="app-plan-portal-actions">
+              <button type="button" class="btn btn--outline"
+                      [disabled]="portalHandoffLoading"
+                      (click)="openPortalBilling('subscriptions')">
+                {{ portalHandoffLoading ? 'Abrindo portal...' : 'Gerenciar plano no portal Akroma' }}
+              </button>
+              <button type="button" class="btn btn--link"
+                      [disabled]="portalHandoffLoading"
+                      (click)="openPortalBilling('invoices')">
+                Ver faturas e notas fiscais
+              </button>
+              <p class="app-plan-portal-actions__error" *ngIf="portalHandoffError">
+                {{ portalHandoffError }}
+              </p>
+            </div>
           </div>
 
           <!-- Plan selector: only show if on trial or free or canceled -->
@@ -1143,6 +1160,22 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
     @keyframes pulseDot {
       0%, 100% { opacity: .55; transform: scale(.85); }
       50%      { opacity: 1;   transform: scale(1.1); }
+    }
+
+    /* Billing-6: portal SSO handoff buttons (inside .app-plan-card) */
+    .app-plan-portal-actions {
+      display: flex; flex-wrap: wrap; align-items: center; gap: .75rem;
+      margin-top: 1rem; padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .app-plan-portal-actions .btn--link {
+      background: transparent; border: none; color: #fbbf24;
+      padding: .5rem .25rem; cursor: pointer; font-weight: 600;
+      text-decoration: underline;
+    }
+    .app-plan-portal-actions .btn--link:disabled { opacity: .5; cursor: default; }
+    .app-plan-portal-actions__error {
+      flex-basis: 100%; margin: .25rem 0 0; font-size: .85rem; color: #fca5a5;
     }
 
     /* CONFIG PAGES (Brand / Schedule tabs) */
@@ -2174,6 +2207,10 @@ export class ClientAppComponent implements OnInit {
   selectedCycle: 'MONTHLY' | 'ANNUAL' = 'MONTHLY';
   checkoutLoading = false;
   checkoutError = '';
+  // Portal SSO handoff (Billing-6) — substitui gradualmente o checkout
+  // in-app pelo portal centralizado em akroma.com.br/portal.
+  portalHandoffLoading = false;
+  portalHandoffError = '';
   // In-app checkout modal state
   checkoutModalOpen = false;
   checkoutMethod: 'PIX' | 'CARD' = 'PIX';
@@ -2462,6 +2499,36 @@ export class ClientAppComponent implements OnInit {
         };
         this.planLoading = false;
       }
+    });
+  }
+
+  /** Billing-6: SSO handoff para o portal akroma.com.br/portal/assinaturas.
+   *  Pede um codigo one-shot ao backend (que repassa pro IDP Site) e
+   *  redireciona — usuario chega logado, sem digitar senha de novo. */
+  openPortalBilling(returnTo: 'subscriptions' | 'invoices' = 'subscriptions'): void {
+    if (this.portalHandoffLoading) return;
+    this.portalHandoffLoading = true;
+    this.portalHandoffError = '';
+    const headers = this.auth.authHeaders();
+    this.http.post<{ redirect_url: string; expires_in: number }>(
+      `${environment.apiUrl}/api/v1/sso/handoff`,
+      { return_to: returnTo },
+      { headers },
+    ).subscribe({
+      next: (resp) => { window.location.href = resp.redirect_url; },
+      error: (err) => {
+        this.portalHandoffLoading = false;
+        const status = err?.status;
+        if (status === 503) {
+          this.portalHandoffError = 'Portal nao disponivel agora. Tente daqui a pouco.';
+        } else if (status === 401 || status === 403) {
+          this.portalHandoffError = 'Sessao expirada. Faca login novamente.';
+        } else if (status === 504) {
+          this.portalHandoffError = 'Tempo esgotado conectando ao portal. Tente de novo.';
+        } else {
+          this.portalHandoffError = 'Nao foi possivel abrir o portal. Tente de novo em instantes.';
+        }
+      },
     });
   }
 
