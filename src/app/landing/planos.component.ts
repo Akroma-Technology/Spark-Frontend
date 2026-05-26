@@ -43,11 +43,16 @@ import { environment } from '../../environments/environment';
             <div class="pricing-card__head">
               <span class="pricing-card__name">{{ p.name }}</span>
               <div class="pricing-card__price">
-                <span class="pricing-card__currency">R$</span>
-                <span class="pricing-card__amount">{{ annual ? calcAnnual(p.monthly) : p.monthly }}</span>
-                <span class="pricing-card__period">/mes</span>
+                <ng-container *ngIf="p.monthly != null; else priceSkeleton">
+                  <span class="pricing-card__currency">R$</span>
+                  <span class="pricing-card__amount">{{ annual ? calcAnnual(p.monthly) : p.monthly }}</span>
+                  <span class="pricing-card__period">/mes</span>
+                </ng-container>
+                <ng-template #priceSkeleton>
+                  <span class="pricing-card__skeleton" aria-label="Carregando preço…"></span>
+                </ng-template>
               </div>
-              <div class="pricing-card__annual-note" *ngIf="annual">
+              <div class="pricing-card__annual-note" *ngIf="annual && p.monthly != null">
                 R$ {{ p.monthly * 10 | number:'1.0-0' }}/ano (pague 10, leve 12)
               <!-- pt-BR locale está registrado globalmente em app.config.ts — sem precisar de argumento explícito -->
               </div>
@@ -212,6 +217,17 @@ import { environment } from '../../environments/environment';
     .pricing-card__period { font-size: 15px; color: #6b7280; }
     .pricing-card__annual-note { font-size: 12px; color: #22c55e; margin-bottom: 16px; }
     .pricing-card__prefix { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    .pricing-card__skeleton {
+      display: inline-block; width: 140px; height: 48px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 75%);
+      background-size: 200% 100%;
+      animation: spark-skeleton 1.4s ease-in-out infinite;
+    }
+    @keyframes spark-skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
     .pricing-card__features {
       list-style: none; padding: 0; margin: 0 0 28px;
       display: flex; flex-direction: column; gap: 12px; flex-grow: 1;
@@ -308,16 +324,30 @@ export class PlanosComponent implements OnInit {
     });
 
     if (isPlatformBrowser(this.platformId)) {
-      this.http.get<{ starter: { monthly: string }; pro: { monthly: string } }>(
+      this.http.get<{
+        starter: { monthly: string };
+        pro: { monthly: string };
+        enterprise?: { monthly: string };
+      }>(
         `${this.apiUrl}/api/v1/plans/spark`
       ).subscribe({
         next: (prices) => {
-          const starterIdx = this.plans.findIndex(p => p.id === 'starter');
-          const proIdx = this.plans.findIndex(p => p.id === 'pro');
-          if (starterIdx >= 0) this.plans[starterIdx] = { ...this.plans[starterIdx], monthly: +prices.starter.monthly };
-          if (proIdx >= 0) this.plans[proIdx] = { ...this.plans[proIdx], monthly: +prices.pro.monthly };
+          const setPrice = (id: 'starter' | 'pro' | 'enterprise', monthly?: string) => {
+            if (!monthly) return;
+            const idx = this.plans.findIndex(p => p.id === id);
+            if (idx >= 0) {
+              this.plans[idx] = { ...this.plans[idx], monthly: +monthly };
+            }
+          };
+          setPrice('starter', prices.starter?.monthly);
+          setPrice('pro', prices.pro?.monthly);
+          setPrice('enterprise', prices.enterprise?.monthly);
         },
-        error: () => {} // mantém defaults em caso de erro
+        error: () => {
+          // Se falhar, deixa monthly=null pra continuar mostrando o
+          // skeleton em vez de um numero errado. UX prefere "nao sei"
+          // a "valor errado". Operador identifica via console/logs.
+        },
       });
     }
   }

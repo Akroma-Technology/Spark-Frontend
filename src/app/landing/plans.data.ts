@@ -3,7 +3,8 @@
 export interface Plan {
   id: 'starter' | 'pro' | 'enterprise';
   name: string;
-  monthly: number;
+  /** null = preco ainda nao carregou do backend; template mostra skeleton. */
+  monthly: number | null;
   prefix?: string;
   featured: boolean;
   features: string[];
@@ -11,9 +12,13 @@ export interface Plan {
   ctaRoute: string;
 }
 
+// Catalogo dos planos (texto, features, ordem). Precos vem do backend
+// via /api/v1/plans/spark (que le accounts.plans, source of truth)
+// — NUNCA hardcoded aqui pra evitar mostrar valores errados se backend
+// estiver lento ou offline. Skeleton ate carregar.
 export const SPARK_PLANS: Plan[] = [
   {
-    id: 'starter', name: 'Starter', monthly: 297, featured: false,
+    id: 'starter', name: 'Starter', monthly: null, featured: false,
     features: [
       '1 perfil (Instagram)',
       '1 post por dia',
@@ -24,7 +29,7 @@ export const SPARK_PLANS: Plan[] = [
     ctaLabel: 'Teste grátis 7 dias', ctaRoute: '/cadastro',
   },
   {
-    id: 'pro', name: 'Pro', monthly: 497, featured: true,
+    id: 'pro', name: 'Pro', monthly: null, featured: true,
     features: [
       '3 redes (IG + FB + LinkedIn)',
       '2 posts por dia',
@@ -36,7 +41,7 @@ export const SPARK_PLANS: Plan[] = [
     ctaLabel: 'Teste grátis 7 dias', ctaRoute: '/cadastro',
   },
   {
-    id: 'enterprise', name: 'Enterprise', monthly: 997, featured: false,
+    id: 'enterprise', name: 'Enterprise', monthly: null, featured: false,
     prefix: 'A partir de',
     features: [
       'Tudo do Pro',
@@ -51,6 +56,7 @@ export const SPARK_PLANS: Plan[] = [
 ];
 
 /** Annual = 10x monthly spread across 12 months. */
-export function annualPerMonth(monthly: number): number {
+export function annualPerMonth(monthly: number | null): number | null {
+  if (monthly == null) return null;
   return Math.round((monthly * 10) / 12);
 }
