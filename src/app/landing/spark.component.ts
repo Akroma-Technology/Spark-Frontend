@@ -157,10 +157,10 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
           Enquanto você trabalha, a IA pesquisa, escreve e publica. Todo dia. No seu nome.
         </p>
         <div class="spark-hero__ctas">
-          <a routerLink="/cadastro" class="btn btn--spark">Teste grátis 7 dias</a>
+          <a routerLink="/contato" class="btn btn--spark">Entre em contato</a>
           <button type="button" class="btn btn--outline" (click)="scrollToDemo()">Ver demonstração</button>
         </div>
-        <p class="spark-hero__trial-note">Sem cartão de crédito · Cancele quando quiser · Resultado em 24h</p>
+        <p class="spark-hero__trial-note">Atendimento personalizado · Resposta em até 24h</p>
       </div>
     </section>
 
@@ -386,8 +386,8 @@ const FALLBACK_DEMOS: Record<string, DemoPost> = {
     <section class="spark-cta">
       <div class="container spark-cta__inner">
         <h2 class="spark-cta__title">Pronto para automatizar seu social media?</h2>
-        <p class="spark-cta__desc">7 dias grátis. Sem cartão. Se não gostar, cancela com um clique.</p>
-        <a routerLink="/cadastro" class="btn btn--spark btn--lg">Começar agora</a>
+        <p class="spark-cta__desc">Atendimento personalizado pra entender o seu negócio. Resposta em até 24h.</p>
+        <a routerLink="/contato" class="btn btn--spark btn--lg">Entre em contato</a>
       </div>
     </section>
 

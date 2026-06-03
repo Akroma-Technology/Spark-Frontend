@@ -160,8 +160,8 @@ const NICHES: Record<string, NicheData> = {
         </div>
 
         <div class="niche-ctas">
-          <a routerLink="/contato" class="btn btn--spark btn--lg">Teste gratis 7 dias &rarr;</a>
-          <p class="niche-ctas__note">Sem cartao de credito. Cancele quando quiser.</p>
+          <a routerLink="/contato" class="btn btn--spark btn--lg">Entre em contato &rarr;</a>
+          <p class="niche-ctas__note">Atendimento personalizado. Resposta em ate 24h.</p>
         </div>
       </div>
     </section>

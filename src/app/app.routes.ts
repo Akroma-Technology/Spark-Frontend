@@ -51,10 +51,10 @@ export const routes: Routes = [
     path: 'planos',
     loadComponent: () => import('./landing/planos.component').then(m => m.PlanosComponent)
   },
-  {
-    path: 'cadastro',
-    loadComponent: () => import('./cadastro/cadastro.component').then(m => m.CadastroComponent)
-  },
+  // Cadastro removido — Spark agora opera com cobrança centralizada
+  // (contrato + cadastro manual via /admin). Auto-signup desligado.
+  // Rotas /cadastro, /verificar-email e /verificar caem no NotFound abaixo,
+  // e o app.routes garante que ninguém entre via URL direta.
   {
     path: 'entrar',
     loadComponent: () => import('./entrar/entrar.component').then(m => m.EntrarComponent)
@@ -62,10 +62,6 @@ export const routes: Routes = [
   {
     path: 'esqueci-senha',
     loadComponent: () => import('./esqueci-senha/esqueci-senha.component').then(m => m.EsqueciSenhaComponent)
-  },
-  {
-    path: 'verificar-email',
-    loadComponent: () => import('./verificar-email/verificar-email.component').then(m => m.VerificarEmailComponent)
   },
   {
     path: 'app',
@@ -83,10 +79,6 @@ export const routes: Routes = [
   {
     path: 'contato',
     loadComponent: () => import('./contato/contato.component').then(m => m.ContatoComponent)
-  },
-  {
-    path: 'verificar',
-    loadComponent: () => import('./verificar/verificar.component').then(m => m.VerificarComponent)
   },
   {
     path: '404',

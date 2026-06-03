@@ -52,7 +52,7 @@ import { RouterModule } from '@angular/router';
           <div class="ak-footer__col">
             <h4 class="ak-footer__heading">Acesso</h4>
             <a routerLink="/entrar" class="ak-footer__link">Entrar</a>
-            <a routerLink="/cadastro" class="ak-footer__link">Teste grátis 7 dias</a>
+            <a routerLink="/contato" class="ak-footer__link">Entre em contato</a>
           </div>
           <div class="ak-footer__col">
             <h4 class="ak-footer__heading">Legal</h4>

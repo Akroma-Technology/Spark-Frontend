@@ -26,7 +26,7 @@ export const SPARK_PLANS: Plan[] = [
       'Analytics básico',
       'Templates de nicho',
     ],
-    ctaLabel: 'Teste grátis 7 dias', ctaRoute: '/cadastro',
+    ctaLabel: 'Solicitar contato', ctaRoute: '/contato',
   },
   {
     id: 'pro', name: 'Pro', monthly: null, featured: true,
@@ -38,7 +38,7 @@ export const SPARK_PLANS: Plan[] = [
       'A/B Testing de conteúdo',
       'Renovação de tokens',
     ],
-    ctaLabel: 'Teste grátis 7 dias', ctaRoute: '/cadastro',
+    ctaLabel: 'Solicitar contato', ctaRoute: '/contato',
   },
   {
     id: 'enterprise', name: 'Enterprise', monthly: null, featured: false,

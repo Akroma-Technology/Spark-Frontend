@@ -64,10 +64,6 @@ interface NicheOpt { value: string; label: string; }
               </div>
             </div>
 
-            <div class="contact-cta">
-              <p class="contact-cta__label">Quer testar sem falar com ninguém?</p>
-              <a routerLink="/cadastro" class="btn btn--spark btn--full">Começar teste grátis &rarr;</a>
-            </div>
           </aside>
 
           <form class="contact-form" (submit)="submit($event)" novalidate>

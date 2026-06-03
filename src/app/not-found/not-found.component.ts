@@ -20,7 +20,7 @@ import { SparkFooterComponent } from '../shared/components/footer/footer.compone
 
         <div class="not-found__actions">
           <a routerLink="/" class="btn btn--spark">Voltar para a home &rarr;</a>
-          <a routerLink="/cadastro" class="btn btn--outline">Começar teste grátis</a>
+          <a routerLink="/contato" class="btn btn--outline">Entre em contato</a>
         </div>
 
         <div class="not-found__links">

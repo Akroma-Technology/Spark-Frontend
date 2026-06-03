@@ -34,7 +34,7 @@ import { filter } from 'rxjs/operators';
           <!-- Slot lang-switcher (vazio no Spark, usado pelo Akroma-Site) -->
           <div class="ak-topbar__lang"></div>
           <a routerLink="/entrar" class="ak-topbar__login">Entrar</a>
-          <a routerLink="/cadastro" class="ak-topbar__cta">Teste grátis</a>
+          <a routerLink="/contato" class="ak-topbar__cta">Entre em contato</a>
         </div>
 
         <button type="button"
@@ -63,7 +63,7 @@ import { filter } from 'rxjs/operators';
            class="ak-drawer__link" (click)="closeDrawer()">Planos</a>
         <div class="ak-drawer__divider"></div>
         <a routerLink="/entrar" class="ak-drawer__link ak-drawer__link--muted" (click)="closeDrawer()">Entrar</a>
-        <a routerLink="/cadastro" class="ak-drawer__cta" (click)="closeDrawer()">Teste grátis 7 dias &rarr;</a>
+        <a routerLink="/contato" class="ak-drawer__cta" (click)="closeDrawer()">Entre em contato &rarr;</a>
       </div>
     </div>
   `,

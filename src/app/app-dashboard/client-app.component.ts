@@ -201,7 +201,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
           </div>
           <div>
             <strong>Bem-vindo ao Akroma Spark, <span class="hl-name">{{ firstName }}</span>!</strong>
-            <span>Seu trial Starter de 7 dias esta ativo. Conecte seu Instagram para comecar.</span>
+            <span>Conecte seu Instagram para comecar a publicar com IA.</span>
           </div>
           <button type="button" class="app-welcome__close" (click)="showWelcome = false" aria-label="Fechar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -396,7 +396,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
               <h3>Indique e ganhe 1 mes gratis</h3>
               <p>A cada 4 amigos que assinarem um plano pago com seu link, voce ganha 1 mes gratis.</p>
               <div class="app-referral-inline">
-                <code class="app-referral-inline__link">spark.akroma.com.br/cadastro?ref={{ client.referralCode }}</code>
+                <code class="app-referral-inline__link">spark.akroma.com.br/contato?ref={{ client.referralCode }}</code>
                 <button type="button" class="app-copy-btn" (click)="copyReferralLink()">
                   <svg *ngIf="!copiedLink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   <svg *ngIf="copiedLink" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -830,7 +830,7 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                 </button>
               </div>
               <div class="app-referral-card__share">
-                <span>Compartilhe: <code>spark.akroma.com.br/cadastro?ref={{ referralStats?.referralCode || client.referralCode }}</code></span>
+                <span>Compartilhe: <code>spark.akroma.com.br/contato?ref={{ referralStats?.referralCode || client.referralCode }}</code></span>
               </div>
             </ng-container>
           </div>
@@ -2108,7 +2108,7 @@ export class ClientAppComponent implements OnInit {
   copyReferralLink(): void {
     const code = this.referralStats?.referralCode || this.client?.referralCode;
     if (!code) return;
-    const text = `https://spark.akroma.com.br/cadastro?ref=${code}`;
+    const text = `https://spark.akroma.com.br/contato?ref=${code}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
         this.copiedLink = true;

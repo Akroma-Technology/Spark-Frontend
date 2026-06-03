@@ -20,7 +20,7 @@ import { environment } from '../../environments/environment';
       <div class="container page-hero__inner">
         <h1 class="page-hero__title">Planos simples.<br>Resultado real.</h1>
         <p class="page-hero__subtitle">
-          Comece grátis por 7 dias. Sem cartão de crédito. Cancele quando quiser.
+          Atendimento personalizado. Fale com nosso time pra encontrar o plano ideal pro seu negócio.
         </p>
       </div>
     </section>
@@ -62,7 +62,7 @@ import { environment } from '../../environments/environment';
               <li *ngFor="let f of p.features">{{ f }}</li>
             </ul>
             <a [routerLink]="p.ctaRoute"
-               [queryParams]="p.ctaRoute === '/cadastro' ? { plan: p.id, billing: annual ? 'annual' : 'monthly' } : null"
+               [queryParams]="{ plan: p.id, billing: annual ? 'annual' : 'monthly' }"
                class="btn btn--full pricing-card__cta"
                [class.btn--spark]="p.featured"
                [class.btn--outline]="!p.featured">
@@ -73,55 +73,12 @@ import { environment } from '../../environments/environment';
       </div>
     </section>
 
-    <!-- REFERRAL -->
-    <section class="referral-section">
-      <div class="container">
-        <div class="referral-card">
-          <div class="referral-card__bg" aria-hidden="true"></div>
-          <div class="referral-card__header">
-            <span class="label">PROGRAMA DE INDICAÇÃO</span>
-            <h2 class="referral-card__title">Indique 4 amigos,<br>ganhe 1 mês grátis</h2>
-            <p class="referral-card__desc">
-              A cada 4 amigos que assinarem o Spark usando seu código, você ganha 1 mês inteiro de crédito.
-              Sem limite de indicações — 8 amigos, 2 meses; 12 amigos, 3 meses; e por aí vai.
-            </p>
-          </div>
-          <div class="referral-card__steps">
-            <div class="referral-card__step">
-              <span class="referral-card__step-num">1</span>
-              <div class="referral-card__step-content">
-                <strong>Crie sua conta</strong>
-                <span>Receba seu código de indicação único</span>
-              </div>
-            </div>
-            <div class="referral-card__step-arrow" aria-hidden="true">→</div>
-            <div class="referral-card__step">
-              <span class="referral-card__step-num">2</span>
-              <div class="referral-card__step-content">
-                <strong>Compartilhe</strong>
-                <span>Envie o link para amigos e colegas</span>
-              </div>
-            </div>
-            <div class="referral-card__step-arrow" aria-hidden="true">→</div>
-            <div class="referral-card__step">
-              <span class="referral-card__step-num">3</span>
-              <div class="referral-card__step-content">
-                <strong>Ganhe meses grátis</strong>
-                <span>A cada 4 indicados, +1 mês de crédito</span>
-              </div>
-            </div>
-          </div>
-          <a routerLink="/cadastro" class="btn btn--spark">Criar conta e indicar amigos</a>
-        </div>
-      </div>
-    </section>
-
     <!-- CTA -->
     <section class="page-cta">
       <div class="container page-cta__inner">
-        <h2 class="page-cta__title">Comece hoje, veja resultado essa semana</h2>
-        <p class="page-cta__desc">7 dias grátis. Sem cartão. Se não gostar, cancela com um clique.</p>
-        <a routerLink="/cadastro" class="btn btn--spark btn--lg">Teste grátis 7 dias</a>
+        <h2 class="page-cta__title">Pronto pra automatizar seu social media?</h2>
+        <p class="page-cta__desc">Fale com nosso time pra entender o plano ideal pro seu negócio. Resposta em até 24h.</p>
+        <a routerLink="/contato" class="btn btn--spark btn--lg">Solicitar contato</a>
       </div>
     </section>
 
@@ -320,7 +277,7 @@ export class PlanosComponent implements OnInit {
   ngOnInit(): void {
     this.seo.setPage({
       title: 'Planos Spark — Simples e transparentes',
-      description: 'Starter, Pro e Enterprise. Comece grátis por 7 dias. Programa de indicação incluso.',
+      description: 'Starter, Pro e Enterprise. Atendimento personalizado pra encontrar o plano ideal pro seu negócio.',
     });
 
     if (isPlatformBrowser(this.platformId)) {

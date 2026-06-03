@@ -88,7 +88,7 @@ import { ParticleNetworkComponent } from '../shared/components/particle-network.
           </form>
 
           <p class="card__switch">
-            Não tem conta? <a routerLink="/cadastro" class="link">Cadastre-se aqui</a>
+            Quer assinar o Spark? <a routerLink="/contato" class="link">Entre em contato com a equipe</a>
           </p>
 
           <p class="card__legal">
@@ -298,8 +298,7 @@ export class EntrarComponent implements OnInit {
         if (err.status === 401) {
           this.error = 'E-mail ou senha incorretos.';
         } else if (err.status === 403 && err.error?.detail === 'email_not_verified') {
-          this.router.navigate(['/cadastro'], { queryParams: { email, verify: '1' } });
-          return;
+          this.error = 'E-mail ainda não verificado. Entre em contato com o suporte da Akroma.';
         } else if (err.status === 0) {
           this.error = 'Sem conexão com o servidor. Verifique sua internet.';
         } else {
