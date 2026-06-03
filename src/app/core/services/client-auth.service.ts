@@ -33,14 +33,6 @@ export interface ClientInfo {
   instagramUsername?: string;
 }
 
-export interface SignupRequest {
-  name: string;
-  email: string;
-  password: string;
-  whatsapp?: string;
-  referralCode?: string;
-}
-
 interface IdpLoginResponse {
   access_token?: string;
   refresh_token: string;
@@ -67,32 +59,9 @@ export class ClientAuthService {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  // -------------------------------------------------------------------------
-  // Signup
-  //
-  // POST {idp}/auth/register → returns {refresh_token}, then exchange for a
-  // Spark-scoped access token. The IDP emits an email verification link as a
-  // side-effect; the magic-link landing page (/verificar) handles the rest.
-  // -------------------------------------------------------------------------
-  signup(payload: SignupRequest, fingerprint = ''): Observable<TokenPair> {
-    // Plan 7 hardening (2026-05-22): Spark é 100% IDP, sem end users.
-    // Quem se cadastra aqui é cliente Akroma virando tenant_owner.
-    // O backend Spark cuida do auto-create do tenant na primeira chamada
-    // autenticada (bridge em src/core/dependencies.py).
-    const body = {
-      email: payload.email,
-      password: payload.password,
-      full_name: payload.name,
-      phone: payload.whatsapp || undefined,
-      fingerprint: fingerprint || undefined,
-      product: 'spark',
-      role: 'tenant_owner' as const,
-    };
-    return this.http.post<IdpLoginResponse>(`${this.idpBase}/auth/register`, body).pipe(
-      switchMap(res => this.exchange(res.refresh_token)),
-      tap(pair => this.persistTokens(pair))
-    );
-  }
+  // signup() removido — Spark passou pra cobrança centralizada. Cadastro
+  // acontece manualmente via /admin/spark (POST /admin/clients/create-b2b).
+  // O endpoint público /auth/register agora retorna 410 Gone pra product=spark.
 
   // -------------------------------------------------------------------------
   // Login
