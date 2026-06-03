@@ -1,0 +1,8 @@
+# Force revalidation do index.html — assets com hash (main-XXX.js, chunks)
+# ficam em cache imutável; só o index.html precisa ser revalidado pra
+# detectar deploys novos.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

@@ -1,1 +1,12 @@
+# Hard redirects (CDN-level) — independem do Angular Router e de cache local
+# do browser. Mantemos pra blindar contra service workers velhos que
+# possam ainda ter rotas removidas em cache.
+/cadastro          /contato 301
+/cadastro/*        /contato 301
+/verificar         /contato 301
+/verificar-email   /contato 301
+/verificar/*       /contato 301
+/verificar-email/* /contato 301
+
+# SPA fallback — qualquer outra rota cai no Angular Router
 /* /index.html 200
