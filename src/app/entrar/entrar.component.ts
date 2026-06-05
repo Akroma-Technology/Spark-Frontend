@@ -8,6 +8,25 @@ import { SeoService } from '../core/services/seo.service';
 import { SparkTopbarComponent } from '../shared/components/topbar/topbar.component';
 import { ParticleNetworkComponent } from '../shared/components/particle-network.component';
 
+// Mensagens das razões que o interceptor (verify-email.interceptor) propaga
+// via ?reason=... quando força redirect — uma fonte só pra logout normal,
+// 403 EMAIL_NOT_VERIFIED, client_not_provisioned, no_product_access, etc.
+const REASON_MESSAGES: Record<string, string> = {
+  email_not_verified: 'E-mail ainda não verificado. Entre em contato com o suporte da Akroma.',
+  client_not_provisioned:
+    'Sua conta da Identity Akroma existe, mas você não tem acesso ao Spark. '
+    + 'Para contratar, fale com a equipe Akroma.',
+  no_product_access:
+    'Você não tem acesso ao Spark com esta conta. '
+    + 'Para contratar, fale com a equipe Akroma.',
+  subscription_inactive:
+    'Sua assinatura do Spark não está ativa. Entre em contato com o financeiro.',
+  client_inactive:
+    'Sua conta no Spark foi desativada. Entre em contato com o suporte.',
+  account_suspended:
+    'Esta conta está suspensa. Entre em contato com o suporte da Akroma.',
+};
+
 @Component({
   selector: 'app-entrar',
   standalone: true,
@@ -250,25 +269,6 @@ import { ParticleNetworkComponent } from '../shared/components/particle-network.
     @media (max-width: 480px) { .card { padding: 28px 20px; } }
   `]
 })
-// Mensagens das razões que o interceptor (verify-email.interceptor) propaga
-// via ?reason=... quando força redirect — uma fonte só pra logout normal,
-// 403 EMAIL_NOT_VERIFIED, client_not_provisioned, no_product_access, etc.
-const REASON_MESSAGES: Record<string, string> = {
-  email_not_verified: 'E-mail ainda não verificado. Entre em contato com o suporte da Akroma.',
-  client_not_provisioned:
-    'Sua conta da Identity Akroma existe, mas você não tem acesso ao Spark. '
-    + 'Para contratar, fale com a equipe Akroma.',
-  no_product_access:
-    'Você não tem acesso ao Spark com esta conta. '
-    + 'Para contratar, fale com a equipe Akroma.',
-  subscription_inactive:
-    'Sua assinatura do Spark não está ativa. Entre em contato com o financeiro.',
-  client_inactive:
-    'Sua conta no Spark foi desativada. Entre em contato com o suporte.',
-  account_suspended:
-    'Esta conta está suspensa. Entre em contato com o suporte da Akroma.',
-};
-
 export class EntrarComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(ClientAuthService);
