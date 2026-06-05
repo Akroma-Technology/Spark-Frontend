@@ -884,79 +884,14 @@ type Tab = 'overview' | 'posts' | 'referrals' | 'plan' | 'brand' | 'schedule';
                 </span>
               </div>
             </div>
-            <p class="app-plan-card__desc" *ngIf="!billingStatus?.canceled">
-              {{ billingStatus?.trialActive
-                ? 'Ative um plano antes do trial encerrar para continuar publicando automaticamente.'
-                : 'Voce pode mudar de plano ou cancelar a qualquer momento. Cancelamentos nao geram reembolso do periodo ja pago.' }}
-            </p>
+            <!-- 2026-06: Spark deixou de ser auto-servico. Tudo de billing
+                 (gerenciar plano, faturas, NF, cancelar) e "Apagar conta"
+                 removidos do FE — gerencia centralizado pela Akroma (CSAT).
+                 Aqui sobrou so o status do plano (read-only). -->
             <p class="app-plan-card__desc" *ngIf="billingStatus?.canceled">
               Sua assinatura foi cancelada. Voce mantem acesso ate <strong>{{ billingStatus?.periodEnd | date:'dd/MM/yyyy' }}</strong>.
-              Para reativar, escolha um plano abaixo.
+              Para mudar de plano ou reativar, fale com a equipe Akroma.
             </p>
-
-            <!-- Billing-8d: portal Akroma e o unico caminho de pagamento.
-                 Trial users veem "Assinar"; ativos veem "Gerenciar"; cancelados veem "Reativar". -->
-            <div class="app-plan-portal-actions">
-              <button type="button" class="btn btn--spark"
-                      [disabled]="portalHandoffLoading"
-                      (click)="openPortalBilling('subscriptions')">
-                <ng-container *ngIf="!portalHandoffLoading">
-                  <span *ngIf="billingStatus?.canceled">Reativar assinatura no portal</span>
-                  <span *ngIf="!billingStatus?.canceled && billingStatus?.trialActive">Assinar plano no portal Akroma</span>
-                  <span *ngIf="!billingStatus?.canceled && !billingStatus?.trialActive && billingStatus?.active">Gerenciar plano no portal Akroma</span>
-                  <span *ngIf="!billingStatus?.canceled && !billingStatus?.trialActive && !billingStatus?.active">Assinar plano no portal Akroma</span>
-                </ng-container>
-                <span *ngIf="portalHandoffLoading">Abrindo portal...</span>
-              </button>
-              <button type="button" class="btn btn--link"
-                      [disabled]="portalHandoffLoading"
-                      (click)="openPortalBilling('invoices')">
-                Ver faturas e notas fiscais
-              </button>
-              <p class="app-plan-portal-actions__hint">
-                Pagamento, troca de plano e cancelamento sao gerenciados no portal central.
-              </p>
-              <p class="app-plan-portal-actions__error" *ngIf="portalHandoffError">
-                {{ portalHandoffError }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Billing-8d (2026-05-26): bloco 'Escolha seu plano' (selector + cycle toggle),
-               in-app checkout modal (PIX/Cartao) e cancel-section REMOVIDOS.
-               Todo o gerenciamento de assinatura (assinar, mudar plano, cancelar,
-               reativar) acontece via portal central:
-                 botao 'Assinar/Gerenciar plano no portal Akroma' acima dispara
-                 SSO handoff -> akroma.com.br/portal/assinaturas
-               Pagamento (PIX/Cartao) e emitido por accounts.invoices + payment_attempts
-               via webhook AbacatePay no Site backend. -->
-
-          <!-- Zona de Perigo: apagar conta -->
-          <div class="danger-zone">
-            <h3 class="danger-zone__title">⚠️ Zona de Perigo</h3>
-            <p class="danger-zone__desc">
-              Apagar sua conta remove todos os seus dados e tokens permanentemente.
-              Você não poderá criar uma nova conta com o mesmo e-mail ou conta do Instagram.
-            </p>
-            <button class="btn danger-zone__toggle-btn" (click)="showDeleteConfirm = !showDeleteConfirm">
-              Apagar minha conta
-            </button>
-            <div *ngIf="showDeleteConfirm" class="delete-confirm">
-              <p class="delete-confirm__label">Digite <strong>apagar</strong> para confirmar:</p>
-              <input
-                type="text"
-                [(ngModel)]="deleteConfirmText"
-                placeholder="apagar"
-                class="delete-confirm__input"
-              />
-              <button
-                class="btn btn--danger"
-                [disabled]="deleteConfirmText.toLowerCase() !== 'apagar' || deletingAccount"
-                (click)="deleteAccount()"
-              >
-                {{ deletingAccount ? 'Apagando...' : 'Confirmar — apagar conta' }}
-              </button>
-            </div>
           </div>
         </div>
       </main>
