@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ClientAuthService } from '../core/services/client-auth.service';
 import { SeoService } from '../core/services/seo.service';
@@ -250,10 +250,30 @@ import { ParticleNetworkComponent } from '../shared/components/particle-network.
     @media (max-width: 480px) { .card { padding: 28px 20px; } }
   `]
 })
+// Mensagens das razões que o interceptor (verify-email.interceptor) propaga
+// via ?reason=... quando força redirect — uma fonte só pra logout normal,
+// 403 EMAIL_NOT_VERIFIED, client_not_provisioned, no_product_access, etc.
+const REASON_MESSAGES: Record<string, string> = {
+  email_not_verified: 'E-mail ainda não verificado. Entre em contato com o suporte da Akroma.',
+  client_not_provisioned:
+    'Sua conta da Identity Akroma existe, mas você não tem acesso ao Spark. '
+    + 'Para contratar, fale com a equipe Akroma.',
+  no_product_access:
+    'Você não tem acesso ao Spark com esta conta. '
+    + 'Para contratar, fale com a equipe Akroma.',
+  subscription_inactive:
+    'Sua assinatura do Spark não está ativa. Entre em contato com o financeiro.',
+  client_inactive:
+    'Sua conta no Spark foi desativada. Entre em contato com o suporte.',
+  account_suspended:
+    'Esta conta está suspensa. Entre em contato com o suporte da Akroma.',
+};
+
 export class EntrarComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(ClientAuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private seo = inject(SeoService);
 
   form!: FormGroup;
@@ -274,7 +294,15 @@ export class EntrarComponent implements OnInit {
       noindex: true
     });
 
-    if (this.auth.isLoggedIn()) {
+    // Reason vem do verify-email.interceptor quando força redirect — mostra
+    // mensagem clara em vez do user voltar à tela em branco achando que foi
+    // bug de login.
+    const reason = this.route.snapshot.queryParamMap.get('reason') || '';
+    if (reason && REASON_MESSAGES[reason]) {
+      this.error = REASON_MESSAGES[reason];
+    }
+
+    if (this.auth.isLoggedIn() && !reason) {
       this.router.navigate(['/app']);
       return;
     }
@@ -295,10 +323,19 @@ export class EntrarComponent implements OnInit {
     this.auth.login(email, password).subscribe({
       next: () => this.router.navigate(['/app']),
       error: (err: HttpErrorResponse) => {
+        // detail pode ser string OU {reason,message} — extrai reason quando
+        // for objeto (IDP novo retorna {reason:'no_product_access',message:..}).
+        const detail = err.error?.detail;
+        const detailReason = (typeof detail === 'object' && detail?.reason) || (typeof detail === 'string' ? detail : '');
+        const mapped = REASON_MESSAGES[detailReason];
+
         if (err.status === 401) {
           this.error = 'E-mail ou senha incorretos.';
-        } else if (err.status === 403 && err.error?.detail === 'email_not_verified') {
-          this.error = 'E-mail ainda não verificado. Entre em contato com o suporte da Akroma.';
+        } else if (err.status === 403 && mapped) {
+          this.error = mapped;
+        } else if (err.status === 403 && typeof detail === 'object' && detail?.message) {
+          // fallback pra qualquer 403 com objeto — usa o message do backend
+          this.error = String(detail.message);
         } else if (err.status === 0) {
           this.error = 'Sem conexão com o servidor. Verifique sua internet.';
         } else {
